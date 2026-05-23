@@ -88,6 +88,7 @@ export default function Home() {
   function openPw() { setPwOpen(true); setPw(''); setPwErr(''); setTimeout(() => inputRef.current?.focus(), 120) }
   function closePw() { setPwOpen(false); setPw(''); setPwErr('') }
 
+  // 密码验证在服务端进行，不暴露在前端
   async function checkPw() {
     if (!pw.trim()) return
     setChecking(true)
@@ -158,33 +159,6 @@ export default function Home() {
         .main-area{margin-left:220px;flex:1;background:#fafaf8;min-height:100vh;padding-bottom:80px}
         .mobile-nav{display:none}
 
-        /* 作品集图片比例3:2，独立卡片 */
-        .port-img {
-          width: 100%;
-          aspect-ratio: 3 / 2;
-          border-radius: 20px;
-          overflow: hidden;
-          background-size: cover;
-          transition: transform 0.3s ease;
-        }
-        .port-img:hover {
-          transform: translateY(-4px);
-        }
-        .port-body {
-          flex: 1;
-        }
-        /* 图集堆叠层比例3:2 */
-        .stack-img-fill {
-          aspect-ratio: 3 / 2 !important;
-          width: 100%;
-        }
-        .g-card-title {
-          margin-top: 16px;
-          text-align: center;
-          font-size: 12px;
-          color: #777;
-        }
-
         /* Responsive */
         @media(max-width:768px){
           .sidebar{display:none}
@@ -196,53 +170,11 @@ export default function Home() {
           .hero-name-txt{font-size:40px!important}
           .content-wrap{padding:0 18px!important}
           .player-wrap{padding:0 18px!important}
-          /* 手机端作品集：标题在上，图片在下，独立圆角 */
-          .portfolio-item {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 16px !important;
-          }
-          .portfolio-item .port-img {
-            order: 2;
-            width: 100%;
-          }
-          .portfolio-item .port-body {
-            order: 1;
-            padding: 0 !important;
-            background: transparent !important;
-          }
-          .port-body {
-            background: transparent !important;
-            padding: 0 !important;
-          }
-          .g-grid{grid-template-columns: repeat(3,1fr) !important; gap: 12px !important;}
+          .port-card{flex-direction:column!important;max-width:100%!important}
+          .port-card .port-img{width:100%!important;height:180px!important}
+          .port-card .port-body{width:100%!important;padding:18px!important}
+          .g-grid{grid-template-columns:1fr 1fr 1fr!important}
           .theater-row{max-width:100%!important}
-        }
-        /* 电脑端作品集：图片与文字独立，不共用卡片背景 */
-        .portfolio-item {
-          display: flex;
-          gap: 40px;
-          margin-bottom: 56px;
-        }
-        .portfolio-item.reverse {
-          flex-direction: row-reverse;
-        }
-        .portfolio-item .port-body {
-          background: transparent;
-          padding: 0;
-        }
-        /* 图集网格 */
-        .g-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 28px;
-        }
-        .g-card {
-          cursor: pointer;
-          transition: transform 0.2s;
-        }
-        .g-card:hover {
-          transform: translateY(-4px);
         }
       `}</style>
 
@@ -250,7 +182,7 @@ export default function Home() {
 
       <div className="layout">
 
-        {/* SIDEBAR */}
+        {/* ── SIDEBAR ── */}
         <aside className="sidebar">
           <div style={{fontFamily:'Noto Serif SC,serif',fontSize:'22px',fontWeight:300,letterSpacing:'.2em',color:'#f0f0ee',padding:'0 28px',marginBottom:'52px'}}>
             Yuria
@@ -270,6 +202,7 @@ export default function Home() {
             </button>
           </nav>
 
+          {/* 底部设置区 */}
           <div style={{padding:'0 14px',borderTop:'0.5px solid rgba(255,255,255,.08)',paddingTop:'18px',marginTop:'8px'}}>
             {user ? (
               <>
@@ -299,7 +232,7 @@ export default function Home() {
           </div>
         </aside>
 
-        {/* MAIN CONTENT */}
+        {/* ── MAIN ── */}
         <main className="main-area">
 
           {/* HERO */}
@@ -320,20 +253,25 @@ export default function Home() {
           {/* MUSIC PLAYER */}
           <div className="player-wrap sr" style={{padding:'0 52px',borderBottom:'0.5px solid #f0f0ee'}} data-d="0">
             <div style={{display:'flex',alignItems:'center',gap:'14px',padding:'16px 0',cursor:'pointer'}} onClick={() => setListOpen(o=>!o)}>
-              {/* vinyl — 实心无空洞 */}
-              <div className={playing ? 'vinyl-spin' : ''} style={{width:'40px',height:'40px',borderRadius:'50%',flexShrink:0,background:'linear-gradient(135deg,#1a1a1a,#3a3a3a)',position:'relative',overflow:'hidden'}}>
-                {track?.cover_url && <img src={track.cover_url} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:.7}} alt=""/>}
-                {/* 移除中间白色圆点 — 实心 */}
+              {/* vinyl */}
+              <div className={playing ? 'vinyl-spin' : ''} style={{width:'40px',height:'40px',borderRadius:'50%',flexShrink:0,background:'linear-gradient(135deg,#1a1a1a,#3a3a3a)',position:'relative'}}>
+                {track?.cover_url && <img src={track.cover_url} style={{position:'absolute',inset:0,width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover',opacity:.6}} alt=""/>}
+                <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <div style={{width:'33%',height:'33%',borderRadius:'50%',background:'#fafaf8'}}/>
+                </div>
               </div>
+              {/* info */}
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:'13px',fontWeight:500,color:'#1a1a1a',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{track?.title ?? '暂无音乐'}</div>
                 <div style={{fontSize:'11px',color:'#999',marginTop:'2px'}}>{track?.artist ?? ''}</div>
               </div>
+              {/* waveform */}
               <div style={{display:'flex',alignItems:'flex-end',gap:'3px',height:'20px',flexShrink:0}}>
                 {[5,11,7,15,9].map((h,i) => (
                   <div key={i} className={playing?'wv-on':''} style={{width:'2.5px',borderRadius:'2px',background:playing?'#333':'#d0d0d0',height:`${h}px`,transition:'background .2s'}}/>
                 ))}
               </div>
+              {/* controls */}
               <div style={{display:'flex',alignItems:'center',gap:'7px',flexShrink:0}}>
                 <button onClick={e=>{e.stopPropagation();setTrackIdx(i=>(i-1+tracks.length)%tracks.length);setPlaying(false)}}
                   style={{width:'32px',height:'32px',borderRadius:'50%',border:'1px solid #d0d0ce',background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',transition:'border-color .2s'}}
@@ -358,6 +296,7 @@ export default function Home() {
                 <path d="M2 4.5l4.5 4.5 4.5-4.5" stroke="#bbb" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
+            {/* track list */}
             <div style={{maxHeight:listOpen?'200px':'0',overflow:'hidden',transition:'max-height .4s cubic-bezier(.22,1,.36,1)'}}>
               {tracks.map((t,i) => (
                 <div key={t.id} onClick={()=>{setTrackIdx(i);if(!playing)togglePlay()}}
@@ -372,7 +311,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* PORTFOLIO — 独立图片与文字，3:2比例 */}
+          {/* PORTFOLIO */}
           <div className="sr content-wrap" style={{padding:'48px 52px 0'}} data-d="60">
             <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:'28px'}}>
               <span style={{fontSize:'10px',letterSpacing:'.3em',color:'#aaa'}}>PORTFOLIO</span>
@@ -382,25 +321,25 @@ export default function Home() {
                 全部 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
               </Link>
             </div>
-            <div style={{display:'flex',flexDirection:'column',gap:'40px'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
               {[
-                {rev:false, bg:'linear-gradient(160deg,#8a9aaa,#5a6a7a)', tag:'PHOTOGRAPHY · 2025', name:'秋日系列', excerpt:'光影交错的午后，城市在镜头里变得温柔而遥远…'},
-                {rev:true,  bg:'linear-gradient(160deg,#9898aa,#686878)', tag:'ILLUSTRATION · 2025', name:'城市素描', excerpt:'用线条描绘城市的轮廓，每一笔都是对空间的感知…'},
-              ].map((item, i) => (
-                <div key={i} className={`portfolio-item ${item.rev ? 'reverse' : ''}`}>
-                  <div className="port-img" style={{background: item.bg, flexShrink: 0, width: '48%'}} />
-                  <div className="port-body" style={{display:'flex', flexDirection:'column', justifyContent:'center', gap:'8px'}}>
-                    <div style={{fontSize:'9px', letterSpacing:'.22em', color:'#bbb'}}>{item.tag}</div>
-                    <div style={{fontFamily:'Noto Serif SC,serif', fontSize:'20px', fontWeight:300, letterSpacing:'.08em', color:'#1a1a1a'}}>{item.name}</div>
-                    <div style={{fontSize:'12px', color:'#999', lineHeight:1.6}}>{item.excerpt}</div>
-                    <Link href="/portfolio" style={{fontSize:'11px', color:'#aaa', marginTop:'6px', textDecoration:'none', borderBottom:'1px solid #ddd', width:'fit-content'}}>阅读更多 →</Link>
+                {rev:false,bg:'linear-gradient(160deg,#8a9aaa,#5a6a7a)',tag:'PHOTOGRAPHY · 2025',name:'秋日系列',excerpt:'光影交错的午后，城市在镜头里变得温柔而遥远…'},
+                {rev:true, bg:'linear-gradient(160deg,#9898aa,#686878)',tag:'ILLUSTRATION · 2025',name:'城市素描',excerpt:'用线条描绘城市的轮廓，每一笔都是对空间的感知…'},
+              ].map((item,i) => (
+                <div key={i} className="sr port-card hover-lift" data-d={`${80+i*60}`}
+                  style={{display:'flex',flexDirection:'row',borderRadius:'14px',overflow:'hidden',cursor:'pointer'}}>
+                  <div className="port-img" style={{order:item.rev?2:1,width:'52%',flexShrink:0,background:item.bg,minHeight:'200px'}}/>
+                  <div className="port-body" style={{order:item.rev?1:2,flex:1,background:'#f5f5f2',padding:'32px 36px',display:'flex',flexDirection:'column',justifyContent:'center',gap:'10px'}}>
+                    <div style={{fontSize:'9px',letterSpacing:'.22em',color:'#bbb'}}>{item.tag}</div>
+                    <div style={{fontFamily:'Noto Serif SC,serif',fontSize:'20px',fontWeight:300,letterSpacing:'.08em',color:'#1a1a1a'}}>{item.name}</div>
+                    <div style={{fontSize:'12px',color:'#999',lineHeight:1.9}}>{item.excerpt}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* GALLERY — 标题在正下方，不显示张数，图片3:2 */}
+          {/* GALLERY */}
           <div className="sr content-wrap" style={{padding:'48px 52px 0'}} data-d="100">
             <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:'28px'}}>
               <span style={{fontSize:'10px',letterSpacing:'.3em',color:'#aaa'}}>GALLERY</span>
@@ -410,28 +349,28 @@ export default function Home() {
                 全部 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
               </Link>
             </div>
-            <div className="g-grid">
+            <div className="g-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'20px'}}>
               {[
-                {label:'黄昏之光', bg:'linear-gradient(150deg,#aab0ba,#7a8090)'},
-                {label:'森林系列', bg:'linear-gradient(150deg,#bcb8c8,#8a8898)'},
-                {label:'城市迷雾', bg:'linear-gradient(150deg,#b4bcb8,#848c88)'},
-                {label:'黑白系列', bg:'linear-gradient(150deg,#484848,#1a1a1a)'},
-                {label:'春日记录', bg:'linear-gradient(150deg,#c8d0b8,#909878)'},
-                {label:'蓝调时刻', bg:'linear-gradient(150deg,#a8b8d0,#6878a0)'},
-              ].map((item, i) => (
-                <Link key={i} href="/gallery" className="g-card">
-                  <div className="stack-visual" style={{position:'relative', height:'auto', aspectRatio:'3/2'}}>
-                    <div style={{position:'absolute', left:'6%', width:'88%', top:0, transform:'rotate(-3deg)', zIndex:1, opacity:0.45, borderRadius:'12px', overflow:'hidden', border:'2px solid #fff', height:'100%'}}>
-                      <div style={{width:'100%', height:'100%', background:item.bg, opacity:0.45}}/>
-                    </div>
-                    <div style={{position:'absolute', left:'4%', width:'92%', top:'8px', transform:'rotate(1.5deg)', zIndex:2, opacity:0.75, borderRadius:'12px', overflow:'hidden', border:'2px solid #fff', height:'100%'}}>
-                      <div style={{width:'100%', height:'100%', background:item.bg, opacity:0.75}}/>
-                    </div>
-                    <div style={{position:'absolute', left:'2%', width:'96%', top:'16px', transform:'rotate(0deg)', zIndex:3, borderRadius:'12px', overflow:'hidden', border:'2px solid #fff', height:'100%'}}>
-                      <div style={{width:'100%', height:'100%', background:item.bg}}/>
-                    </div>
+                {label:'黄昏之光',count:'12 张',bg:'linear-gradient(150deg,#aab0ba,#7a8090)'},
+                {label:'森林系列',count:'8 张', bg:'linear-gradient(150deg,#bcb8c8,#8a8898)'},
+                {label:'城市迷雾',count:'16 张',bg:'linear-gradient(150deg,#b4bcb8,#848c88)'},
+                {label:'黑白系列',count:'9 张', bg:'linear-gradient(150deg,#484848,#1a1a1a)'},
+                {label:'春日记录',count:'14 张',bg:'linear-gradient(150deg,#c8d0b8,#909878)'},
+                {label:'蓝调时刻',count:'7 张', bg:'linear-gradient(150deg,#a8b8d0,#6878a0)'},
+              ].map((item,i) => (
+                <Link key={i} href="/gallery" className="sr hover-lift" data-d={`${110+i*30}`}
+                  style={{cursor:'pointer',textDecoration:'none',display:'block'}}
+                  onMouseEnter={e=>(e.currentTarget as HTMLElement).style.transform='translateY(-3px)'}
+                  onMouseLeave={e=>(e.currentTarget as HTMLElement).style.transform='none'}>
+                  <div style={{position:'relative',height:'140px',margin:'4px'}}>
+                    {[{rot:'-3.2deg',op:.45,top:0},{rot:'1.5deg',op:.7,top:9},{rot:'0deg',op:1,top:18}].map((l,j) => (
+                      <div key={j} style={{position:'absolute',left:'4%',width:'92%',top:`${l.top}px`,transform:`rotate(${l.rot})`,zIndex:j+1,borderRadius:'9px',overflow:'hidden',border:'2px solid #fff',boxShadow:`0 ${2+j*2}px ${8+j*5}px rgba(0,0,0,${.06+j*.015})`}}>
+                        <div style={{height:'90px',background:item.bg,opacity:l.op}}/>
+                      </div>
+                    ))}
                   </div>
-                  <div className="g-card-title">{item.label}</div>
+                  <div style={{fontSize:'12px',color:'#777',padding:'7px 2px 0'}}>{item.label}</div>
+                  <div style={{fontSize:'10px',color:'#bbb',marginTop:'2px'}}>{item.count}</div>
                 </Link>
               ))}
             </div>
@@ -460,7 +399,7 @@ export default function Home() {
         </main>
       </div>
 
-      {/* MOBILE NAV */}
+      {/* ── MOBILE NAV ── */}
       <nav className="mobile-nav">
         {[
           {href:'/',label:'主页',d:'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z'},
@@ -476,6 +415,7 @@ export default function Home() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.4" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
           <span>小剧场</span>
         </button>
+        {/* 手机端设置按钮 */}
         {user ? (
           isAdmin
             ? <Link href="/admin" className="mobile-nav-item">
@@ -494,12 +434,17 @@ export default function Home() {
         )}
       </nav>
 
-      {/* PASSWORD MODAL — 无小圆点 */}
+      {/* ── PASSWORD MODAL ── */}
       {pwOpen && (
         <div style={{position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(18,18,18,.52)',backdropFilter:'blur(14px)',WebkitBackdropFilter:'blur(14px)'}} onClick={closePw}>
           <div className="pw-fadein" style={{background:'rgba(252,252,250,.97)',borderRadius:'22px',padding:'44px 40px',width:'310px',textAlign:'center',boxShadow:'0 32px 80px rgba(0,0,0,.18)'}} onClick={e=>e.stopPropagation()}>
             <div style={{fontFamily:'Noto Serif SC,serif',fontSize:'16px',fontWeight:300,letterSpacing:'.15em',marginBottom:'4px'}}>小剧场</div>
             <div style={{fontSize:'11px',color:'#aaa',letterSpacing:'.1em',marginBottom:'30px'}}>私密空间 · 请输入密码</div>
+            <div style={{display:'flex',justifyContent:'center',gap:'10px',marginBottom:'20px'}}>
+              {[0,1,2,3].map(i => (
+                <div key={i} style={{width:'9px',height:'9px',borderRadius:'50%',border:'0.5px solid',transition:'all .2s',background:pw.length>i?'#1a1a1a':'transparent',borderColor:pw.length>i?'#1a1a1a':'#ddd'}}/>
+              ))}
+            </div>
             {pwErr && <p style={{fontSize:'11px',color:'#c0392b',marginBottom:'10px'}}>{pwErr}</p>}
             <input ref={inputRef} type="password" value={pw}
               onChange={e=>{setPw(e.target.value);setPwErr('')}}
