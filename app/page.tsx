@@ -233,7 +233,10 @@ export default function Home() {
   flex-direction:column!important;
   align-items:flex-start!important;
 }
-
+.port-text-wrap{
+  padding:0!important;
+  width:100%;
+}
 .port-tag-row{
   order:1;
   padding:0;
@@ -557,12 +560,17 @@ marginBottom:'42px'}}>
                   </div>
 
                   {/* 文字 — 独立，有间距 */}
-                  <div style={{
-                    order:item.rev?1:2,
-                    flex:1,
-                   padding: item.rev ? '8px 28px 8px 0' : '8px 0 8px 28px',
-                    display:'flex',flexDirection:'column',justifyContent:'center',gap:'12px',
-                  }}>
+                  <div
+  className="port-text-wrap"
+  style={{
+    order:item.rev?1:2,
+    flex:1,
+    padding: item.rev ? '8px 28px 8px 0' : '8px 0 8px 28px',
+    display:'flex',
+    flexDirection:'column',
+    justifyContent:'center',
+    gap:'12px',
+  }}>
                     <div className="port-tag-row"
                       style={{fontSize:'13px',letterSpacing:'.22em',color:'#bbb'}}>
                       {item.tag}
