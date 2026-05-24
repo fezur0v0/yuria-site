@@ -225,12 +225,50 @@ export default function Home() {
           .player-wrap{padding:0 20px!important}
 
           /* 手机端作品集：标题在上，图片在下，文字不合并 */
-          .port-list{gap:28px!important}
-          .port-item{flex-direction:column!important}
-          .port-tag-row{order:1;padding:0 4px}
-          .port-name-row{order:2;padding:0 4px}
-          .port-excerpt-row{order:3;padding:0 4px;display:block!important}
-          .port-img-wrap{order:4;width:100%!important;aspect-ratio:3/2}
+          .port-list{
+  gap:42px!important;
+}
+
+.port-item{
+  flex-direction:column!important;
+  align-items:flex-start!important;
+}
+
+.port-tag-row{
+  order:1;
+  padding:0;
+  width:100%;
+  text-align:left;
+}
+
+.port-name-row{
+  order:2;
+  padding:0;
+  width:100%;
+  text-align:left;
+}
+
+.port-excerpt-row{
+  order:3;
+  display:block!important;
+  padding:0;
+  width:100%;
+  text-align:left;
+}
+
+.port-img-wrap{
+  order:4!important;
+  width:100%!important;
+  max-width:none!important;
+  margin-top:14px;
+  aspect-ratio:16/9!important;
+}
+
+.port-img-inner{
+  border-radius:14px!important;
+  width:100%;
+  height:100%;
+}
           .port-img-inner{border-radius:14px!important;width:100%;height:100%}
 
           /* 手机端图集：2列 */
