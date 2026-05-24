@@ -244,7 +244,12 @@ export default function Home() {
 
       {track && (
         <audio ref={audioRef} src={track.src}
-          onEnded={() => setTrackIdx(i => (i+1)%tracks.length)} />
+          onEnded={() => {
+  setTrackIdx(i => (i + 1) % tracks.length)
+  setTimeout(() => {
+    audioRef.current?.play().catch(() => {})
+  }, 120)
+}} />
       )}
 
       <div className="layout">
@@ -425,7 +430,13 @@ export default function Home() {
                   }
                 </button>
                 <button
-                  onClick={e=>{e.stopPropagation();setTrackIdx(i=>(i+1)%tracks.length);setPlaying(false)}}
+                  onClick={e=>{e.stopPropagation();setTrackIdx(i=>(i+1)%tracks.length)
+
+setTimeout(() => {
+  audioRef.current?.play().catch(() => {})
+}, 120)
+
+setPlaying(true)}}
                   style={{width:'33px',height:'33px',borderRadius:'50%',border:'1px solid #d8d8d8',
                     background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',
                     cursor:'pointer',transition:'border-color .2s,background .2s'}}
@@ -466,10 +477,11 @@ export default function Home() {
 
           {/* PORTFOLIO */}
           <div className="sr content-wrap" style={{padding:'52px 56px 0'}} data-d="60">
-            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:'32px'}}>
-              <span style={{fontSize:'10px',letterSpacing:'.32em',color:'#aaa'}}>PORTFOLIO</span>
+            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between', marginTop:'18px',
+marginBottom:'42px'}}>
+              <span style={{fontSize:'13px',letterSpacing:'.32em',color:'#aaa'}}>PORTFOLIO</span>
               <Link href="/portfolio"
-                style={{fontSize:'11px',color:'#aaa',display:'flex',alignItems:'center',gap:'4px',
+                style={{fontSize:'13px',color:'#aaa',display:'flex',alignItems:'center',gap:'4px',
                   textDecoration:'none',transition:'color .2s'}}
                 onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='#1a1a1a'}
                 onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='#aaa'}>
@@ -489,15 +501,18 @@ export default function Home() {
                     cursor:'pointer',
                   }}>
                   {/* 图片 — 3:2比例，圆角，独立 */}
-                  <div className="port-img-wrap"
-                    style={{
-                      order:item.rev?2:1,
-                      width:'55%',flexShrink:0,
-                      borderRadius:'16px',overflow:'hidden',
-                      aspectRatio:'3/2',
-                      background:item.bg,
-                      transition:'transform .35s,box-shadow .35s',
-                    }}
+                 <div className="port-img-wrap"
+  style={{
+    order:item.rev?2:1,
+    width:'46%',
+    maxWidth:'520px',
+    flexShrink:0,
+    borderRadius:'16px',
+    overflow:'hidden',
+    aspectRatio:'16/9',
+    background:item.bg,
+    transition:'transform .35s,box-shadow .35s',
+  }}
                     onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-3px)';(e.currentTarget as HTMLElement).style.boxShadow='0 16px 48px rgba(0,0,0,.1)'}}
                     onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
                     <div className="port-img-inner" style={{width:'100%',height:'100%',background:item.bg}}/>
@@ -507,11 +522,11 @@ export default function Home() {
                   <div style={{
                     order:item.rev?1:2,
                     flex:1,
-                    padding: item.rev ? '8px 40px 8px 0' : '8px 0 8px 40px',
+                   padding: item.rev ? '8px 28px 8px 0' : '8px 0 8px 28px',
                     display:'flex',flexDirection:'column',justifyContent:'center',gap:'12px',
                   }}>
                     <div className="port-tag-row"
-                      style={{fontSize:'10px',letterSpacing:'.22em',color:'#bbb'}}>
+                      style={{fontSize:'13px',letterSpacing:'.22em',color:'#bbb'}}>
                       {item.tag}
                     </div>
                     <div className="port-name-row"
@@ -531,10 +546,11 @@ export default function Home() {
 
           {/* GALLERY */}
           <div className="sr content-wrap" style={{padding:'52px 56px 0'}} data-d="100">
-            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:'32px'}}>
-              <span style={{fontSize:'10px',letterSpacing:'.32em',color:'#aaa'}}>GALLERY</span>
+            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between', marginTop:'18px',
+marginBottom:'42px'}}>
+              <span style={{fontSize:'13px',letterSpacing:'.32em',color:'#aaa'}}>GALLERY</span>
               <Link href="/gallery"
-                style={{fontSize:'11px',color:'#aaa',display:'flex',alignItems:'center',gap:'4px',
+                style={{fontSize:'13px',color:'#aaa',display:'flex',alignItems:'center',gap:'4px',
                   textDecoration:'none',transition:'color .2s'}}
                 onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='#1a1a1a'}
                 onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='#aaa'}>
@@ -578,8 +594,14 @@ export default function Home() {
                   </div>
 
                   {/* 标题正下方，无张数 */}
-                  <div style={{fontSize:'14px',color:'#666',padding:'10px 2px 0',
-                    letterSpacing:'.04em',fontWeight:400}}>
+                  <div style={{
+  fontSize:'14px',
+  color:'#666',
+  padding:'18px 2px 8px',
+  textAlign:'center',
+  letterSpacing:'.06em',
+  fontWeight:400,
+}}>
                     {item.label}
                   </div>
                 </Link>
@@ -590,7 +612,7 @@ export default function Home() {
           {/* 小剧场 */}
           <div className="sr content-wrap" style={{padding:'52px 56px 72px'}} data-d="140">
             <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:'28px'}}>
-              <span style={{fontSize:'10px',letterSpacing:'.32em',color:'#aaa'}}>小剧场</span>
+              <span style={{fontSize:'13px',letterSpacing:'.32em',color:'#aaa'}}>小剧场</span>
             </div>
             <button onClick={openPw} className="theater-btn"
               style={{
@@ -697,7 +719,8 @@ export default function Home() {
               letterSpacing:'.15em',marginBottom:'6px',color:'#1a1a1a'}}>
               小剧场
             </div>
-            <div style={{fontSize:'11px',color:'#bbb',letterSpacing:'.1em',marginBottom:'32px'}}>
+            <div style={{fontSize:'13px',color:'#bbb',letterSpacing:'.1em', marginTop:'18px',
+marginBottom:'42px'}}>
               私密空间 · 请输入密码
             </div>
 
