@@ -355,7 +355,7 @@ export default function Home() {
             </Link>
           </nav>
 
-          {/* 底部：管理设置（直接链接到 /admin） */}
+          {/* 底部：管理设置（直接链接到 /admin，当前页面跳转） */}
           <div
             style={{
               padding: '0 16px',
@@ -364,7 +364,7 @@ export default function Home() {
               marginTop: '8px',
             }}
           >
-            <Link href="/admin" className="sb-link" target="_blank" rel="noopener noreferrer">
+            <Link href="/admin" className="sb-link">
               <div className="sb-bar" />
               <svg
                 width="15"
@@ -866,7 +866,7 @@ export default function Home() {
           </svg>
           <span>小剧场</span>
         </Link>
-        <Link href="/admin" className="mobile-nav-item" target="_blank" rel="noopener noreferrer">
+        <Link href="/admin" className="mobile-nav-item">
           <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
             <circle cx="12" cy="12" r="3" />
             <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
