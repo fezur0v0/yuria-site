@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/client'
 const supabase = createClient()
 
 export default function Home() {
+const router = useRouter()
   const [config, setConfig]     = useState({ cover_url: '', signature: '我的小小世界' })
   const [tracks, setTracks]     = useState<any[]>([])
   const [trackIdx, setTrackIdx] = useState(0)
@@ -275,6 +276,44 @@ useEffect(() => {
               <span>小剧场</span>
             </Link>
           </nav>
+
+{/* 底部：登录/设置 */}
+          <div style={{
+            padding:'0 16px',
+            borderTop:'0.5px solid rgba(255,255,255,.09)',
+            paddingTop:'20px',marginTop:'8px',
+          }}>
+            {user ? (
+              <>
+                {isAdmin && (
+                  <Link href="/admin" className="sb-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                      stroke="#777" strokeWidth="1.5" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <span style={{fontSize:'12px'}}>管理设置</span>
+                  </Link>
+                )}
+                <button onClick={signOut} className="sb-link">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{flexShrink:0}}>
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                  </svg>
+                  <span style={{fontSize:'12px'}}>退出登录</span>
+                </button>
+              </>
+            ) : (
+              <button onClick={signInWithGitHub} className="sb-link">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="#777" strokeWidth="1.5" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <span style={{fontSize:'12px'}}>设置 / 登录</span>
+              </button>
+            )}
+          </div>
         </aside>
 
         {/* ════ MAIN ════ */}
@@ -627,6 +666,67 @@ marginBottom:'42px'}}>
   <span>小剧场</span>
 </Link>
 </nav>
+</nav>
+
+{/* SETTINGS */}
+<div style={{
+  padding:'16px',
+  borderTop:'1px solid rgba(255,255,255,.06)',
+  marginTop:'auto',
+}}>
+  <button
+    onClick={() => router.push('/admin')}
+    className="sb-link"
+    style={{
+      color:'#8f8f8f',
+    }}
+  >
+    <div className="sb-bar"/>
+
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{flexShrink:0}}
+    >
+      <circle cx="12" cy="12" r="3"/>
+
+      <path d="M19.4 15a1.65 1.65 0 00.33 1.82
+      l.06.06a2 2 0 11-2.83 2.83
+      l-.06-.06a1.65 1.65 0 00-1.82-.33
+      1.65 1.65 0 00-1 1.51V21
+      a2 2 0 11-4 0v-.09
+      a1.65 1.65 0 00-1-1.51
+      1.65 1.65 0 00-1.82.33
+      l-.06.06a2 2 0 11-2.83-2.83
+      l.06-.06a1.65 1.65 0 00.33-1.82
+      1.65 1.65 0 00-1.51-1H3
+      a2 2 0 110-4h.09
+      a1.65 1.65 0 001.51-1
+      1.65 1.65 0 00-.33-1.82
+      l-.06-.06a2 2 0 112.83-2.83
+      l.06.06a1.65 1.65 0 001.82.33h.01
+      A1.65 1.65 0 009 3.09V3
+      a2 2 0 114 0v.09
+      a1.65 1.65 0 001 1.51h.01
+      a1.65 1.65 0 001.82-.33
+      l.06-.06a2 2 0 112.83 2.83
+      l-.06.06a1.65 1.65 0 00-.33 1.82v.01
+      A1.65 1.65 0 0019.91 11H20
+      a2 2 0 110 4h-.09
+      a1.65 1.65 0 00-1.51 1z"/>
+    </svg>
+
+    <span>设置</span>
+  </button>
+</div>
+
+</aside>
     </>
   )
 }
