@@ -1,7 +1,10 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/utils/supabase/client'
 
+const supabase = createClient()
 
 export default function Home() {
   const [config, setConfig]     = useState({ cover_url: '', signature: '我的小小世界' })
@@ -624,4 +627,6 @@ marginBottom:'42px'}}>
   <span>小剧场</span>
 </Link>
 </nav>
-
+    </>
+  )
+}
