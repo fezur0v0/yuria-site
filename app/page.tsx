@@ -36,7 +36,7 @@ export default function Home() {
     return () => obs.disconnect()
   }, [])
 
-  // auth + data (保留登录状态用于管理入口显示，但不再显示登录/退出按钮)
+  // auth + data
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       const u = data.user
@@ -53,12 +53,10 @@ export default function Home() {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  // 当 trackIdx 变化时，加载新音频并自动播放（如果 playing 为 true）
   useEffect(() => {
     if (!audioRef.current) return
     const track = tracks[trackIdx]
     if (!track) return
-
     audioRef.current.src = track.src
     audioRef.current.load()
     if (playing) {
@@ -259,7 +257,7 @@ export default function Home() {
           text-align: center;
         }
 
-        /* 手机端适配 */
+        /* 手机端适配 - 修正作品集标题不对齐问题 */
         @media(max-width:768px){
           .sidebar{display:none}
           .main-area{margin-left:0}
@@ -285,9 +283,12 @@ export default function Home() {
           .player-wrap{padding:0 20px!important}
           .port-list{gap:28px!important}
           .port-item{flex-direction:column!important}
-          .port-tag-row{order:1;padding:0 4px}
-          .port-name-row{order:2;padding:0 4px}
-          .port-excerpt-row{order:3;padding:0 4px;display:block!important}
+          /* 文字区块：去除所有左边距，确保左对齐 */
+          .port-tag-row, .port-name-row, .port-excerpt-row {
+            padding-left: 0 !important;
+            margin-left: 0 !important;
+            text-align: left;
+          }
           .port-img-wrap{order:4;width:100%!important;aspect-ratio:16/9}
           .g-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
           .theater-btn{max-width:100%!important}
@@ -355,7 +356,6 @@ export default function Home() {
             </Link>
           </nav>
 
-          {/* 底部：管理设置（直接链接到 /admin，当前页面跳转） */}
           <div
             style={{
               padding: '0 16px',
@@ -610,7 +610,6 @@ export default function Home() {
               </svg>
             </div>
 
-            {/* 曲目列表 */}
             <div
               style={{
                 maxHeight: listOpen ? '220px' : '0',
