@@ -1,13 +1,10 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+
 import { createClient } from '@/utils/supabase/client'
-
-const supabase = createClient()
-
 export default function Home() {
-const router = useRouter()
+
   const [config, setConfig]     = useState({ cover_url: '', signature: '我的小小世界' })
   const [tracks, setTracks]     = useState<any[]>([])
   const [trackIdx, setTrackIdx] = useState(0)
@@ -277,45 +274,30 @@ useEffect(() => {
             </Link>
           </nav>
 
-{/* 底部：登录/设置 */}
-          <div style={{
-            padding:'0 16px',
-            borderTop:'0.5px solid rgba(255,255,255,.09)',
-            paddingTop:'20px',marginTop:'8px',
-          }}>
-            {user ? (
-              <>
-                {isAdmin && (
-                  <Link href="/admin" className="sb-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                      stroke="#777" strokeWidth="1.5" strokeLinecap="round">
-                      <circle cx="12" cy="12" r="3"/>
-                      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
-                    <span style={{fontSize:'12px'}}>管理设置</span>
-                  </Link>
-                )}
-                <button onClick={signOut} className="sb-link">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{flexShrink:0}}>
-                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-                  </svg>
-                  <span style={{fontSize:'12px'}}>退出登录</span>
-                </button>
-              </>
-            ) : (
-              <button onClick={signInWithGitHub} className="sb-link">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                  stroke="#777" strokeWidth="1.5" strokeLinecap="round">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                </svg>
-                <span style={{fontSize:'12px'}}>设置 / 登录</span>
-              </button>
-            )}
-          </div>
-        </aside>
+{/* 底部设置 */}
+<div style={{
+  padding:'0 16px',
+  borderTop:'0.5px solid rgba(255,255,255,.09)',
+  paddingTop:'20px',
+  marginTop:'8px',
+}}>
+  <Link href="/admin" className="sb-link">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#777"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    >
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+    </svg>
 
+    <span style={{fontSize:'12px'}}>设置</span>
+  </Link>
+</div>
         {/* ════ MAIN ════ */}
         <main className="main-area">
 
