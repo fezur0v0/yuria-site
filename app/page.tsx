@@ -298,6 +298,10 @@ export default function Home() {
   width:100%;
   padding:0 !important;
 }
+.port-text-wrap{
+padding-left:0 !important;
+padding-right:0 !important;
+}
           .port-tag-row,.port-name-row,.port-excerpt-row{
             padding-left: 0 !important;
             padding-right: 0 !important;
@@ -707,7 +711,10 @@ export default function Home() {
   style={{
     order: item.rev ? 1 : 2,
     flex: 1,
-    padding: item.rev ? '8px 40px 8px 0' : '8px 0 8px 40px',
+paddingTop: '8px',
+paddingBottom: '8px',
+paddingLeft: item.rev ? '0' : '40px',
+paddingRight: item.rev ? '40px' : '0',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'center',
