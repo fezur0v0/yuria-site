@@ -616,11 +616,12 @@ marginBottom:'42px'}}>
           </Link>
         ))}
 <Link href="/notes" className="mobile-nav-item">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
-            stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
-            <rect x="3" y="11" width="18" height="11" rx="2"/>
-            <path d="M7 11V7a5 5 0 0110 0v4"/>
-          </svg>
-          <span>小剧场</span>
-        </button>
-      </nav>
+  <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+    stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
+    <rect x="3" y="11" width="18" height="11" rx="2"/>
+    <path d="M7 11V7a5 5 0 0110 0v4"/>
+  </svg>
+  <span>小剧场</span>
+</Link>
+</nav>
+
