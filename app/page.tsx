@@ -53,10 +53,12 @@ export default function Home() {
     return () => listener.subscription.unsubscribe()
   }, [])
 
+  // 自动切歌时自动播放
   useEffect(() => {
     if (!audioRef.current) return
     const track = tracks[trackIdx]
     if (!track) return
+
     audioRef.current.src = track.src
     audioRef.current.load()
     if (playing) {
@@ -257,7 +259,7 @@ export default function Home() {
           text-align: center;
         }
 
-        /* 手机端适配 - 修正作品集标题不对齐问题 */
+        /* 手机端适配 —— 修复作品集标题对齐与留白 */
         @media(max-width:768px){
           .sidebar{display:none}
           .main-area{margin-left:0}
@@ -282,19 +284,35 @@ export default function Home() {
           .content-wrap{padding:0 20px!important}
           .player-wrap{padding:0 20px!important}
           .port-list{gap:28px!important}
-          .port-item{flex-direction:column!important}
-          /* 文字区块：去除所有左边距，确保左对齐 */
-          .port-tag-row, .port-name-row, .port-excerpt-row {
-            padding-left: 0 !important;
-            margin-left: 0 !important;
-            text-align: left;
+          .port-item{
+            flex-direction:column !important;
+            gap:12px !important;
           }
-          .port-img-wrap{order:4;width:100%!important;aspect-ratio:16/9}
+          /* 重置文字区域的左右内边距，使标题与图片左对齐 */
+          .port-item > div:not(.port-img-wrap) {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          .port-tag-row,.port-name-row,.port-excerpt-row{
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          .port-img-wrap{
+            order:4;
+            width:100% !important;
+            aspect-ratio:16/9;
+          }
+          /* 确保文字顺序：标签 -> 标题 -> 描述 -> 图片 */
+          .port-tag-row{order:1}
+          .port-name-row{order:2}
+          .port-excerpt-row{order:3}
+          .port-img-wrap{order:4}
+          
           .g-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
           .theater-btn{max-width:100%!important}
           .main-area{padding-bottom:72px!important}
-          .section-label { font-size: 11px; }
-          .section-more { font-size: 10px; }
+          .section-label{font-size:11px}
+          .section-more{font-size:10px}
         }
       `}</style>
 
@@ -610,6 +628,7 @@ export default function Home() {
               </svg>
             </div>
 
+            {/* 曲目列表 */}
             <div
               style={{
                 maxHeight: listOpen ? '220px' : '0',
