@@ -283,35 +283,55 @@ export default function Home() {
           .hero-name-txt{font-size:38px!important}
           .content-wrap{padding:0 20px!important}
           .player-wrap{padding:0 20px!important}
-          .port-list{gap:28px!important}
-    .port-item{
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:flex-start !important;
-  gap:14px !important;
-}          /* 重置文字区域的左右内边距，使标题与图片左对齐 */
-          .port-item > div:not(.port-img-wrap) {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-          }
+         .port-list{
+  gap:42px!important;
+}
+
+.port-item{
+  flex-direction:column!important;
+  align-items:flex-start!important;
+}
 .port-text-wrap{
+  padding:0!important;
   width:100%;
-  padding:0 !important;
 }
-.port-text-wrap{
-padding-left:0 !important;
-padding-right:0 !important;
+.port-tag-row{
+  order:1;
+  padding:0;
+  width:100%;
+  text-align:left;
 }
-          .port-tag-row,.port-name-row,.port-excerpt-row{
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-          }
-        .port-img-wrap{
-  width:100% !important;
-  aspect-ratio:16/9;
-  margin-top:4px;
-}         
-          
+
+.port-name-row{
+  order:2;
+  padding:0;
+  width:100%;
+  text-align:left;
+}
+
+.port-excerpt-row{
+  order:3;
+  display:block!important;
+  padding:0;
+  width:100%;
+  text-align:left;
+}
+
+.port-img-wrap{
+  order:4!important;
+  width:100%!important;
+  max-width:none!important;
+  margin-top:14px;
+  aspect-ratio:16/9!important;
+}
+
+.port-img-inner{
+  border-radius:14px!important;
+  width:100%;
+  height:100%;
+}
+          .port-img-inner{border-radius:14px!important;width:100%;height:100%}      
+                    /* 手机端图集：2列 */
           .g-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
           .theater-btn{max-width:100%!important}
           .main-area{padding-bottom:72px!important}
