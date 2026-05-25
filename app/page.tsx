@@ -671,73 +671,71 @@ padding-right:0 !important;
           </div>
 
           {/* PORTFOLIO */}
-          <div className="sr content-wrap" style={{ padding: '52px 56px 0' }} data-d="60">
-            <div className="section-header">
-              <span className="section-label">PORTFOLIO</span>
-              <Link href="/portfolio" className="section-more">
+          <div className="sr content-wrap" style={{padding:'52px 56px 0'}} data-d="60">
+            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between', marginTop:'18px',
+marginBottom:'42px'}}>
+              <span style={{fontSize:'13px',letterSpacing:'.32em',color:'#aaa'}}>PORTFOLIO</span>
+              <Link href="/portfolio"
+                style={{fontSize:'13px',color:'#aaa',display:'flex',alignItems:'center',gap:'4px',
+                  textDecoration:'none',transition:'color .2s'}}
+                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='#1a1a1a'}
+                onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='#aaa'}>
                 全部
-                <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
-                  <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </Link>
             </div>
 
-            <div className="port-list" style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
-              {portfolioItems.map((item, i) => (
-                <div
-                  key={i}
-                  className="sr port-item"
-                  data-d={`${80 + i * 60}`}
-                  style={{ display: 'flex', flexDirection: 'row', gap: '0', alignItems: 'stretch', cursor: 'pointer' }}
-                >
-                  <div
-                    className="port-img-wrap"
-                    style={{
-                      order: item.rev ? 2 : 1,
-                    }}
-                    onMouseEnter={(e) => {
-                      ;(e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'
-                      ;(e.currentTarget as HTMLElement).style.boxShadow = '0 16px 48px rgba(0,0,0,.1)'
-                    }}
-                    onMouseLeave={(e) => {
-                      ;(e.currentTarget as HTMLElement).style.transform = 'none'
-                      ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
-                    }}
-                  >
-                    <div className="port-img-inner" style={{ background: item.bg }} />
+            {/* 作品集：图片和文字分开，不在同一个卡片框 */}
+            <div className="port-list" style={{display:'flex',flexDirection:'column',gap:'48px'}}>
+              {portfolioItems.map((item,i) => (
+                <div key={i} className="sr port-item"
+                  data-d={`${80+i*60}`}
+                  style={{display:'flex',flexDirection:'row',gap:'0',alignItems:'stretch',
+                    cursor:'pointer',
+                  }}>
+                  {/* 图片 — 3:2比例，圆角，独立 */}
+                 <div className="port-img-wrap"
+  style={{
+    order:item.rev?2:1,
+    width:'46%',
+    maxWidth:'520px',
+    flexShrink:0,
+    borderRadius:'16px',
+    overflow:'hidden',
+    aspectRatio:'16/9',
+    background:item.bg,
+    transition:'transform .35s,box-shadow .35s',
+  }}
+                    onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-3px)';(e.currentTarget as HTMLElement).style.boxShadow='0 16px 48px rgba(0,0,0,.1)'}}
+                    onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
+                    <div className="port-img-inner" style={{width:'100%',height:'100%',background:item.bg}}/>
                   </div>
-                 <div
+
+                  {/* 文字 — 独立，有间距 */}
+                  <div
   className="port-text-wrap"
   style={{
-    order: item.rev ? 1 : 2,
-    flex: 1,
-paddingTop: '8px',
-paddingBottom: '8px',
-paddingLeft: item.rev ? '0' : '40px',
-paddingRight: item.rev ? '40px' : '0',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      gap: '12px',
-                    }}
-                  >
-                    <div className="port-tag-row" style={{ fontSize: '10px', letterSpacing: '.22em', color: '#bbb' }}>
+    order:item.rev?1:2,
+    flex:1,
+    padding: item.rev ? '8px 28px 8px 0' : '8px 0 8px 28px',
+    display:'flex',
+    flexDirection:'column',
+    justifyContent:'center',
+    gap:'12px',
+  }}>
+                    <div className="port-tag-row"
+                      style={{fontSize:'13px',letterSpacing:'.22em',color:'#bbb'}}>
                       {item.tag}
                     </div>
-                    <div
-                      className="port-name-row"
-                      style={{
-                        fontFamily: 'Noto Serif SC,serif',
-                        fontSize: '24px',
-                        fontWeight: 300,
-                        letterSpacing: '.08em',
-                        color: '#1a1a1a',
-                        lineHeight: 1.3,
-                      }}
-                    >
+                    <div className="port-name-row"
+                      style={{fontFamily:'Noto Serif SC,serif',fontSize:'24px',fontWeight:300,
+                        letterSpacing:'.08em',color:'#1a1a1a',lineHeight:1.3}}>
                       {item.name}
                     </div>
-                    <div className="port-excerpt-row" style={{ fontSize: '13px', color: '#999', lineHeight: 1.9 }}>
+                    <div className="port-excerpt-row"
+                      style={{fontSize:'13px',color:'#999',lineHeight:1.9}}>
                       {item.excerpt}
                     </div>
                   </div>
