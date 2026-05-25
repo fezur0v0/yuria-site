@@ -1,6 +1,9 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/utils/supabase/client'
+
+const supabase = createClient()
 
 export default function Home() {
   const [config, setConfig]     = useState({ cover_url: '', signature: '我的小小世界' })
@@ -581,15 +584,8 @@ marginBottom:'42px'}}>
   </svg>
   <span>设置</span>
 </button>
-
+</nav>
       {/* ════ PASSWORD MODAL ════ */}
-      {pwOpen && (
-        <div
-          style={{position:'fixed',inset:0,zIndex:200,
-            display:'flex',alignItems:'center',justifyContent:'center',
-            background:'rgba(16,16,16,.54)',
-            backdropFilter:'blur(16px)',WebkitBackdropFilter:'blur(16px)',
-          }}
           onClick={closePw}>
           <div className="pw-fadein"
             style={{background:'rgba(252,252,250,.97)',borderRadius:'24px',
