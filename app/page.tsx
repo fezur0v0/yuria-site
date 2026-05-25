@@ -643,90 +643,43 @@ marginBottom:'42px'}}>
       </div>
 
       {/* ════ MOBILE NAV ════ */}
-      <nav className="mobile-nav">
-        {[
-          {href:'/',        label:'主页',   d:'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z'},
-          {href:'/portfolio',label:'作品集',d:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z'},
-          {href:'/gallery', label:'图集',   d:'M4 16l4-8 4 8M2 12h12M16 6h.01M16 10a4 4 0 110-8 4 4 0 010 8z'},
-        ].map(item => (
-          <Link key={item.href} href={item.href} className="mobile-nav-item">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
-              stroke="#aaa" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d={item.d}/>
-            </svg>
-            <span>{item.label}</span>
-          </Link>
-        ))}
-<Link href="/notes" className="mobile-nav-item">
-  <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
-    stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
-    <rect x="3" y="11" width="18" height="11" rx="2"/>
-    <path d="M7 11V7a5 5 0 0110 0v4"/>
-  </svg>
-  <span>小剧场</span>
-</Link>
-</nav>
-</nav>
+<nav className="mobile-nav">
+  {[
+    {href:'/', label:'主页', d:'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z'},
+    {href:'/portfolio',label:'作品集',d:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z'},
+    {href:'/gallery', label:'图集', d:'M4 16l4-8 4 8M2 12h12M16 6h.01M16 10a4 4 0 110-8 4 4 0 010 8z'},
+  ].map(item => (
+    <Link key={item.href} href={item.href} className="mobile-nav-item">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+        stroke="#aaa" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d={item.d}/>
+      </svg>
 
-{/* SETTINGS */}
-<div style={{
-  padding:'16px',
-  borderTop:'1px solid rgba(255,255,255,.06)',
-  marginTop:'auto',
-}}>
-  <button
-    onClick={() => router.push('/admin')}
-    className="sb-link"
-    style={{
-      color:'#8f8f8f',
-    }}
-  >
-    <div className="sb-bar"/>
+      <span>{item.label}</span>
+    </Link>
+  ))}
 
-    <svg
-      width="17"
-      height="17"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{flexShrink:0}}
-    >
+  <Link href="/notes" className="mobile-nav-item">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+      stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+
+    <span>小剧场</span>
+  </Link>
+
+  {/* 设置按钮 */}
+  <Link href="/admin" className="mobile-nav-item">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+      stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
       <circle cx="12" cy="12" r="3"/>
-
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82
-      l.06.06a2 2 0 11-2.83 2.83
-      l-.06-.06a1.65 1.65 0 00-1.82-.33
-      1.65 1.65 0 00-1 1.51V21
-      a2 2 0 11-4 0v-.09
-      a1.65 1.65 0 00-1-1.51
-      1.65 1.65 0 00-1.82.33
-      l-.06.06a2 2 0 11-2.83-2.83
-      l.06-.06a1.65 1.65 0 00.33-1.82
-      1.65 1.65 0 00-1.51-1H3
-      a2 2 0 110-4h.09
-      a1.65 1.65 0 001.51-1
-      1.65 1.65 0 00-.33-1.82
-      l-.06-.06a2 2 0 112.83-2.83
-      l.06.06a1.65 1.65 0 001.82.33h.01
-      A1.65 1.65 0 009 3.09V3
-      a2 2 0 114 0v.09
-      a1.65 1.65 0 001 1.51h.01
-      a1.65 1.65 0 001.82-.33
-      l.06-.06a2 2 0 112.83 2.83
-      l-.06.06a1.65 1.65 0 00-.33 1.82v.01
-      A1.65 1.65 0 0019.91 11H20
-      a2 2 0 110 4h-.09
-      a1.65 1.65 0 00-1.51 1z"/>
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
     </svg>
 
     <span>设置</span>
-  </button>
-</div>
-
-</aside>
-    </>
+  </Link>
+</nav>   
+ </>
   )
 }
