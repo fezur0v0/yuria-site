@@ -1,17 +1,27 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
 const supabase = createClient()
+const ADMIN_EMAIL = 'fezur0v0@gmail.com'
 
 export default function Home() {
+  const router = useRouter()
+  const [user, setUser]         = useState<any>(null)
+  const [isAdmin, setIsAdmin]   = useState(false)
   const [config, setConfig]     = useState({ cover_url: '', signature: '我的小小世界' })
   const [tracks, setTracks]     = useState<any[]>([])
   const [trackIdx, setTrackIdx] = useState(0)
   const [playing, setPlaying]   = useState(false)
   const [listOpen, setListOpen] = useState(false)
+  const [pwOpen, setPwOpen]     = useState(false)
+  const [pw, setPw]             = useState('')
+  const [pwErr, setPwErr]       = useState('')
+  const [checking, setChecking] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // scroll reveal
   useEffect(() => {
@@ -28,6 +38,23 @@ export default function Home() {
     return () => obs.disconnect()
   }, [])
 
+  // auth + data
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data.user
+      setUser(u)
+      setIsAdmin(u?.email === ADMIN_EMAIL)
+    })
+    fetchConfig()
+    fetchTracks()
+    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
+      const u = session?.user ?? null
+      setUser(u)
+      setIsAdmin(u?.email === ADMIN_EMAIL)
+    })
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
   async function fetchConfig() {
     const { data } = await supabase.from('site_config').select('*')
     if (data) {
@@ -42,6 +69,17 @@ export default function Home() {
     setTracks(data || [])
   }
 
+  async function signInWithGitHub() {
+    await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo: 'https://www.yuria.xin/auth/callback' },
+    })
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut()
+    setUser(null); setIsAdmin(false)
+  }
 
   function togglePlay() {
     if (!audioRef.current) return
@@ -49,6 +87,28 @@ export default function Home() {
     else { audioRef.current.play().catch(() => {}); setPlaying(true) }
   }
 
+  function openPw() { setPwOpen(true); setPw(''); setPwErr(''); setTimeout(() => inputRef.current?.focus(), 120) }
+  function closePw() { setPwOpen(false); setPw(''); setPwErr('') }
+
+  // 密码通过 API Route 在服务端验证，不在前端暴露
+  async function checkPw() {
+    if (!pw.trim()) return
+    setChecking(true)
+    try {
+      const res = await fetch('/api/check-theater', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      })
+      const { ok } = await res.json()
+      if (ok) { closePw(); router.push('/notes') }
+      else { setPwErr('密码错误，请重试'); setPw('') }
+    } catch {
+      setPwErr('验证失败，请重试')
+    } finally {
+      setChecking(false)
+    }
+  }
 
   const track = tracks[trackIdx]
 
@@ -122,7 +182,8 @@ export default function Home() {
         }
         .sb-link:hover .sb-bar{opacity:1}
 
-        
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+        .pw-fadein{animation:fadeUp .4s cubic-bezier(.22,1,.36,1)}
 
         /* ── 桌面布局 ── */
         .layout{display:flex;min-height:100vh}
@@ -217,6 +278,7 @@ export default function Home() {
           .g-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
           .g-img-inner{height:52px!important}
 
+          .theater-btn{max-width:100%!important}
           .main-area{padding-bottom:72px!important}
         }
       `}</style>
@@ -255,24 +317,55 @@ export default function Home() {
                 <span>{item.label}</span>
               </Link>
             ))}
+            <button onClick={openPw} className="sb-link">
+              <div className="sb-bar"/>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{flexShrink:0}}>
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+              <span>小剧场</span>
+            </button>
           </nav>
 
           {/* 底部：登录/设置 */}
-   <div style={{
-  padding:'0 16px',
-  borderTop:'0.5px solid rgba(255,255,255,.09)',
-  paddingTop:'20px',
-  marginTop:'8px',
-}}>
-  <button className="sb-link">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-      stroke="#777" strokeWidth="1.5" strokeLinecap="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-    </svg>
-    <span style={{fontSize:'12px'}}>设置</span>
-  </button>
-</div>
+          <div style={{
+            padding:'0 16px',
+            borderTop:'0.5px solid rgba(255,255,255,.09)',
+            paddingTop:'20px',marginTop:'8px',
+          }}>
+            {user ? (
+              <>
+                {isAdmin && (
+                  <Link href="/admin" className="sb-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                      stroke="#777" strokeWidth="1.5" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <span style={{fontSize:'12px'}}>管理设置</span>
+                  </Link>
+                )}
+                <button onClick={signOut} className="sb-link">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{flexShrink:0}}>
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                  </svg>
+                  <span style={{fontSize:'12px'}}>退出登录</span>
+                </button>
+              </>
+            ) : (
+              <button onClick={signInWithGitHub} className="sb-link">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="#777" strokeWidth="1.5" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <span style={{fontSize:'12px'}}>设置 / 登录</span>
+              </button>
+            )}
+          </div>
+        </aside>
 
         {/* ════ MAIN ════ */}
         <main className="main-area">
@@ -561,6 +654,45 @@ marginBottom:'42px'}}>
               ))}
             </div>
           </div>
+
+          {/* 小剧场 */}
+          <div className="sr content-wrap" style={{padding:'52px 56px 72px'}} data-d="140">
+            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:'28px'}}>
+              <span style={{fontSize:'13px',letterSpacing:'.32em',color:'#aaa'}}>小剧场</span>
+            </div>
+            <button onClick={openPw} className="theater-btn"
+              style={{
+                width:'100%',display:'flex',alignItems:'center',gap:'20px',
+                padding:'24px 28px',borderRadius:'18px',
+                background:'rgba(26,26,26,.04)',border:'0.5px solid rgba(0,0,0,.07)',
+                cursor:'pointer',fontFamily:'Inter,sans-serif',
+                transition:'background .2s,box-shadow .2s',
+              }}
+              onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background='rgba(26,26,26,.08)';(e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,.06)'}}
+              onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background='rgba(26,26,26,.04)';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
+              <div style={{width:'46px',height:'46px',borderRadius:'50%',
+                background:'rgba(26,26,26,.07)',display:'flex',alignItems:'center',
+                justifyContent:'center',flexShrink:0}}>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+                  stroke="#555" strokeWidth="1.5" strokeLinecap="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+              </div>
+              <div style={{flex:1,textAlign:'left'}}>
+                <div style={{fontFamily:'Noto Serif SC,serif',fontSize:'16px',fontWeight:300,
+                  letterSpacing:'.1em',color:'#1a1a1a'}}>小剧场</div>
+                <div style={{fontSize:'12px',color:'#aaa',marginTop:'5px'}}>私密空间 · 输入密码访问</div>
+              </div>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
+                <path d="M5 3l4 4-4 4" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+        </main>
+      </div>
+
       {/* ════ MOBILE NAV ════ */}
       <nav className="mobile-nav">
         {[
@@ -576,16 +708,51 @@ marginBottom:'42px'}}>
             <span>{item.label}</span>
           </Link>
         ))}
-   <button className="mobile-nav-item">
-  <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
-    stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
-    <circle cx="12" cy="12" r="3"/>
-    <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-  </svg>
-  <span>设置</span>
-</button>
-</nav>
+        <button onClick={openPw} className="mobile-nav-item">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+            stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+          <span>小剧场</span>
+        </button>
+        {user ? (
+          isAdmin
+            ? <Link href="/admin" className="mobile-nav-item">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+                  stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <span>设置</span>
+              </Link>
+            : <button onClick={signOut} className="mobile-nav-item">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+                  stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+                <span>退出</span>
+              </button>
+        ) : (
+          <button onClick={signInWithGitHub} className="mobile-nav-item">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+              stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <span>设置</span>
+          </button>
+        )}
+      </nav>
+
       {/* ════ PASSWORD MODAL ════ */}
+      {pwOpen && (
+        <div
+          style={{position:'fixed',inset:0,zIndex:200,
+            display:'flex',alignItems:'center',justifyContent:'center',
+            background:'rgba(16,16,16,.54)',
+            backdropFilter:'blur(16px)',WebkitBackdropFilter:'blur(16px)',
+          }}
           onClick={closePw}>
           <div className="pw-fadein"
             style={{background:'rgba(252,252,250,.97)',borderRadius:'24px',
@@ -603,7 +770,9 @@ marginBottom:'42px'}}>
               私密空间 · 请输入密码
             </div>
 
-          
+            {pwErr && (
+              <p style={{fontSize:'12px',color:'#c0392b',marginBottom:'12px'}}>{pwErr}</p>
+            )}
 
             <input ref={inputRef} type="password" value={pw}
               onChange={e=>{setPw(e.target.value);setPwErr('')}}
