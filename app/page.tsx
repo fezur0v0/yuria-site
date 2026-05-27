@@ -935,6 +935,7 @@ marginBottom:'42px'}}>
           </svg>
           <span>小剧场</span>
         </Link>
+{isAdmin && (
         <Link href="/admin" className="mobile-nav-item">
           <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
             <circle cx="12" cy="12" r="3" />
@@ -942,6 +943,7 @@ marginBottom:'42px'}}>
           </svg>
           <span>管理设置</span>
         </Link>
+)}
       </nav>
     </>
   )
