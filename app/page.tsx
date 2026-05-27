@@ -272,12 +272,29 @@ export default function Home() {
             padding-bottom:max(10px,env(safe-area-inset-bottom));
             justify-content:space-around;align-items:center;
           }
-          .mobile-nav-item{
-            display:flex;flex-direction:column;align-items:center;gap:4px;
-            color:#bbb;text-decoration:none;padding:0 4px;
-            border:none;background:none;cursor:pointer;
-            font-family:'Inter',sans-serif;flex:1;
-          }
+         .mobile-nav-item{
+  position:relative;
+  z-index:10000;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+
+  color:#bbb;
+  text-decoration:none;
+
+  padding:0 4px;
+
+  border:none;
+  background:none;
+  cursor:pointer;
+
+  font-family:'Inter',sans-serif;
+  flex:1;
+
+  pointer-events:auto;
+}
           .mobile-nav-item span{font-size:9px;letter-spacing:.1em;color:#bbb}
           .hero-section{height:260px!important}
           .hero-name-txt{font-size:38px!important}
@@ -334,7 +351,9 @@ export default function Home() {
                     /* 手机端图集：2列 */
           .g-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
           .theater-btn{max-width:100%!important}
-          .main-area{padding-bottom:72px!important}
+.main-area{
+  padding-bottom:110px!important;
+}
           .section-label{font-size:11px}
           .section-more{font-size:10px}
         }
@@ -342,7 +361,13 @@ export default function Home() {
 
       {track && <audio ref={audioRef} onEnded={() => setTrackIdx((i) => (i + 1) % tracks.length)} />}
 
-      <div className="layout">
+<div
+  className="layout"
+  style={{
+    position:'relative',
+    zIndex:1
+  }}
+>
         {/* SIDEBAR */}
         <aside className="sidebar">
           <div
