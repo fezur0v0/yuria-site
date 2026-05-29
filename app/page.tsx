@@ -18,6 +18,10 @@ export default function Home() {
   const [listOpen, setListOpen] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
+  // 新增：从数据库加载的 portfolio 和 gallery 数据
+  const [portfolioItems, setPortfolioItems] = useState<any[]>([])
+  const [galleryItems, setGalleryItems] = useState<any[]>([])
+
   // scroll reveal
   useEffect(() => {
     const els = document.querySelectorAll('.sr')
@@ -45,6 +49,8 @@ export default function Home() {
     })
     fetchConfig()
     fetchTracks()
+    fetchPortfolio() // 新增
+    fetchGallery()   // 新增
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       const u = session?.user ?? null
       setUser(u)
@@ -85,6 +91,26 @@ export default function Home() {
     setTracks(data || [])
   }
 
+  // 新增：从 Supabase 读取首页作品集
+  async function fetchPortfolio() {
+    const { data } = await supabase
+      .from('homepage_portfolio')
+      .select('*')
+      .eq('is_visible', true)
+      .order('sort_order')
+    setPortfolioItems(data || [])
+  }
+
+  // 新增：从 Supabase 读取首页图集
+  async function fetchGallery() {
+    const { data } = await supabase
+      .from('homepage_gallery')
+      .select('*')
+      .eq('is_visible', true)
+      .order('sort_order')
+    setGalleryItems(data || [])
+  }
+
   function togglePlay() {
     if (!audioRef.current) return
     if (playing) {
@@ -102,32 +128,6 @@ export default function Home() {
     { href: '/', label: '主页', d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z' },
     { href: '/portfolio', label: '作品集', d: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
     { href: '/gallery', label: '图集', d: 'M4 16l4-8 4 8M2 12h12M16 6h.01M16 10a4 4 0 110-8 4 4 0 010 8z' },
-  ]
-
-  const galleryItems = [
-    { label: '黄昏之光', bg: 'linear-gradient(150deg,#aab0ba,#7a8090)' },
-    { label: '森林系列', bg: 'linear-gradient(150deg,#bcb8c8,#8a8898)' },
-    { label: '城市迷雾', bg: 'linear-gradient(150deg,#b4bcb8,#848c88)' },
-    { label: '黑白系列', bg: 'linear-gradient(150deg,#484848,#1a1a1a)' },
-    { label: '春日记录', bg: 'linear-gradient(150deg,#c8d0b8,#909878)' },
-    { label: '蓝调时刻', bg: 'linear-gradient(150deg,#a8b8d0,#6878a0)' },
-  ]
-
-  const portfolioItems = [
-    {
-      rev: false,
-      bg: 'linear-gradient(160deg,#8a9aaa,#5a6a7a)',
-      tag: 'PHOTOGRAPHY · 2025',
-      name: '秋日系列',
-      excerpt: '光影交错的午后，城市在镜头里变得温柔而遥远…',
-    },
-    {
-      rev: true,
-      bg: 'linear-gradient(160deg,#9898aa,#686878)',
-      tag: 'ILLUSTRATION · 2025',
-      name: '城市素描',
-      excerpt: '用线条描绘城市的轮廓，每一笔都是对空间的感知…',
-    },
   ]
 
   return (
@@ -259,7 +259,7 @@ export default function Home() {
           text-align: center;
         }
 
-        /* 手机端适配 —— 修复作品集标题对齐与留白 */
+        /* 手机端适配 */
         @media(max-width:768px){
           .sidebar{display:none}
           .main-area{margin-left:0}
@@ -272,88 +272,39 @@ export default function Home() {
             padding-bottom:max(10px,env(safe-area-inset-bottom));
             justify-content:space-around;align-items:center;
           }
-         .mobile-nav-item{
-  position:relative;
-  z-index:10000;
-
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-
-  color:#bbb;
-  text-decoration:none;
-
-  padding:0 4px;
-
-  border:none;
-  background:none;
-  cursor:pointer;
-
-  font-family:'Inter',sans-serif;
-  flex:1;
-
-  pointer-events:auto;
-}
+          .mobile-nav-item{
+            position:relative;
+            z-index:10000;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            gap:4px;
+            color:#bbb;
+            text-decoration:none;
+            padding:0 4px;
+            border:none;
+            background:none;
+            cursor:pointer;
+            font-family:'Inter',sans-serif;
+            flex:1;
+            pointer-events:auto;
+          }
           .mobile-nav-item span{font-size:9px;letter-spacing:.1em;color:#bbb}
           .hero-section{height:260px!important}
           .hero-name-txt{font-size:38px!important}
           .content-wrap{padding:0 20px!important}
           .player-wrap{padding:0 20px!important}
-         .port-list{
-  gap:42px!important;
-}
-
-.port-item{
-  flex-direction:column!important;
-  align-items:flex-start!important;
-}
-.port-text-wrap{
-  padding:0!important;
-  width:100%;
-}
-.port-tag-row{
-  order:1;
-  padding:0;
-  width:100%;
-  text-align:left;
-}
-
-.port-name-row{
-  order:2;
-  padding:0;
-  width:100%;
-  text-align:left;
-}
-
-.port-excerpt-row{
-  order:3;
-  display:block!important;
-  padding:0;
-  width:100%;
-  text-align:left;
-}
-
-.port-img-wrap{
-  order:4!important;
-  width:100%!important;
-  max-width:none!important;
-  margin-top:14px;
-  aspect-ratio:16/9!important;
-}
-
-.port-img-inner{
-  border-radius:14px!important;
-  width:100%;
-  height:100%;
-}
-          .port-img-inner{border-radius:14px!important;width:100%;height:100%}      
-                    /* 手机端图集：2列 */
+          .port-list{gap:42px!important}
+          .port-item{flex-direction:column!important;align-items:flex-start!important}
+          .port-text-wrap{padding:0!important;width:100%}
+          .port-tag-row{order:1;padding:0;width:100%;text-align:left}
+          .port-name-row{order:2;padding:0;width:100%;text-align:left}
+          .port-excerpt-row{order:3;display:block!important;padding:0;width:100%;text-align:left}
+          .port-img-wrap{order:4!important;width:100%!important;max-width:none!important;margin-top:14px;aspect-ratio:16/9!important}
+          .port-img-inner{border-radius:14px!important;width:100%;height:100%}
           .g-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
           .theater-btn{max-width:100%!important}
-.main-area{
-  padding-bottom:110px!important;
-}
+          .main-area{padding-bottom:110px!important}
           .section-label{font-size:11px}
           .section-more{font-size:10px}
         }
@@ -361,13 +312,7 @@ export default function Home() {
 
       {track && <audio ref={audioRef} onEnded={() => setTrackIdx((i) => (i + 1) % tracks.length)} />}
 
-<div
-  className="layout"
-  style={{
-    position:'relative',
-    zIndex:1
-  }}
->
+      <div className="layout" style={{ position: 'relative', zIndex: 1 }}>
         {/* SIDEBAR */}
         <aside className="sidebar">
           <div
@@ -715,73 +660,118 @@ export default function Home() {
             </div>
           </div>
 
-          {/* PORTFOLIO */}
-          <div className="sr content-wrap" style={{padding:'52px 56px 0'}} data-d="60">
-            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between', marginTop:'18px',
-marginBottom:'42px'}}>
-              <span style={{fontSize:'13px',letterSpacing:'.32em',color:'#aaa'}}>PORTFOLIO</span>
-              <Link href="/portfolio"
-                style={{fontSize:'13px',color:'#aaa',display:'flex',alignItems:'center',gap:'4px',
-                  textDecoration:'none',transition:'color .2s'}}
-                onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='#1a1a1a'}
-                onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='#aaa'}>
+          {/* PORTFOLIO - 动态数据 */}
+          <div className="sr content-wrap" style={{ padding: '52px 56px 0' }} data-d="60">
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: '18px', marginBottom: '42px' }}>
+              <span style={{ fontSize: '13px', letterSpacing: '.32em', color: '#aaa' }}>PORTFOLIO</span>
+              <Link
+                href="/portfolio"
+                style={{
+                  fontSize: '13px',
+                  color: '#aaa',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  textDecoration: 'none',
+                  transition: 'color .2s',
+                }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = '#1a1a1a')}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = '#aaa')}
+              >
                 全部
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </Link>
             </div>
 
-            {/* 作品集：图片和文字分开，不在同一个卡片框 */}
-            <div className="port-list" style={{display:'flex',flexDirection:'column',gap:'48px'}}>
-              {portfolioItems.map((item,i) => (
-                <div key={i} className="sr port-item"
-                  data-d={`${80+i*60}`}
-                  style={{display:'flex',flexDirection:'row',gap:'0',alignItems:'stretch',
-                    cursor:'pointer',
-                  }}>
-                  {/* 图片 — 3:2比例，圆角，独立 */}
-                 <div className="port-img-wrap"
-  style={{
-    order:item.rev?2:1,
-    width:'46%',
-    maxWidth:'520px',
-    flexShrink:0,
-    borderRadius:'16px',
-    overflow:'hidden',
-    aspectRatio:'16/9',
-    background:item.bg,
-    transition:'transform .35s,box-shadow .35s',
-  }}
-                    onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-3px)';(e.currentTarget as HTMLElement).style.boxShadow='0 16px 48px rgba(0,0,0,.1)'}}
-                    onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
-                    <div className="port-img-inner" style={{width:'100%',height:'100%',background:item.bg}}/>
+            <div className="port-list" style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
+              {portfolioItems.map((item, i) => (
+                <div
+                  key={item.id}
+                  className="sr port-item"
+                  data-d={`${80 + i * 60}`}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '0',
+                    alignItems: 'stretch',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {/* 图片部分 */}
+                  <div
+                    className="port-img-wrap"
+                    style={{
+                      order: i % 2 === 1 ? 2 : 1,
+                      width: '46%',
+                      maxWidth: '520px',
+                      flexShrink: 0,
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      aspectRatio: '16/9',
+                      background: 'linear-gradient(160deg,#8a9aaa,#5a6a7a)',
+                      transition: 'transform .35s,box-shadow .35s',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'
+                      ;(e.currentTarget as HTMLElement).style.boxShadow = '0 16px 48px rgba(0,0,0,.1)'
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.transform = 'none'
+                      ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+                    }}
+                  >
+                    {item.cover_url ? (
+                      <img
+                        src={item.cover_url}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        alt={item.title}
+                      />
+                    ) : (
+                      <div
+                        className="port-img-inner"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(160deg,#8a9aaa,#5a6a7a)',
+                        }}
+                      />
+                    )}
                   </div>
 
-                  {/* 文字 — 独立，有间距 */}
+                  {/* 文字部分 */}
                   <div
-  className="port-text-wrap"
-  style={{
-    order:item.rev?1:2,
-    flex:1,
-    padding: item.rev ? '8px 28px 8px 0' : '8px 0 8px 28px',
-    display:'flex',
-    flexDirection:'column',
-    justifyContent:'center',
-    gap:'12px',
-  }}>
-                    <div className="port-tag-row"
-                      style={{fontSize:'13px',letterSpacing:'.22em',color:'#bbb'}}>
-                      {item.tag}
+                    className="port-text-wrap"
+                    style={{
+                      order: i % 2 === 1 ? 1 : 2,
+                      flex: 1,
+                      padding: i % 2 === 1 ? '8px 28px 8px 0' : '8px 0 8px 28px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      gap: '12px',
+                    }}
+                  >
+                    <div className="port-tag-row" style={{ fontSize: '13px', letterSpacing: '.22em', color: '#bbb' }}>
+                      {item.category}
+                      {item.year ? ` · ${item.year}` : ''}
                     </div>
-                    <div className="port-name-row"
-                      style={{fontFamily:'Noto Serif SC,serif',fontSize:'24px',fontWeight:300,
-                        letterSpacing:'.08em',color:'#1a1a1a',lineHeight:1.3}}>
-                      {item.name}
+                    <div
+                      className="port-name-row"
+                      style={{
+                        fontFamily: 'Noto Serif SC,serif',
+                        fontSize: '24px',
+                        fontWeight: 300,
+                        letterSpacing: '.08em',
+                        color: '#1a1a1a',
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {item.title}
                     </div>
-                    <div className="port-excerpt-row"
-                      style={{fontSize:'13px',color:'#999',lineHeight:1.9}}>
-                      {item.excerpt}
+                    <div className="port-excerpt-row" style={{ fontSize: '13px', color: '#999', lineHeight: 1.9 }}>
+                      {item.description}
                     </div>
                   </div>
                 </div>
@@ -789,7 +779,7 @@ marginBottom:'42px'}}>
             </div>
           </div>
 
-          {/* GALLERY */}
+          {/* GALLERY - 动态数据 */}
           <div className="sr content-wrap" style={{ padding: '52px 56px 0' }} data-d="100">
             <div className="section-header">
               <span className="section-label">GALLERY</span>
@@ -804,7 +794,7 @@ marginBottom:'42px'}}>
             <div className="g-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '24px' }}>
               {galleryItems.map((item, i) => (
                 <Link
-                  key={i}
+                  key={item.id}
                   href="/gallery"
                   className="sr g-card"
                   data-d={`${110 + i * 28}`}
@@ -833,17 +823,32 @@ marginBottom:'42px'}}>
                           aspectRatio: '3/2',
                         }}
                       >
-                        <div className="g-img-inner" style={{ width: '100%', paddingBottom: '66.67%', background: item.bg, opacity: l.op }} />
+                        {item.cover_url && j === 2 ? (
+                          <img
+                            src={item.cover_url}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: l.op }}
+                            alt={item.title}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: '100%',
+                              paddingBottom: '66.67%',
+                              background: 'linear-gradient(150deg,#aab0ba,#7a8090)',
+                              opacity: l.op,
+                            }}
+                          />
+                        )}
                       </div>
                     ))}
                   </div>
-                  <div className="gallery-title">{item.label}</div>
+                  <div className="gallery-title">{item.title}</div>
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* 小剧场入口（直接跳转 /notes） */}
+          {/* 小剧场入口 */}
           <div className="sr content-wrap" style={{ padding: '52px 56px 72px' }} data-d="140">
             <div className="section-header">
               <span className="section-label">小剧场</span>
@@ -935,15 +940,15 @@ marginBottom:'42px'}}>
           </svg>
           <span>小剧场</span>
         </Link>
-{isAdmin && (
-        <Link href="/admin" className="mobile-nav-item">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-          </svg>
-          <span>管理设置</span>
-        </Link>
-)}
+        {isAdmin && (
+          <Link href="/admin" className="mobile-nav-item">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+            </svg>
+            <span>管理设置</span>
+          </Link>
+        )}
       </nav>
     </>
   )
