@@ -38,7 +38,7 @@ export default function Home() {
     )
     els.forEach((el) => obs.observe(el))
     return () => obs.disconnect()
-  }, [])
+}, [portfolioItems, galleryItems])
 
   // auth + data
   useEffect(() => {
