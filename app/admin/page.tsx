@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
-const supabase = createClient()
 const ALLOWED_GITHUB_ID = '261478435'
 
 type PortfolioItem = {
@@ -26,6 +25,7 @@ type GalleryItem = {
 }
 
 export default function Admin() {
+  const supabase = createClient()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -56,6 +56,8 @@ export default function Admin() {
         data.user.user_metadata?.sub ||
         ''
       )
+        console.log('GitHub ID:', githubId) 
+  console.log('user_metadata:', data.user.user_metadata) 
       if (githubId !== ALLOWED_GITHUB_ID) { router.push('/admin/unauthorized'); return }
       setLoading(false)
       fetchConfig()
