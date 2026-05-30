@@ -792,59 +792,34 @@ export default function Home() {
             </div>
 
             <div className="g-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '24px' }}>
-              {galleryItems.map((item, i) => (
-                <Link
-                  key={item.id}
-                  href="/gallery"
-                  className="sr g-card"
-                  data-d={`${110 + i * 28}`}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)')}
-                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.transform = 'none')}
-                >
-                  <div style={{ position: 'relative', paddingBottom: '66.67%', margin: '4px' }}>
-                    {[
-                      { rot: '-3.2deg', op: 0.42, top: '0%' },
-                      { rot: '1.5deg', op: 0.68, top: '6%' },
-                      { rot: '0deg', op: 1, top: '12%' },
-                    ].map((l, j) => (
-                      <div
-                        key={j}
-                        style={{
-                          position: 'absolute',
-                          left: '4%',
-                          width: '92%',
-                          top: l.top,
-                          transform: `rotate(${l.rot})`,
-                          zIndex: j + 1,
-                          borderRadius: '10px',
-                          overflow: 'hidden',
-                          border: '2px solid #fff',
-                          boxShadow: `0 ${2 + j * 3}px ${10 + j * 6}px rgba(0,0,0,${0.06 + j * 0.02})`,
-                          aspectRatio: '3/2',
-                        }}
-                      >
-                        {item.cover_url && j === 2 ? (
-                          <img
-                            src={item.cover_url}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: l.op }}
-                            alt={item.title}
-                          />
-                        ) : (
-                          <div
-                            style={{
-                              width: '100%',
-                              paddingBottom: '66.67%',
-                              background: 'linear-gradient(150deg,#aab0ba,#7a8090)',
-                              opacity: l.op,
-                            }}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="gallery-title">{item.title}</div>
-                </Link>
-              ))}
+            {galleryItems.map((item, i) => (
+  <Link
+    key={item.id}
+    href="/gallery"
+    className="sr g-card"
+    data-d={`${110 + i * 28}`}
+    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)')}
+    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = 'none')}
+  >
+    <div style={{
+      borderRadius: '14px',
+      overflow: 'hidden',
+      aspectRatio: '3/2',
+      background: 'linear-gradient(150deg,#e8e8e6,#d8d8d6)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+      transition: 'box-shadow 0.3s',
+    }}
+      onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.14)'}
+      onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'}
+    >
+      {item.cover_url
+        ? <img src={item.cover_url} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt={item.title} />
+        : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(150deg,#e0e0de,#c8c8c6)' }} />
+      }
+    </div>
+    <div className="gallery-title">{item.title}</div>
+  </Link>
+))}
             </div>
           </div>
 
