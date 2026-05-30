@@ -248,6 +248,7 @@ export default function Home() {
           display: block;
           transition: transform 0.3s;
           text-align: center;
+overflow: hidden;
         }
         .g-card:hover { transform: translateY(-3px); }
         .gallery-title {
