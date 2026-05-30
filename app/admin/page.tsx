@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
 const ALLOWED_GITHUB_ID = '261478435'
+  const supabase = createClient()
 
 type PortfolioItem = {
   id: string
@@ -25,7 +26,6 @@ type GalleryItem = {
 }
 
 export default function Admin() {
-  const supabase = createClient()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
