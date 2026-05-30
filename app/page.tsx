@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
 const ADMIN_EMAIL = 'fezur0v0@gmail.com'
+  const supabase = createClient()
 
 export default function Home() {
-  const supabase = createClient()
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
