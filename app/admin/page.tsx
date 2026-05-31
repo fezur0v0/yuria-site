@@ -45,7 +45,7 @@ export default function Admin() {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
 
   // 新增表单
-  const [newPortfolio, setNewPortfolio] = useState({ title: '', category: '', year: '2025', description: '', cover_url: '' })
+  const [newPortfolio, setNewPortfolio] = useState({ title: '', category: '', year: '', description: '', cover_url: '' })
   const [newGallery, setNewGallery] = useState({ title: '', cover_url: '' })
 
   useEffect(() => {
