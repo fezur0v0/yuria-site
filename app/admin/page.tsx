@@ -265,10 +265,10 @@ export default function Admin() {
           <div className="border border-gray-100 rounded-2xl p-5 space-y-3">
             <p className="text-xs text-gray-400 tracking-wide">添加新曲目</p>
             {[
-              { key: 'title', placeholder: '歌曲名 *' },
-              { key: 'artist', placeholder: '歌手/作者' },
-              { key: 'src', placeholder: '音乐直链 URL * (mp3/flac)' },
-              { key: 'cover_url', placeholder: '封面图 URL（可选）' },
+              { key: 'title', placeholder: '歌曲名' },
+              { key: 'artist', placeholder: '作者' },
+              { key: 'src', placeholder: '音乐直链 URL' },
+              { key: 'cover_url', placeholder: '封面图 URL' },
             ].map(({ key, placeholder }) => (
               <input key={key} value={(newTrack as any)[key]}
                 onChange={e => setNewTrack(p => ({ ...p, [key]: e.target.value }))}
@@ -334,9 +334,9 @@ export default function Admin() {
           <div className="border border-gray-100 rounded-2xl p-5 space-y-3">
             <p className="text-xs text-gray-400 tracking-wide">添加新作品</p>
             {[
-              { key: 'title', placeholder: '标题 *' },
-              { key: 'category', placeholder: '分类（如 PHOTOGRAPHY）' },
-              { key: 'year', placeholder: '年份' },
+              { key: 'title', placeholder: '标题' },
+              { key: 'category', placeholder: '分类' },
+              { key: 'year', placeholder: '时间' },
               { key: 'description', placeholder: '描述' },
               { key: 'cover_url', placeholder: '封面图 URL' },
             ].map(({ key, placeholder }) => (
@@ -386,7 +386,7 @@ export default function Admin() {
           <div className="border border-gray-100 rounded-2xl p-5 space-y-3">
             <p className="text-xs text-gray-400 tracking-wide">添加新图集</p>
             {[
-              { key: 'title', placeholder: '标题 *' },
+              { key: 'title', placeholder: '标题' },
               { key: 'cover_url', placeholder: '封面图 URL' },
             ].map(({ key, placeholder }) => (
               <input key={key} value={(newGallery as any)[key]}
