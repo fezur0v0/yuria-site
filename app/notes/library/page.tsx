@@ -105,7 +105,6 @@ excludeCategories.forEach(category => {
     }))
     setAllTags(Array.from(tagSet))
   }
-
 function toggleTag(tag: string) {
   setSelectedTags(prev => {
     const cur = prev[tag]
@@ -136,7 +135,7 @@ function toggleTag(tag: string) {
   })
 
   setPage(1)
-}}
+}
   async function addCard() {
     if (!newCard.title) return
     setSaving(true)
