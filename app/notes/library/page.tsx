@@ -154,15 +154,6 @@ export default function Library() {
   setTotal(count || 0)
   setLoading(false)
 }
-    if (includeTags.length > 0) query = query.contains('tags', includeTags)
-    excludeTags.forEach(tag => { query = query.not('tags', 'cs', `{${tag}}`) })
-    const mainSelected = MAIN_CATEGORIES.filter(c => selectedTags[c] === 'include')
-    if (mainSelected.length > 0) query = query.in('category', mainSelected)
-    const { data, count } = await query.order('created_at', { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
-    setCards(data || [])
-    setTotal(count || 0)
-    setLoading(false)
-  }
 
   async function fetchAllTags() {
     const { data } = await supabase.from('theater_cards').select('tags')
