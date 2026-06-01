@@ -85,75 +85,69 @@ export default function Library() {
   }, [page, search, selectedTags])
 
   async function fetchCards() {
-  setLoading(true)
+    setLoading(true)
 
-  let query = supabase
-    .from('theater_cards')
-    .select('*', { count: 'exact' })
+    let query = supabase
+      .from('theater_cards')
+      .select('*', { count: 'exact' })
 
-  // 搜索
-  if (search) {
-    query = query.or(
-      `title.ilike.%${search}%,content.ilike.%${search}%`
+    if (search) {
+      query = query.or(
+        `title.ilike.%${search}%,content.ilike.%${search}%`
+      )
+    }
+
+    const includeTags = Object.entries(selectedTags)
+      .filter(
+        ([k, v]) =>
+          v === 'include' &&
+          !MAIN_CATEGORIES.includes(k)
+      )
+      .map(([k]) => k)
+
+    const excludeTags = Object.entries(selectedTags)
+      .filter(
+        ([k, v]) =>
+          v === 'exclude' &&
+          !MAIN_CATEGORIES.includes(k)
+      )
+      .map(([k]) => k)
+
+    if (includeTags.length > 0) {
+      query = query.contains('tags', includeTags)
+    }
+
+    excludeTags.forEach(tag => {
+      query = query.not('tags', 'cs', `{${tag}}`)
+    })
+
+    const mainInclude = MAIN_CATEGORIES.filter(
+      c => selectedTags[c] === 'include'
     )
+
+    const mainExclude = MAIN_CATEGORIES.filter(
+      c => selectedTags[c] === 'exclude'
+    )
+
+    if (mainInclude.length > 0) {
+      query = query.in('category', mainInclude)
+    }
+
+    mainExclude.forEach(category => {
+      query = query.neq('category', category)
+    })
+
+    const { data, count } = await query
+      .order('created_at', { ascending: false })
+      .range(
+        (page - 1) * PAGE_SIZE,
+        page * PAGE_SIZE - 1
+      )
+
+    setCards(data || [])
+    setTotal(count || 0)
+    setLoading(false)
   }
-
-  // 普通标签
-  const includeTags = Object.entries(selectedTags)
-    .filter(
-      ([k, v]) =>
-        v === 'include' &&
-        !MAIN_CATEGORIES.includes(k)
-    )
-    .map(([k]) => k)
-
-  const excludeTags = Object.entries(selectedTags)
-    .filter(
-      ([k, v]) =>
-        v === 'exclude' &&
-        !MAIN_CATEGORIES.includes(k)
-    )
-    .map(([k]) => k)
-
-  if (includeTags.length > 0) {
-    query = query.contains('tags', includeTags)
-  }
-
-  excludeTags.forEach(tag => {
-    query = query.not('tags', 'cs', `{${tag}}`)
-  })
-
-  // ===== 主要分类 =====
-
-  const mainInclude = MAIN_CATEGORIES.filter(
-    c => selectedTags[c] === 'include'
-  )
-
-  const mainExclude = MAIN_CATEGORIES.filter(
-    c => selectedTags[c] === 'exclude'
-  )
-
-  // 选中
-  if (mainInclude.length > 0) {
-    query = query.in('category', mainInclude)
-  }
-
-  // 反选
-  mainExclude.forEach(category => {
-    query = query.neq('category', category)
-  })
-
-  const { data, count } = await query
-    .order('created_at', { ascending: false })
-    .range(
-      (page - 1) * PAGE_SIZE,
-      page * PAGE_SIZE - 1
-    )
-
-  setCards(data || [])
-  setTotal(count || 0)
-  setLoading(false)
-}
 
   async function fetchAllTags() {
     const { data } = await supabase.from('theater_cards').select('tags')
@@ -259,13 +253,16 @@ export default function Library() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#fafaf8', fontFamily: 'Inter,sans-serif' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=Inter:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto Serif SC:wght@300;400&family=Inter:wght@300;400;500&display=swap');
         * { box-sizing: border-box; }
         .card-item { transition: box-shadow 0.2s, transform 0.2s; }
         .card-item:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important; }
         .sb-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#888;font-size:13px;text-decoration:none;transition:all 0.2s;background:transparent;border:none;width:100%;font-family:Inter,sans-serif; }
         .sb-link:hover,.sb-link.active { color:#1a1a1a;background:#f0f0ee; }
         .sb-link.active { font-weight:500; }
+        /* 侧边栏宽度调整为 260px */
+        .sidebar-desktop { width: 260px !important; }
+        .main-content { margin-left: 260px !important; }
         @media(max-width:768px){
           .sidebar-desktop{display:none!important}
           .mobile-nav{display:flex!important}
@@ -279,10 +276,10 @@ export default function Library() {
         }
       `}</style>
 
-      {/* 侧边栏 */}
-      <aside className="sidebar-desktop" style={{ position: 'fixed', left: 0, top: 0, bottom: 0, width: '220px', background: '#fff', borderRight: '1px solid #f0f0ee', display: 'flex', flexDirection: 'column', padding: '32px 0', zIndex: 40 }}>
-        <div style={{ padding: '0 20px 28px', fontFamily: 'Noto Serif SC,serif', fontSize: '20px', fontWeight: 300, letterSpacing: '0.2em', color: '#1a1a1a' }}>Yuria</div>
-        <nav style={{ padding: '0 10px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+      {/* 侧边栏 - 宽度已改为 260px */}
+      <aside className="sidebar-desktop" style={{ position: 'fixed', left: 0, top: 0, bottom: 0, width: '260px', background: '#fff', borderRight: '1px solid #f0f0ee', display: 'flex', flexDirection: 'column', padding: '32px 0', zIndex: 40 }}>
+        <div style={{ padding: '0 24px 28px', fontFamily: 'Noto Serif SC,serif', fontSize: '20px', fontWeight: 300, letterSpacing: '0.2em', color: '#1a1a1a' }}>Yuria</div>
+        <nav style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
           <button className="sb-link active">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             词库
@@ -292,14 +289,14 @@ export default function Library() {
             记录
           </button>
         </nav>
-        <div style={{ padding: '24px 16px 0', flex: 1, overflowY: 'auto' }}>
+        <div style={{ padding: '28px 20px 0', flex: 1, overflowY: 'auto' }}>
           <div style={{ color: '#aaa', fontSize: '11px', letterSpacing: '0.2em', marginBottom: '16px' }}>分类筛选</div>
           <FilterPanel />
         </div>
       </aside>
 
-      {/* 主内容 */}
-      <div className="main-content" style={{ marginLeft: '220px', flex: 1, padding: '32px 40px', paddingBottom: '60px' }}>
+      {/* 主内容区 - 左边距同步为 260px */}
+      <div className="main-content" style={{ marginLeft: '260px', flex: 1, padding: '32px 40px', paddingBottom: '60px' }}>
         <div className="top-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <h1 style={{ fontFamily: 'Noto Serif SC,serif', fontSize: '24px', fontWeight: 300, letterSpacing: '0.1em', color: '#1a1a1a', margin: 0 }}>词库</h1>
           <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1a1a1a', color: '#fff', border: 'none', borderRadius: '10px', padding: '9px 18px', fontSize: '13px', cursor: 'pointer' }}>
@@ -332,7 +329,6 @@ export default function Library() {
                   style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s' }}
                   onClick={() => handleCardClick(card)}>
 
-                  {/* 顶部 */}
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '15px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.title}</div>
@@ -354,19 +350,16 @@ export default function Library() {
                     </div>
                   </div>
 
-                  {/* 内容 */}
                   <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, overflow: 'hidden', maxHeight: isExpanded ? 'none' : '72px', maskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', WebkitMaskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', whiteSpace: 'pre-wrap', marginBottom: '12px' }}>
                     {card.content}
                   </div>
 
-                  {/* 标签 */}
                   {card.tags?.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '12px' }}>
                       {card.tags.map(t => <span key={t} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: '#f5f5f3', color: '#888' }}>{t}</span>)}
                     </div>
                   )}
 
-                  {/* 展开后：关联记录 */}
                   {isExpanded && (
                     <div style={{ borderTop: '1px solid #f0f0ee', paddingTop: '12px', marginBottom: '12px' }} onClick={e => e.stopPropagation()}>
                       {related.length === 0 ? (
@@ -393,7 +386,6 @@ export default function Library() {
                     </div>
                   )}
 
-                  {/* 复制按钮 */}
                   <div onClick={e => e.stopPropagation()}>
                     <button onClick={() => copyContent(card.content, card.id)}
                       style={{ width: '100%', padding: '9px', borderRadius: '8px', border: '1px solid #ebebeb', background: copied === card.id ? '#f0fdf4' : '#fff', color: copied === card.id ? '#22c55e' : '#666', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
