@@ -88,39 +88,17 @@ export default function Library() {
     setLoading(true)
     let query = supabase.from('theater_cards').select('*', { count: 'exact' })
     if (search) query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`)
-   // 普通标签
-const includeTags = Object.entries(selectedTags)
-  .filter(([k, v]) => !MAIN_CATEGORIES.includes(k) && v === 'include')
-  .map(([k]) => k)
-
-const excludeTags = Object.entries(selectedTags)
-  .filter(([k, v]) => !MAIN_CATEGORIES.includes(k) && v === 'exclude')
-  .map(([k]) => k)
-
-if (includeTags.length > 0) {
-  query = query.contains('tags', includeTags)
-}
-
-excludeTags.forEach(tag => {
-  query = query.not('tags', 'cs', `{${tag}}`)
-})
-
-// 主要分类
-const includeCategories = MAIN_CATEGORIES.filter(
-  c => selectedTags[c] === 'include'
-)
-
-const excludeCategories = MAIN_CATEGORIES.filter(
-  c => selectedTags[c] === 'exclude'
-)
-
-if (includeCategories.length > 0) {
-  query = query.in('category', includeCategories)
-}
-
-excludeCategories.forEach(category => {
-  query = query.neq('category', category)
-})
+    const includeTags = Object.entries(selectedTags).filter(([, v]) => v === 'include').map(([k]) => k)
+    const excludeTags = Object.entries(selectedTags).filter(([, v]) => v === 'exclude').map(([k]) => k)
+    if (includeTags.length > 0) query = query.contains('tags', includeTags)
+    excludeTags.forEach(tag => { query = query.not('tags', 'cs', `{${tag}}`) })
+    const mainSelected = MAIN_CATEGORIES.filter(c => selectedTags[c] === 'include')
+    if (mainSelected.length > 0) query = query.in('category', mainSelected)
+    const { data, count } = await query.order('created_at', { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
+    setCards(data || [])
+    setTotal(count || 0)
+    setLoading(false)
+  }
 
   async function fetchAllTags() {
     const { data } = await supabase.from('theater_cards').select('tags')
