@@ -88,8 +88,21 @@ export default function Library() {
     setLoading(true)
     let query = supabase.from('theater_cards').select('*', { count: 'exact' })
     if (search) query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`)
-    const includeTags = Object.entries(selectedTags).filter(([, v]) => v === 'include').map(([k]) => k)
-    const excludeTags = Object.entries(selectedTags).filter(([, v]) => v === 'exclude').map(([k]) => k)
+   const includeTags = Object.entries(selectedTags)
+  .filter(
+    ([k, v]) =>
+      v === 'include' &&
+      !MAIN_CATEGORIES.includes(k)
+  )
+  .map(([k]) => k)
+
+const excludeTags = Object.entries(selectedTags)
+  .filter(
+    ([k, v]) =>
+      v === 'exclude' &&
+      !MAIN_CATEGORIES.includes(k)
+  )
+  .map(([k]) => k)
     if (includeTags.length > 0) query = query.contains('tags', includeTags)
     excludeTags.forEach(tag => { query = query.not('tags', 'cs', `{${tag}}`) })
     const mainSelected = MAIN_CATEGORIES.filter(c => selectedTags[c] === 'include')
