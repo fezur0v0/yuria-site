@@ -85,24 +85,75 @@ export default function Library() {
   }, [page, search, selectedTags])
 
   async function fetchCards() {
-    setLoading(true)
-    let query = supabase.from('theater_cards').select('*', { count: 'exact' })
-    if (search) query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`)
-   const includeTags = Object.entries(selectedTags)
-  .filter(
-    ([k, v]) =>
-      v === 'include' &&
-      !MAIN_CATEGORIES.includes(k)
-  )
-  .map(([k]) => k)
+  setLoading(true)
 
-const excludeTags = Object.entries(selectedTags)
-  .filter(
-    ([k, v]) =>
-      v === 'exclude' &&
-      !MAIN_CATEGORIES.includes(k)
+  let query = supabase
+    .from('theater_cards')
+    .select('*', { count: 'exact' })
+
+  // 搜索
+  if (search) {
+    query = query.or(
+      `title.ilike.%${search}%,content.ilike.%${search}%`
+    )
+  }
+
+  // 普通标签
+  const includeTags = Object.entries(selectedTags)
+    .filter(
+      ([k, v]) =>
+        v === 'include' &&
+        !MAIN_CATEGORIES.includes(k)
+    )
+    .map(([k]) => k)
+
+  const excludeTags = Object.entries(selectedTags)
+    .filter(
+      ([k, v]) =>
+        v === 'exclude' &&
+        !MAIN_CATEGORIES.includes(k)
+    )
+    .map(([k]) => k)
+
+  if (includeTags.length > 0) {
+    query = query.contains('tags', includeTags)
+  }
+
+  excludeTags.forEach(tag => {
+    query = query.not('tags', 'cs', `{${tag}}`)
+  })
+
+  // ===== 主要分类 =====
+
+  const mainInclude = MAIN_CATEGORIES.filter(
+    c => selectedTags[c] === 'include'
   )
-  .map(([k]) => k)
+
+  const mainExclude = MAIN_CATEGORIES.filter(
+    c => selectedTags[c] === 'exclude'
+  )
+
+  // 选中
+  if (mainInclude.length > 0) {
+    query = query.in('category', mainInclude)
+  }
+
+  // 反选
+  mainExclude.forEach(category => {
+    query = query.neq('category', category)
+  })
+
+  const { data, count } = await query
+    .order('created_at', { ascending: false })
+    .range(
+      (page - 1) * PAGE_SIZE,
+      page * PAGE_SIZE - 1
+    )
+
+  setCards(data || [])
+  setTotal(count || 0)
+  setLoading(false)
+}
     if (includeTags.length > 0) query = query.contains('tags', includeTags)
     excludeTags.forEach(tag => { query = query.not('tags', 'cs', `{${tag}}`) })
     const mainSelected = MAIN_CATEGORIES.filter(c => selectedTags[c] === 'include')
