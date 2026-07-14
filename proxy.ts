@@ -1,19 +1,72 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
-  const protectedPaths = ['/notes/library', '/notes/records']
+const ADMIN_EMAIL = 'fezur0v0@gmail.com'
 
-  if (protectedPaths.some(p => pathname.startsWith(p))) {
-    const auth = request.cookies.get('notes_auth')
-    if (!auth || auth.value !== 'true') {
-      return NextResponse.redirect(new URL('/notes', request.url))
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request,
+  })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        // 修复：为 cookiesToSet 添加类型
+        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
+
+          response = NextResponse.next({
+            request,
+          })
+
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // 获取当前用户
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const pathname = request.nextUrl.pathname
+
+  // ─────────────────────
+  // admin 权限保护
+  // ─────────────────────
+  if (pathname.startsWith('/admin')) {
+    // 未登录
+    if (!user) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+
+    // 不是管理员邮箱
+    if (user.email !== ADMIN_EMAIL) {
+      return NextResponse.redirect(new URL('/', request.url))
     }
   }
-  return NextResponse.next()
+
+  return response
 }
 
 export const config = {
-  matcher: ['/notes/library/:path*', '/notes/records/:path*'],
+  matcher: [
+    /*
+     * 排除：
+     * - _next
+     * - favicon
+     * - 图片
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }
