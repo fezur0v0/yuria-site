@@ -24,6 +24,10 @@ type Record = {
   created_at: string
 }
 
+type CardOption = { id: string; title: string }
+
+type DraftImage = ImageItem & { uploading?: boolean }
+
 const PAGE_SIZE = 9
 
 // 极简 markdown 转纯文本预览（去掉 ** 和 > 符号，只做列表页摘要用）
@@ -46,11 +50,26 @@ export default function Records() {
   const [total, setTotal] = useState(0)
   const [filterOpen, setFilterOpen] = useState(false)
 
+  // 新增记录弹窗相关
+  const [showAdd, setShowAdd] = useState(false)
+  const [cardOptions, setCardOptions] = useState<CardOption[]>([])
+  const [cardSearch, setCardSearch] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [newRecord, setNewRecord] = useState({
+    character_id: '' as string,
+    card_id: '' as string,
+    title: '',
+    extra_tag: '',
+    content: '',
+  })
+  const [draftImages, setDraftImages] = useState<DraftImage[]>([])
+
   useEffect(() => {
     if (sessionStorage.getItem('notes_auth') !== 'true') {
       router.replace('/notes'); return
     }
     fetchCharacters()
+    fetchCardOptions()
   }, [])
 
   useEffect(() => {
@@ -61,6 +80,76 @@ export default function Records() {
   async function fetchCharacters() {
     const { data } = await supabase.from('characters').select('*').order('created_at', { ascending: true })
     setCharacters(data || [])
+  }
+
+  async function fetchCardOptions() {
+    const { data } = await supabase.from('theater_cards').select('id,title').order('created_at', { ascending: false })
+    setCardOptions(data || [])
+  }
+
+  async function handleImageUpload(files: FileList | null) {
+    if (!files || files.length === 0) return
+    const fileArr = Array.from(files)
+
+    // 先插入占位（显示上传中）
+    const placeholders: DraftImage[] = fileArr.map(() => ({ url: '', caption: '', uploading: true }))
+    setDraftImages(prev => [...prev, ...placeholders])
+    const startIndex = draftImages.length
+
+    for (let i = 0; i < fileArr.length; i++) {
+      const file = fileArr[i]
+      const ext = file.name.split('.').pop()
+      const path = `${crypto.randomUUID()}.${ext}`
+
+      const { error } = await supabase.storage.from('theater-images').upload(path, file)
+      if (error) {
+        console.error('上传失败', error)
+        continue
+      }
+      const { data: urlData } = supabase.storage.from('theater-images').getPublicUrl(path)
+
+      setDraftImages(prev => {
+        const next = [...prev]
+        next[startIndex + i] = { url: urlData.publicUrl, caption: '', uploading: false }
+        return next
+      })
+    }
+  }
+
+  function updateCaption(index: number, caption: string) {
+    setDraftImages(prev => {
+      const next = [...prev]
+      next[index] = { ...next[index], caption }
+      return next
+    })
+  }
+
+  function removeDraftImage(index: number) {
+    setDraftImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  async function saveRecord() {
+    if (!newRecord.title || !newRecord.character_id) return
+    setSaving(true)
+
+    const images = draftImages
+      .filter(img => !img.uploading && img.url)
+      .map(img => ({ url: img.url, caption: img.caption || '' }))
+
+    await supabase.from('theater_records').insert({
+      character_id: newRecord.character_id,
+      card_id: newRecord.card_id || null,
+      title: newRecord.title,
+      extra_tag: newRecord.extra_tag || null,
+      content: newRecord.content || null,
+      images,
+    })
+
+    setNewRecord({ character_id: '', card_id: '', title: '', extra_tag: '', content: '' })
+    setDraftImages([])
+    setShowAdd(false)
+    setSaving(false)
+    fetchRecords()
   }
 
   async function fetchRecords() {
@@ -195,7 +284,7 @@ export default function Records() {
       <div className="main-content" style={{ marginLeft: '260px', flex: 1, padding: '32px 40px', paddingBottom: '60px' }}>
         <div className="top-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <h1 style={{ fontFamily: 'Noto Serif SC,serif', fontSize: '24px', fontWeight: 300, letterSpacing: '0.1em', color: '#1a1a1a', margin: 0 }}>记录</h1>
-          <button onClick={() => router.push('/notes/records/new')} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1a1a1a', color: '#fff', border: 'none', borderRadius: '10px', padding: '9px 18px', fontSize: '13px', cursor: 'pointer' }}>
+          <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1a1a1a', color: '#fff', border: 'none', borderRadius: '10px', padding: '9px 18px', fontSize: '13px', cursor: 'pointer' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
             新增记录
           </button>
@@ -280,6 +369,130 @@ export default function Records() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 45, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)' }} onClick={() => setFilterOpen(false)}>
           <div style={{ position: 'absolute', bottom: '80px', left: '16px', background: '#fff', borderRadius: '16px', padding: '20px', width: 'min(280px,calc(100vw - 32px))', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }} onClick={e => e.stopPropagation()}>
             <CharFilter />
+          </div>
+        </div>
+      )}
+
+      {/* 新增记录弹窗 */}
+      {showAdd && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowAdd(false)}>
+          <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>新增记录</h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色 *</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {characters.map(c => (
+                    <button key={c.id} onClick={() => setNewRecord(p => ({ ...p, character_id: c.id }))}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 12px 5px 5px',
+                        borderRadius: '20px', fontSize: '12px', border: '1px solid', cursor: 'pointer',
+                        background: newRecord.character_id === c.id ? '#1a1a1a' : '#f5f5f3',
+                        color: newRecord.character_id === c.id ? '#fff' : '#666',
+                        borderColor: newRecord.character_id === c.id ? '#1a1a1a' : '#ebebeb',
+                      }}>
+                      {c.avatar
+                        ? <img src={c.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
+                        : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>关联词库（可选）</label>
+                <input value={cardSearch} onChange={e => setCardSearch(e.target.value)} placeholder="搜索词库标题..."
+                  style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', outline: 'none', marginBottom: '8px' }} />
+                <div style={{ maxHeight: '120px', overflowY: 'auto', border: cardSearch ? '1px solid #ebebeb' : 'none', borderRadius: '10px' }}>
+                  {cardSearch && cardOptions
+                    .filter(c => c.title.toLowerCase().includes(cardSearch.toLowerCase()))
+                    .slice(0, 8)
+                    .map(c => (
+                      <div key={c.id} onClick={() => { setNewRecord(p => ({ ...p, card_id: c.id })); setCardSearch(c.title) }}
+                        style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', color: newRecord.card_id === c.id ? '#1a1a1a' : '#666', background: newRecord.card_id === c.id ? '#f5f5f3' : '#fff' }}>
+                        {c.title}
+                      </div>
+                    ))}
+                </div>
+                {newRecord.card_id && (
+                  <div style={{ fontSize: '11px', color: '#22c55e', marginTop: '4px' }}>已关联词库
+                    <button onClick={() => { setNewRecord(p => ({ ...p, card_id: '' })); setCardSearch('') }}
+                      style={{ marginLeft: '8px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px' }}>取消关联</button>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标题 *</label>
+                <input value={newRecord.title} onChange={e => setNewRecord(p => ({ ...p, title: e.target.value }))} placeholder="标题"
+                  style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>副标题</label>
+                <input value={newRecord.extra_tag} onChange={e => setNewRecord(p => ({ ...p, extra_tag: e.target.value }))} placeholder="副标题"
+                  style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>正文（支持 **加粗** 和 &gt; 引用）</label>
+                <textarea value={newRecord.content} onChange={e => setNewRecord(p => ({ ...p, content: e.target.value }))} rows={7}
+                  placeholder={'在这里写正文...\n\n**加粗文字**\n\n> 这是一段引用'}
+                  style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>图片</label>
+                <label style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  border: '1px dashed #ccc', borderRadius: '10px', padding: '14px', fontSize: '12px',
+                  color: '#999', cursor: 'pointer', marginBottom: '10px',
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  点击上传图片（可多选）
+                  <input type="file" accept="image/*" multiple style={{ display: 'none' }}
+                    onChange={e => handleImageUpload(e.target.files)} />
+                </label>
+
+                {draftImages.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {draftImages.map((img, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center', background: '#fafaf8', borderRadius: '10px', padding: '8px' }}>
+                        <div style={{ width: '52px', height: '52px', borderRadius: '8px', overflow: 'hidden', background: '#eee', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {img.uploading
+                            ? <span style={{ fontSize: '10px', color: '#aaa' }}>上传中</span>
+                            : <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                        </div>
+                        <input value={img.caption || ''} onChange={e => updateCaption(i, e.target.value)} placeholder="这张图的备注（可选）"
+                          style={{ flex: 1, border: '1px solid #ebebeb', borderRadius: '8px', padding: '7px 10px', fontSize: '12px', outline: 'none' }} />
+                        <button onClick={() => removeDraftImage(i)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', padding: '4px', flexShrink: 0 }}
+                          onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                          onMouseLeave={e => e.currentTarget.style.color = '#ccc'}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+              <button onClick={() => { setShowAdd(false); setDraftImages([]) }}
+                style={{ flex: 1, padding: '11px', borderRadius: '10px', border: '1px solid #ebebeb', background: '#fff', color: '#666', fontSize: '13px', cursor: 'pointer' }}>取消</button>
+              <button onClick={saveRecord} disabled={saving || !newRecord.title || !newRecord.character_id}
+                style={{
+                  flex: 2, padding: '11px', borderRadius: '10px', border: 'none',
+                  background: saving || !newRecord.title || !newRecord.character_id ? '#f0f0ee' : '#1a1a1a',
+                  color: saving || !newRecord.title || !newRecord.character_id ? '#aaa' : '#fff',
+                  fontSize: '13px', cursor: saving || !newRecord.title || !newRecord.character_id ? 'not-allowed' : 'pointer',
+                }}>
+                {saving ? '保存中...' : '保存'}
+              </button>
+            </div>
           </div>
         </div>
       )}
