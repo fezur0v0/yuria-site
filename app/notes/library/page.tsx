@@ -14,11 +14,11 @@ type Card = {
   created_at: string
 }
 
-type RelatedRecord = {
-  id: string
-  character_name: string
-  character_avatar: string
-  title: string
+type CharacterGroup = {
+  character_id: string
+  name: string
+  avatar: string | null
+  records: { id: string; title: string }[]
 }
 
 const MAIN_CATEGORIES = ['html', '小手机', '番外']
@@ -66,7 +66,8 @@ export default function Library() {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [relatedRecords, setRelatedRecords] = useState<Record<string, RelatedRecord[]>>({})
+  const [relatedGroups, setRelatedGroups] = useState<Record<string, CharacterGroup[]>>({})
+  const [expandedCharPerCard, setExpandedCharPerCard] = useState<Record<string, string | null>>({})
   const [copied, setCopied] = useState<string | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
@@ -86,64 +87,20 @@ export default function Library() {
 
   async function fetchCards() {
     setLoading(true)
+    let query = supabase.from('theater_cards').select('*', { count: 'exact' })
+    if (search) query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`)
 
-    let query = supabase
-      .from('theater_cards')
-      .select('*', { count: 'exact' })
+    const includeTags = Object.entries(selectedTags).filter(([k, v]) => v === 'include' && !MAIN_CATEGORIES.includes(k)).map(([k]) => k)
+    const excludeTags = Object.entries(selectedTags).filter(([k, v]) => v === 'exclude' && !MAIN_CATEGORIES.includes(k)).map(([k]) => k)
+    if (includeTags.length > 0) query = query.contains('tags', includeTags)
+    excludeTags.forEach(tag => { query = query.not('tags', 'cs', `{${tag}}`) })
 
-    if (search) {
-      query = query.or(
-        `title.ilike.%${search}%,content.ilike.%${search}%`
-      )
-    }
+    const mainInclude = MAIN_CATEGORIES.filter(c => selectedTags[c] === 'include')
+    const mainExclude = MAIN_CATEGORIES.filter(c => selectedTags[c] === 'exclude')
+    if (mainInclude.length > 0) query = query.in('category', mainInclude)
+    mainExclude.forEach(category => { query = query.neq('category', category) })
 
-    const includeTags = Object.entries(selectedTags)
-      .filter(
-        ([k, v]) =>
-          v === 'include' &&
-          !MAIN_CATEGORIES.includes(k)
-      )
-      .map(([k]) => k)
-
-    const excludeTags = Object.entries(selectedTags)
-      .filter(
-        ([k, v]) =>
-          v === 'exclude' &&
-          !MAIN_CATEGORIES.includes(k)
-      )
-      .map(([k]) => k)
-
-    if (includeTags.length > 0) {
-      query = query.contains('tags', includeTags)
-    }
-
-    excludeTags.forEach(tag => {
-      query = query.not('tags', 'cs', `{${tag}}`)
-    })
-
-    const mainInclude = MAIN_CATEGORIES.filter(
-      c => selectedTags[c] === 'include'
-    )
-
-    const mainExclude = MAIN_CATEGORIES.filter(
-      c => selectedTags[c] === 'exclude'
-    )
-
-    if (mainInclude.length > 0) {
-      query = query.in('category', mainInclude)
-    }
-
-    mainExclude.forEach(category => {
-      query = query.neq('category', category)
-    })
-
-    const { data, count } = await query
-      .order('created_at', { ascending: false })
-      .range(
-        (page - 1) * PAGE_SIZE,
-        page * PAGE_SIZE - 1
-      )
-
+    const { data, count } = await query.order('created_at', { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
     setCards(data || [])
     setTotal(count || 0)
     setLoading(false)
@@ -157,10 +114,32 @@ export default function Library() {
     setAllTags(Array.from(tagSet))
   }
 
+  // 按角色分组：查出所有关联该词库的记录（带角色信息），再按 character_id 分组
   async function fetchRelated(cardId: string) {
-    if (relatedRecords[cardId]) return
-    const { data } = await supabase.from('theater_records').select('id,character_name,character_avatar,title').eq('card_id', cardId)
-    setRelatedRecords(prev => ({ ...prev, [cardId]: data || [] }))
+    if (relatedGroups[cardId]) return
+    const { data } = await supabase
+      .from('theater_records')
+      .select('id,title,character_id,characters(id,name,avatar)')
+      .eq('card_id', cardId)
+
+    const groups: Record<string, CharacterGroup> = {}
+    ;(data || []).forEach((r: any) => {
+      const char = r.characters
+      const key = char?.id || 'unknown'
+      if (!groups[key]) {
+        groups[key] = { character_id: key, name: char?.name || '未命名角色', avatar: char?.avatar || null, records: [] }
+      }
+      groups[key].records.push({ id: r.id, title: r.title })
+    })
+
+    setRelatedGroups(prev => ({ ...prev, [cardId]: Object.values(groups) }))
+  }
+
+  function toggleCharExpand(cardId: string, characterId: string) {
+    setExpandedCharPerCard(prev => ({
+      ...prev,
+      [cardId]: prev[cardId] === characterId ? null : characterId,
+    }))
   }
 
   function toggleTag(tag: string) {
@@ -260,7 +239,6 @@ export default function Library() {
         .sb-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#888;font-size:13px;text-decoration:none;transition:all 0.2s;background:transparent;border:none;width:100%;font-family:Inter,sans-serif; }
         .sb-link:hover,.sb-link.active { color:#1a1a1a;background:#f0f0ee; }
         .sb-link.active { font-weight:500; }
-        /* 侧边栏宽度调整为 260px */
         .sidebar-desktop { width: 260px !important; }
         .main-content { margin-left: 260px !important; }
         @media(max-width:768px){
@@ -276,7 +254,6 @@ export default function Library() {
         }
       `}</style>
 
-      {/* 侧边栏 - 宽度已改为 260px */}
       <aside className="sidebar-desktop" style={{ position: 'fixed', left: 0, top: 0, bottom: 0, width: '260px', background: '#fff', borderRight: '1px solid #f0f0ee', display: 'flex', flexDirection: 'column', padding: '32px 0', zIndex: 40 }}>
         <div style={{ padding: '0 24px 28px', fontFamily: 'Noto Serif SC,serif', fontSize: '20px', fontWeight: 300, letterSpacing: '0.2em', color: '#1a1a1a' }}>Yuria</div>
         <nav style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -295,7 +272,6 @@ export default function Library() {
         </div>
       </aside>
 
-      {/* 主内容区 - 左边距同步为 260px */}
       <div className="main-content" style={{ marginLeft: '260px', flex: 1, padding: '32px 40px', paddingBottom: '60px' }}>
         <div className="top-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <h1 style={{ fontFamily: 'Noto Serif SC,serif', fontSize: '24px', fontWeight: 300, letterSpacing: '0.1em', color: '#1a1a1a', margin: 0 }}>词库</h1>
@@ -305,7 +281,6 @@ export default function Library() {
           </button>
         </div>
 
-        {/* 搜索 */}
         <div style={{ position: 'relative', marginBottom: '24px' }}>
           <svg style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
           <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="搜索标题、内容、标签..."
@@ -314,7 +289,6 @@ export default function Library() {
             onBlur={e => e.target.style.borderColor = '#ebebeb'} />
         </div>
 
-        {/* 卡片 */}
         {loading ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>加载中...</div>
         ) : cards.length === 0 ? (
@@ -323,7 +297,8 @@ export default function Library() {
           <div className="cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
             {cards.map(card => {
               const isExpanded = expandedId === card.id
-              const related = relatedRecords[card.id] || []
+              const groups = relatedGroups[card.id] || []
+              const expandedChar = expandedCharPerCard[card.id]
               return (
                 <div key={card.id} className="card-item"
                   style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s' }}
@@ -362,23 +337,40 @@ export default function Library() {
 
                   {isExpanded && (
                     <div style={{ borderTop: '1px solid #f0f0ee', paddingTop: '12px', marginBottom: '12px' }} onClick={e => e.stopPropagation()}>
-                      {related.length === 0 ? (
+                      {groups.length === 0 ? (
                         <div style={{ fontSize: '12px', color: '#ccc', textAlign: 'center', padding: '8px 0' }}>暂无关联记录</div>
                       ) : (
                         <>
-                          <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '10px', letterSpacing: '0.1em' }}>关联记录</div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            {related.map(r => (
-                              <button key={r.id} onClick={() => router.push(`/notes/records/${r.id}`)}
-                                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 10px', borderRadius: '20px', border: '1px solid #f0f0ee', background: '#fafaf8', cursor: 'pointer', fontSize: '12px', color: '#555', transition: 'all 0.15s' }}
-                                onMouseEnter={e => { e.currentTarget.style.background = '#f0f0ee'; e.currentTarget.style.borderColor = '#e0e0de' }}
-                                onMouseLeave={e => { e.currentTarget.style.background = '#fafaf8'; e.currentTarget.style.borderColor = '#f0f0ee' }}>
-                                {r.character_avatar
-                                  ? <img src={r.character_avatar} alt={r.character_name} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
-                                  : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#aaa' }}>{r.character_name?.[0]}</div>
-                                }
-                                {r.character_name}
-                              </button>
+                          <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '10px', letterSpacing: '0.1em' }}>关联角色</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {groups.map(g => (
+                              <div key={g.character_id}>
+                                <button onClick={() => toggleCharExpand(card.id, g.character_id)}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '6px 10px', borderRadius: '10px', border: '1px solid #f0f0ee', background: expandedChar === g.character_id ? '#f5f5f3' : '#fafaf8', cursor: 'pointer', fontSize: '12px', color: '#555' }}>
+                                  {g.avatar
+                                    ? <img src={g.avatar} alt={g.name} style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
+                                    : <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#e8e8e6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#aaa' }}>{g.name?.[0]}</div>
+                                  }
+                                  <span style={{ flex: 1, textAlign: 'left' }}>{g.name}</span>
+                                  <span style={{ color: '#bbb', fontSize: '11px' }}>{g.records.length} 条</span>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2" strokeLinecap="round"
+                                    style={{ transform: expandedChar === g.character_id ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+                                    <path d="M6 9l6 6 6-6"/>
+                                  </svg>
+                                </button>
+                                {expandedChar === g.character_id && (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 0 2px 30px' }}>
+                                    {g.records.map(r => (
+                                      <button key={r.id} onClick={() => router.push(`/notes/records/${r.id}`)}
+                                        style={{ textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: '#888', padding: '4px 0' }}
+                                        onMouseEnter={e => e.currentTarget.style.color = '#1a1a1a'}
+                                        onMouseLeave={e => e.currentTarget.style.color = '#888'}>
+                                        · {r.title}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             ))}
                           </div>
                         </>
@@ -401,7 +393,6 @@ export default function Library() {
           </div>
         )}
 
-        {/* 分页 */}
         {totalPages > 1 && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '32px', flexWrap: 'wrap' }}>
             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
@@ -423,7 +414,6 @@ export default function Library() {
         )}
       </div>
 
-      {/* 手机底部导航 */}
       <nav className="mobile-nav" style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderTop: '0.5px solid #ebebeb', padding: '10px 0', paddingBottom: 'max(10px,env(safe-area-inset-bottom))', justifyContent: 'space-around', zIndex: 50 }}>
         {[{ label: '词库', path: '/notes/library', active: true }, { label: '记录', path: '/notes/records', active: false }].map(item => (
           <button key={item.path} onClick={() => router.push(item.path)}
@@ -436,7 +426,6 @@ export default function Library() {
         ))}
       </nav>
 
-      {/* 手机端分类悬浮球 */}
       <button className="filter-float" onClick={() => setFilterOpen(v => !v)}
         style={{ position: 'fixed', bottom: '80px', left: '16px', width: '44px', height: '44px', borderRadius: '50%', background: Object.keys(selectedTags).length > 0 ? '#1a1a1a' : '#fff', border: '1px solid #e8e8e6', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 40, color: Object.keys(selectedTags).length > 0 ? '#fff' : '#666' }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
@@ -450,7 +439,6 @@ export default function Library() {
         </div>
       )}
 
-      {/* 新增弹窗 */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowAdd(false)}>
           <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(480px,100%)', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
@@ -497,7 +485,6 @@ export default function Library() {
         </div>
       )}
 
-      {/* 编辑弹窗 */}
       {editCard && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setEditCard(null)}>
           <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(480px,100%)', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
