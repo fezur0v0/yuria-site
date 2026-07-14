@@ -1,11 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
 const supabase = createClient()
 
 type ImageItem = { url: string; caption?: string }
+type DraftImage = ImageItem & { uploading?: boolean }
 
 type Character = {
   id: string
@@ -13,7 +14,7 @@ type Character = {
   avatar: string | null
 }
 
-type Record = {
+type RecordRow = {
   id: string
   title: string
   extra_tag: string | null
@@ -26,11 +27,8 @@ type Record = {
 
 type CardOption = { id: string; title: string }
 
-type DraftImage = ImageItem & { uploading?: boolean }
-
 const PAGE_SIZE = 9
 
-// 极简 markdown 转纯文本预览（去掉 ** 和 > 符号，只做列表页摘要用）
 function stripMarkdown(text: string) {
   return text
     .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -38,9 +36,11 @@ function stripMarkdown(text: string) {
     .replace(/\n+/g, ' ')
 }
 
+// ------ 可复用的隐藏滚动条样式 class：scroll-hide ------
+
 export default function Records() {
   const router = useRouter()
-  const [records, setRecords] = useState<Record[]>([])
+  const [records, setRecords] = useState<RecordRow[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -50,19 +50,31 @@ export default function Records() {
   const [total, setTotal] = useState(0)
   const [filterOpen, setFilterOpen] = useState(false)
 
-  // 新增记录弹窗相关
+  // 新增记录弹窗
   const [showAdd, setShowAdd] = useState(false)
   const [cardOptions, setCardOptions] = useState<CardOption[]>([])
-  const [cardSearch, setCardSearch] = useState('')
   const [saving, setSaving] = useState(false)
   const [newRecord, setNewRecord] = useState({
-    character_id: '' as string,
-    card_id: '' as string,
+    character_id: '',
+    card_id: '',
     title: '',
     extra_tag: '',
     content: '',
   })
   const [draftImages, setDraftImages] = useState<DraftImage[]>([])
+  const contentRef = useRef<HTMLTextAreaElement>(null)
+
+  // 角色下拉
+  const [charDropdownOpen, setCharDropdownOpen] = useState(false)
+  const [showNewCharForm, setShowNewCharForm] = useState(false)
+  const [newCharName, setNewCharName] = useState('')
+  const [newCharAvatar, setNewCharAvatar] = useState('')
+  const [newCharUploading, setNewCharUploading] = useState(false)
+  const [savingNewChar, setSavingNewChar] = useState(false)
+
+  // 词库下拉
+  const [cardDropdownOpen, setCardDropdownOpen] = useState(false)
+  const [cardSearch, setCardSearch] = useState('')
 
   useEffect(() => {
     if (sessionStorage.getItem('notes_auth') !== 'true') {
@@ -87,27 +99,34 @@ export default function Records() {
     setCardOptions(data || [])
   }
 
+  async function fetchRecords() {
+    setLoading(true)
+    let query = supabase.from('theater_records').select('*, characters(id,name,avatar)', { count: 'exact' })
+    if (search) query = query.or(`title.ilike.%${search}%,extra_tag.ilike.%${search}%,content.ilike.%${search}%`)
+    if (activeChar) query = query.eq('character_id', activeChar)
+    const { data, count } = await query.order('created_at', { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
+    setRecords((data as any) || [])
+    setTotal(count || 0)
+    setLoading(false)
+  }
+
+  function selectChar(id: string | null) { setActiveChar(id); setPage(1) }
+
+  // ---------- 图片上传 / 排序 ----------
   async function handleImageUpload(files: FileList | null) {
     if (!files || files.length === 0) return
     const fileArr = Array.from(files)
-
-    // 先插入占位（显示上传中）
     const placeholders: DraftImage[] = fileArr.map(() => ({ url: '', caption: '', uploading: true }))
-    setDraftImages(prev => [...prev, ...placeholders])
     const startIndex = draftImages.length
+    setDraftImages(prev => [...prev, ...placeholders])
 
     for (let i = 0; i < fileArr.length; i++) {
       const file = fileArr[i]
       const ext = file.name.split('.').pop()
       const path = `${crypto.randomUUID()}.${ext}`
-
       const { error } = await supabase.storage.from('theater-images').upload(path, file)
-      if (error) {
-        console.error('上传失败', error)
-        continue
-      }
+      if (error) { console.error('上传失败', error); continue }
       const { data: urlData } = supabase.storage.from('theater-images').getPublicUrl(path)
-
       setDraftImages(prev => {
         const next = [...prev]
         next[startIndex + i] = { url: urlData.publicUrl, caption: '', uploading: false }
@@ -117,25 +136,77 @@ export default function Records() {
   }
 
   function updateCaption(index: number, caption: string) {
+    setDraftImages(prev => { const next = [...prev]; next[index] = { ...next[index], caption }; return next })
+  }
+  function removeDraftImage(index: number) {
+    setDraftImages(prev => prev.filter((_, i) => i !== index))
+  }
+  function moveImage(index: number, dir: -1 | 1) {
     setDraftImages(prev => {
       const next = [...prev]
-      next[index] = { ...next[index], caption }
+      const target = index + dir
+      if (target < 0 || target >= next.length) return next
+      ;[next[index], next[target]] = [next[target], next[index]]
       return next
     })
   }
 
-  function removeDraftImage(index: number) {
-    setDraftImages(prev => prev.filter((_, i) => i !== index))
+  // ---------- 新角色 ----------
+  async function handleNewCharAvatar(files: FileList | null) {
+    if (!files || files.length === 0) return
+    setNewCharUploading(true)
+    const file = files[0]
+    const ext = file.name.split('.').pop()
+    const path = `char-${crypto.randomUUID()}.${ext}`
+    const { error } = await supabase.storage.from('theater-images').upload(path, file)
+    if (!error) {
+      const { data: urlData } = supabase.storage.from('theater-images').getPublicUrl(path)
+      setNewCharAvatar(urlData.publicUrl)
+    }
+    setNewCharUploading(false)
+  }
+
+  async function saveNewCharacter() {
+    if (!newCharName.trim()) return
+    setSavingNewChar(true)
+    const { data } = await supabase.from('characters').insert({ name: newCharName.trim(), avatar: newCharAvatar || null }).select().single()
+    if (data) {
+      setCharacters(prev => [...prev, data as Character])
+      setNewRecord(p => ({ ...p, character_id: data.id }))
+    }
+    setNewCharName(''); setNewCharAvatar(''); setShowNewCharForm(false); setCharDropdownOpen(false)
+    setSavingNewChar(false)
+  }
+
+  // ---------- markdown 快捷按钮 ----------
+  function insertMarkdown(type: 'bold' | 'quote') {
+    const ta = contentRef.current
+    if (!ta) return
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    const value = newRecord.content
+    const selected = value.slice(start, end)
+    let insertText = ''
+    if (type === 'bold') {
+      insertText = selected ? `**${selected}**` : '****'
+    } else {
+      insertText = selected
+        ? selected.split('\n').map(l => `> ${l}`).join('\n')
+        : '> '
+    }
+    const nextValue = value.slice(0, start) + insertText + value.slice(end)
+    setNewRecord(p => ({ ...p, content: nextValue }))
+    requestAnimationFrame(() => {
+      ta.focus()
+      const pos = selected ? start + insertText.length : (type === 'bold' ? start + 2 : start + 2)
+      ta.selectionStart = ta.selectionEnd = pos
+    })
   }
 
   async function saveRecord() {
     if (!newRecord.title || !newRecord.character_id) return
     setSaving(true)
-
-    const images = draftImages
-      .filter(img => !img.uploading && img.url)
-      .map(img => ({ url: img.url, caption: img.caption || '' }))
-
+    const images = draftImages.filter(img => !img.uploading && img.url).map(img => ({ url: img.url, caption: img.caption || '' }))
     await supabase.from('theater_records').insert({
       character_id: newRecord.character_id,
       card_id: newRecord.card_id || null,
@@ -144,70 +215,37 @@ export default function Records() {
       content: newRecord.content || null,
       images,
     })
-
     setNewRecord({ character_id: '', card_id: '', title: '', extra_tag: '', content: '' })
     setDraftImages([])
+    setCardSearch('')
     setShowAdd(false)
     setSaving(false)
     fetchRecords()
-  }
-
-  async function fetchRecords() {
-    setLoading(true)
-    let query = supabase
-      .from('theater_records')
-      .select('*, characters(id,name,avatar)', { count: 'exact' })
-
-    if (search) {
-      query = query.or(`title.ilike.%${search}%,extra_tag.ilike.%${search}%,content.ilike.%${search}%`)
-    }
-    if (activeChar) {
-      query = query.eq('character_id', activeChar)
-    }
-
-    const { data, count } = await query
-      .order('created_at', { ascending: false })
-      .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
-
-    setRecords((data as any) || [])
-    setTotal(count || 0)
-    setLoading(false)
-  }
-
-  function selectChar(id: string | null) {
-    setActiveChar(id)
-    setPage(1)
+    fetchCardOptions()
   }
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
+  const selectedChar = characters.find(c => c.id === newRecord.character_id)
+  const selectedCard = cardOptions.find(c => c.id === newRecord.card_id)
+  const filteredCardOptions = cardOptions.filter(c => c.title.toLowerCase().includes(cardSearch.toLowerCase()))
+
+  const tagBtnStyle = (active: boolean) => ({
+    padding: '4px 10px', borderRadius: '6px', fontSize: '12px', border: '1px solid', cursor: 'pointer',
+    background: active ? '#1a1a1a' : '#f5f5f3', color: active ? '#fff' : '#999',
+    borderColor: active ? '#1a1a1a' : '#e8e8e6',
+  } as React.CSSProperties)
 
   const CharFilter = () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-      <button onClick={() => selectChar(null)}
-        style={{
-          padding: '6px 14px', borderRadius: '20px', fontSize: '12px', border: '1px solid',
-          cursor: 'pointer', background: activeChar === null ? '#1a1a1a' : '#f5f5f3',
-          color: activeChar === null ? '#fff' : '#666',
-          borderColor: activeChar === null ? '#1a1a1a' : '#ebebeb',
-        }}>全部</button>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+      <button onClick={() => selectChar(null)} style={tagBtnStyle(activeChar === null)}>全部</button>
       {(charsExpanded ? characters : characters.slice(0, 5)).map(c => (
-        <button key={c.id} onClick={() => selectChar(c.id)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 12px 5px 5px',
-            borderRadius: '20px', fontSize: '12px', border: '1px solid', cursor: 'pointer',
-            background: activeChar === c.id ? '#1a1a1a' : '#f5f5f3',
-            color: activeChar === c.id ? '#fff' : '#666',
-            borderColor: activeChar === c.id ? '#1a1a1a' : '#ebebeb',
-          }}>
-          {c.avatar
-            ? <img src={c.avatar} alt={c.name} style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
-            : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}
+        <button key={c.id} onClick={() => selectChar(c.id)} style={{ ...tagBtnStyle(activeChar === c.id), display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px 4px 4px' }}>
+          {c.avatar ? <img src={c.avatar} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#e8e8e6' }} />}
           {c.name}
         </button>
       ))}
       {characters.length > 5 && (
-        <button onClick={() => setCharsExpanded(v => !v)}
-          style={{ fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer' }}>
+        <button onClick={() => setCharsExpanded(v => !v)} style={{ fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer' }}>
           {charsExpanded ? '收起 ↑' : `更多 (${characters.length}) ↓`}
         </button>
       )}
@@ -227,10 +265,7 @@ export default function Records() {
               style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', background: '#f0f0ee' }}>
               <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               {isLast && (
-                <div style={{
-                  position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '14px', fontWeight: 500,
-                }}>+{remaining}</div>
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '14px', fontWeight: 500 }}>+{remaining}</div>
               )}
             </div>
           )
@@ -250,6 +285,10 @@ export default function Records() {
         .sb-link:hover,.sb-link.active { color:#1a1a1a;background:#f0f0ee; }
         .sb-link.active { font-weight:500; }
         .sidebar-desktop { width: 260px !important; }
+        .scroll-hide::-webkit-scrollbar { display: none; }
+        .scroll-hide { scrollbar-width: none; -ms-overflow-style: none; }
+        .md-btn { background:#f5f5f3;border:1px solid #ebebeb;border-radius:6px;padding:4px 10px;font-size:12px;color:#666;cursor:pointer; }
+        .md-btn:hover { background:#eaeae8; }
         @media(max-width:768px){
           .sidebar-desktop{display:none!important}
           .mobile-nav{display:flex!important}
@@ -307,17 +346,10 @@ export default function Records() {
             {records.map(r => (
               <div key={r.id} className="card-item" onClick={() => router.push(`/notes/records/${r.id}`)}
                 style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f0f0ee', padding: '20px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  {r.characters?.avatar
-                    ? <img src={r.characters.avatar} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
-                    : <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#e8e8e6' }} />}
+                  {r.characters?.avatar ? <img src={r.characters.avatar} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#e8e8e6' }} />}
                   <span style={{ fontSize: '13px', color: '#666' }}>{r.characters?.name || '未命名'}</span>
-                  <span style={{ marginLeft: 'auto', color: '#ccc' }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-                  </span>
                 </div>
-
                 <div style={{ fontSize: '15px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px' }}>{r.title}</div>
                 {r.extra_tag && <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>{r.extra_tag}</div>}
                 {r.content && (
@@ -325,9 +357,7 @@ export default function Records() {
                     {stripMarkdown(r.content)}
                   </div>
                 )}
-
                 <ThumbGrid images={r.images || []} recordId={r.id} />
-
                 <div style={{ fontSize: '11px', color: '#bbb', marginTop: '12px' }}>{new Date(r.created_at).toLocaleDateString('zh-CN')}</div>
               </div>
             ))}
@@ -336,22 +366,19 @@ export default function Records() {
 
         {totalPages > 1 && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '32px', flexWrap: 'wrap' }}>
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-              style={{ padding: '7px 14px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: page === 1 ? '#ccc' : '#333', cursor: page === 1 ? 'not-allowed' : 'pointer', fontSize: '13px' }}>← 上一页</button>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '7px 14px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: page === 1 ? '#ccc' : '#333', cursor: page === 1 ? 'not-allowed' : 'pointer', fontSize: '13px' }}>← 上一页</button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i
               return <button key={p} onClick={() => setPage(p)} style={{ width: '36px', height: '36px', borderRadius: '8px', border: '1px solid', borderColor: p === page ? '#1a1a1a' : '#ebebeb', background: p === page ? '#1a1a1a' : '#fff', color: p === page ? '#fff' : '#333', cursor: 'pointer', fontSize: '13px' }}>{p}</button>
             })}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-              style={{ padding: '7px 14px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: page === totalPages ? '#ccc' : '#333', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontSize: '13px' }}>下一页 →</button>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: '7px 14px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: page === totalPages ? '#ccc' : '#333', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontSize: '13px' }}>下一页 →</button>
           </div>
         )}
       </div>
 
       <nav className="mobile-nav" style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderTop: '0.5px solid #ebebeb', padding: '10px 0', paddingBottom: 'max(10px,env(safe-area-inset-bottom))', justifyContent: 'space-around', zIndex: 50 }}>
         {[{ label: '词库', path: '/notes/library', active: false }, { label: '记录', path: '/notes/records', active: true }].map(item => (
-          <button key={item.path} onClick={() => router.push(item.path)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', flex: 1, color: item.active ? '#1a1a1a' : '#bbb' }}>
+          <button key={item.path} onClick={() => router.push(item.path)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', flex: 1, color: item.active ? '#1a1a1a' : '#bbb' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
               {item.label === '词库' ? <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></> : <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></>}
             </svg>
@@ -375,51 +402,97 @@ export default function Records() {
 
       {/* 新增记录弹窗 */}
       {showAdd && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowAdd(false)}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+          onClick={() => { setShowAdd(false); setCharDropdownOpen(false); setCardDropdownOpen(false) }}>
           <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>新增记录</h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
+
+              {/* 角色下拉选择 */}
+              <div style={{ position: 'relative' }}>
                 <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色 *</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {characters.map(c => (
-                    <button key={c.id} onClick={() => setNewRecord(p => ({ ...p, character_id: c.id }))}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 12px 5px 5px',
-                        borderRadius: '20px', fontSize: '12px', border: '1px solid', cursor: 'pointer',
-                        background: newRecord.character_id === c.id ? '#1a1a1a' : '#f5f5f3',
-                        color: newRecord.character_id === c.id ? '#fff' : '#666',
-                        borderColor: newRecord.character_id === c.id ? '#1a1a1a' : '#ebebeb',
-                      }}>
-                      {c.avatar
-                        ? <img src={c.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
-                        : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}
-                      {c.name}
-                    </button>
-                  ))}
+                <div onClick={() => { setCharDropdownOpen(v => !v); setCardDropdownOpen(false) }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', cursor: 'pointer', color: selectedChar ? '#1a1a1a' : '#bbb' }}>
+                  {selectedChar ? (
+                    <>
+                      {selectedChar.avatar ? <img src={selectedChar.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}
+                      {selectedChar.name}
+                    </>
+                  ) : '点击选择角色'}
+                  <svg style={{ marginLeft: 'auto' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
+
+                {charDropdownOpen && (
+                  <div className="scroll-hide" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: '#fff', border: '1px solid #ebebeb', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', maxHeight: '240px', overflowY: 'auto', zIndex: 10 }}>
+                    {!showNewCharForm ? (
+                      <>
+                        <div onClick={() => setShowNewCharForm(true)}
+                          style={{ padding: '10px 12px', fontSize: '13px', color: '#1a1a1a', fontWeight: 500, cursor: 'pointer', borderBottom: '1px solid #f0f0ee', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                          新角色
+                        </div>
+                        {characters.map(c => (
+                          <div key={c.id} onClick={() => { setNewRecord(p => ({ ...p, character_id: c.id })); setCharDropdownOpen(false) }}
+                            style={{ padding: '9px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: newRecord.character_id === c.id ? '#1a1a1a' : '#555', background: newRecord.character_id === c.id ? '#f5f5f3' : '#fff' }}>
+                            {c.avatar ? <img src={c.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}
+                            {c.name}
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <div style={{ padding: '12px' }}>
+                        <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>新建角色</div>
+                        <input value={newCharName} onChange={e => setNewCharName(e.target.value)} placeholder="角色名字"
+                          style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '8px', padding: '8px 10px', fontSize: '13px', outline: 'none', marginBottom: '8px' }} />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#999', cursor: 'pointer', marginBottom: '10px' }}>
+                          {newCharAvatar
+                            ? <img src={newCharAvatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                            : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#f0f0ee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</div>}
+                          {newCharUploading ? '上传中...' : '上传头像（可选）'}
+                          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleNewCharAvatar(e.target.files)} />
+                        </label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => { setShowNewCharForm(false); setNewCharName(''); setNewCharAvatar('') }}
+                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: '#666', fontSize: '12px', cursor: 'pointer' }}>取消</button>
+                          <button onClick={saveNewCharacter} disabled={!newCharName.trim() || savingNewChar}
+                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: !newCharName.trim() || savingNewChar ? '#f0f0ee' : '#1a1a1a', color: !newCharName.trim() || savingNewChar ? '#aaa' : '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                            {savingNewChar ? '保存中' : '保存角色'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
-              <div>
+              {/* 关联词库下拉 */}
+              <div style={{ position: 'relative' }}>
                 <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>关联词库（可选）</label>
-                <input value={cardSearch} onChange={e => setCardSearch(e.target.value)} placeholder="搜索词库标题..."
-                  style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', outline: 'none', marginBottom: '8px' }} />
-                <div style={{ maxHeight: '120px', overflowY: 'auto', border: cardSearch ? '1px solid #ebebeb' : 'none', borderRadius: '10px' }}>
-                  {cardSearch && cardOptions
-                    .filter(c => c.title.toLowerCase().includes(cardSearch.toLowerCase()))
-                    .slice(0, 8)
-                    .map(c => (
-                      <div key={c.id} onClick={() => { setNewRecord(p => ({ ...p, card_id: c.id })); setCardSearch(c.title) }}
-                        style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', color: newRecord.card_id === c.id ? '#1a1a1a' : '#666', background: newRecord.card_id === c.id ? '#f5f5f3' : '#fff' }}>
-                        {c.title}
-                      </div>
-                    ))}
+                <div onClick={() => { setCardDropdownOpen(v => !v); setCharDropdownOpen(false) }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', cursor: 'pointer', color: selectedCard ? '#1a1a1a' : '#bbb' }}>
+                  {selectedCard ? selectedCard.title : '点击查看词库列表'}
+                  <svg style={{ marginLeft: 'auto' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
-                {newRecord.card_id && (
-                  <div style={{ fontSize: '11px', color: '#22c55e', marginTop: '4px' }}>已关联词库
-                    <button onClick={() => { setNewRecord(p => ({ ...p, card_id: '' })); setCardSearch('') }}
-                      style={{ marginLeft: '8px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px' }}>取消关联</button>
+
+                {cardDropdownOpen && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: '#fff', border: '1px solid #ebebeb', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px' }}>
+                    <input value={cardSearch} onChange={e => setCardSearch(e.target.value)} placeholder="搜索词库标题..." autoFocus
+                      style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '8px', padding: '7px 10px', fontSize: '12px', outline: 'none', marginBottom: '6px' }} />
+                    <div className="scroll-hide" style={{ maxHeight: '180px', overflowY: 'auto' }}>
+                      {newRecord.card_id && (
+                        <div onClick={() => { setNewRecord(p => ({ ...p, card_id: '' })); setCardDropdownOpen(false) }}
+                          style={{ padding: '8px 10px', fontSize: '12px', color: '#ef4444', cursor: 'pointer' }}>取消关联</div>
+                      )}
+                      {filteredCardOptions.length === 0 ? (
+                        <div style={{ padding: '10px', fontSize: '12px', color: '#ccc', textAlign: 'center' }}>没有找到词库</div>
+                      ) : filteredCardOptions.map(c => (
+                        <div key={c.id} onClick={() => { setNewRecord(p => ({ ...p, card_id: c.id })); setCardDropdownOpen(false) }}
+                          style={{ padding: '8px 10px', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', color: newRecord.card_id === c.id ? '#1a1a1a' : '#666', background: newRecord.card_id === c.id ? '#f5f5f3' : '#fff' }}>
+                          {c.title}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -437,40 +510,48 @@ export default function Records() {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>正文（支持 **加粗** 和 &gt; 引用）</label>
-                <textarea value={newRecord.content} onChange={e => setNewRecord(p => ({ ...p, content: e.target.value }))} rows={7}
-                  placeholder={'在这里写正文...\n\n**加粗文字**\n\n> 这是一段引用'}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '12px', color: '#aaa' }}>正文</label>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong> 加粗</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
+                  </div>
+                </div>
+                <textarea ref={contentRef} value={newRecord.content} onChange={e => setNewRecord(p => ({ ...p, content: e.target.value }))} rows={7}
+                  placeholder="在这里写正文...（选中文字后点上方按钮可快速加粗/引用）"
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
               </div>
 
               <div>
                 <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>图片</label>
-                <label style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                  border: '1px dashed #ccc', borderRadius: '10px', padding: '14px', fontSize: '12px',
-                  color: '#999', cursor: 'pointer', marginBottom: '10px',
-                }}>
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: '1px dashed #ccc', borderRadius: '10px', padding: '14px', fontSize: '12px', color: '#999', cursor: 'pointer', marginBottom: '10px' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
                   点击上传图片（可多选）
-                  <input type="file" accept="image/*" multiple style={{ display: 'none' }}
-                    onChange={e => handleImageUpload(e.target.files)} />
+                  <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => handleImageUpload(e.target.files)} />
                 </label>
 
                 {draftImages.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {draftImages.map((img, i) => (
                       <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center', background: '#fafaf8', borderRadius: '10px', padding: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <button onClick={() => moveImage(i, -1)} disabled={i === 0}
+                            style={{ background: 'none', border: 'none', cursor: i === 0 ? 'not-allowed' : 'pointer', color: i === 0 ? '#e0e0e0' : '#999', padding: '2px' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+                          </button>
+                          <button onClick={() => moveImage(i, 1)} disabled={i === draftImages.length - 1}
+                            style={{ background: 'none', border: 'none', cursor: i === draftImages.length - 1 ? 'not-allowed' : 'pointer', color: i === draftImages.length - 1 ? '#e0e0e0' : '#999', padding: '2px' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
+                          </button>
+                        </div>
                         <div style={{ width: '52px', height: '52px', borderRadius: '8px', overflow: 'hidden', background: '#eee', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {img.uploading
-                            ? <span style={{ fontSize: '10px', color: '#aaa' }}>上传中</span>
-                            : <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                          {img.uploading ? <span style={{ fontSize: '10px', color: '#aaa' }}>上传中</span> : <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                         </div>
                         <input value={img.caption || ''} onChange={e => updateCaption(i, e.target.value)} placeholder="这张图的备注（可选）"
                           style={{ flex: 1, border: '1px solid #ebebeb', borderRadius: '8px', padding: '7px 10px', fontSize: '12px', outline: 'none' }} />
                         <button onClick={() => removeDraftImage(i)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', padding: '4px', flexShrink: 0 }}
-                          onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                          onMouseLeave={e => e.currentTarget.style.color = '#ccc'}>
+                          onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = '#ccc'}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
                       </div>
@@ -484,12 +565,7 @@ export default function Records() {
               <button onClick={() => { setShowAdd(false); setDraftImages([]) }}
                 style={{ flex: 1, padding: '11px', borderRadius: '10px', border: '1px solid #ebebeb', background: '#fff', color: '#666', fontSize: '13px', cursor: 'pointer' }}>取消</button>
               <button onClick={saveRecord} disabled={saving || !newRecord.title || !newRecord.character_id}
-                style={{
-                  flex: 2, padding: '11px', borderRadius: '10px', border: 'none',
-                  background: saving || !newRecord.title || !newRecord.character_id ? '#f0f0ee' : '#1a1a1a',
-                  color: saving || !newRecord.title || !newRecord.character_id ? '#aaa' : '#fff',
-                  fontSize: '13px', cursor: saving || !newRecord.title || !newRecord.character_id ? 'not-allowed' : 'pointer',
-                }}>
+                style={{ flex: 2, padding: '11px', borderRadius: '10px', border: 'none', background: saving || !newRecord.title || !newRecord.character_id ? '#f0f0ee' : '#1a1a1a', color: saving || !newRecord.title || !newRecord.character_id ? '#aaa' : '#fff', fontSize: '13px', cursor: saving || !newRecord.title || !newRecord.character_id ? 'not-allowed' : 'pointer' }}>
                 {saving ? '保存中...' : '保存'}
               </button>
             </div>
