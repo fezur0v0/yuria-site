@@ -415,7 +415,7 @@ export default function Library() {
       </div>
 
       <nav className="mobile-nav" style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderTop: '0.5px solid #ebebeb', padding: '10px 0', paddingBottom: 'max(10px,env(safe-area-inset-bottom))', justifyContent: 'space-around', zIndex: 50 }}>
-        {[{ label: '词库', path: '/notes/library', active: true }, { label: '记录', path: '/notes/records', active: false }].map(item => (
+        {[{ label: '主页', path: '/', active: false }, { label: '词库', path: '/notes/library', active: true }, { label: '记录', path: '/notes/records', active: false }].map(item => (
           <button key={item.path} onClick={() => router.push(item.path)}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', flex: 1, color: item.active ? '#1a1a1a' : '#bbb' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
