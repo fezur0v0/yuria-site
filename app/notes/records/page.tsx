@@ -244,10 +244,13 @@ export default function Records() {
           {c.name}
         </button>
       ))}
-      {characters.length > 5 && (
-        <button onClick={() => setCharsExpanded(v => !v)} style={{ fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer' }}>
-          {charsExpanded ? '收起 ↑' : `更多 (${characters.length}) ↓`}
-        </button>
+      {characters.length > 6 && <button onClick={() => setTagsExpanded(v => !v)} style={{ marginTop: '8px', fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+  {tagsExpanded ? '收起' : `展开全部 (${allTags.length})`}
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+    style={{ transform: tagsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+    <path d="M6 9l6 6 6-6"/>
+  </svg>
+</button>}
       )}
     </div>
   )
