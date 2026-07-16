@@ -34,9 +34,26 @@ function renderMarkdown(text: string) {
       }
       return <span key={j}>{part}</span>
     })
-    if (isQuote) {
-      return <blockquote key={i} style={{ margin: '16px 0', padding: '4px 0 4px 16px', borderLeft: '3px solid #e0e0de', color: '#888', fontSize: '13px', fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>{parts}</blockquote>
-    }
+   if (isQuote) {
+  return (
+    <blockquote key={i} style={{
+      position: 'relative',
+      margin: '20px 0',
+      padding: '14px 20px 14px 44px',
+      background: '#f7f7f5',
+      borderRadius: '10px',
+      color: '#666',
+      fontSize: '14px',
+      lineHeight: 1.8,
+      whiteSpace: 'pre-wrap',
+    }}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#d4d4d0" style={{ position: 'absolute', left: '14px', top: '14px' }}>
+        <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-4v-10h10z"/>
+      </svg>
+      {parts}
+    </blockquote>
+  )
+}
     return <p key={i} style={{ margin: '0 0 16px', color: '#444', fontSize: '14px', lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{parts}</p>
   })
 }
