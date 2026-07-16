@@ -363,9 +363,11 @@ export default function Records() {
       </div>
     )}
     <ThumbGrid images={r.images || []} recordId={r.id} />
-    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '12px' }}>{new Date(r.created_at).toLocaleDateString('zh-CN')}</div>
-  </div>
-))}
+                <div style={{ fontSize: '11px', color: '#bbb', marginTop: '12px' }}>{new Date(r.created_at).toLocaleDateString('zh-CN')}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {totalPages > 1 && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '32px', flexWrap: 'wrap' }}>
