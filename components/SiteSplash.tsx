@@ -2,25 +2,37 @@
 import { useEffect, useState } from 'react'
 import HandwritingIcon from './HandwritingIcon'
 
+const MIN_DISPLAY_MS = 2200 // 至少展示这么久，保证动画能完整播放一轮
+
 export default function SiteSplash() {
   const [visible, setVisible] = useState(true)
   const [fading, setFading] = useState(false)
 
   useEffect(() => {
-    function handleReady() {
-      // 留一点点余量，避免刚好在动画很突兀的瞬间消失
+    const startTime = Date.now()
+    let pageLoaded = false
+
+    function tryFinish() {
+      if (!pageLoaded) return
+      const elapsed = Date.now() - startTime
+      const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed)
       setTimeout(() => {
         setFading(true)
-        setTimeout(() => setVisible(false), 500) // 等淡出动画播完再彻底移除
-      }, 300)
+        setTimeout(() => setVisible(false), 500)
+      }, remaining)
+    }
+
+    function handleLoad() {
+      pageLoaded = true
+      tryFinish()
     }
 
     if (document.readyState === 'complete') {
-      handleReady()
+      handleLoad()
     } else {
-      window.addEventListener('load', handleReady)
-      return () => window.removeEventListener('load', handleReady)
+      window.addEventListener('load', handleLoad)
     }
+    return () => window.removeEventListener('load', handleLoad)
   }, [])
 
   if (!visible) return null
