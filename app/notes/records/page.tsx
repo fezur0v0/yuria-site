@@ -235,25 +235,26 @@ export default function Records() {
     borderColor: active ? '#1a1a1a' : '#e8e8e6',
   } as React.CSSProperties)
 
-  const CharFilter = () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-      <button onClick={() => selectChar(null)} style={tagBtnStyle(activeChar === null)}>全部</button>
-      {(charsExpanded ? characters : characters.slice(0, 5)).map(c => (
-        <button key={c.id} onClick={() => selectChar(c.id)} style={{ ...tagBtnStyle(activeChar === c.id), display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px 4px 4px' }}>
-          {c.avatar ? <img src={c.avatar} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#e8e8e6' }} />}
-          {c.name}
-        </button>
-      ))}
-      {characters.length > 6 && <button onClick={() => setTagsExpanded(v => !v)} style={{ marginTop: '8px', fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-  {tagsExpanded ? '收起' : `展开全部 (${allTags.length})`}
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-    style={{ transform: tagsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-    <path d="M6 9l6 6 6-6"/>
-  </svg>
-</button>}
-      )}
-    </div>
-  )
+ const CharFilter = () => (
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+    <button onClick={() => selectChar(null)} style={tagBtnStyle(activeChar === null)}>全部</button>
+    {(charsExpanded ? characters : characters.slice(0, 5)).map(c => (
+      <button key={c.id} onClick={() => selectChar(c.id)} style={{ ...tagBtnStyle(activeChar === c.id), display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px 4px 4px' }}>
+        {c.avatar ? <img src={c.avatar} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#e8e8e6' }} />}
+        {c.name}
+      </button>
+    ))}
+    {characters.length > 5 && (
+      <button onClick={() => setCharsExpanded(v => !v)} style={{ fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+        {charsExpanded ? '收起' : `更多 (${characters.length})`}
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+          style={{ transform: charsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+    )}
+  </div>
+)
 
   function ThumbGrid({ images, recordId }: { images: ImageItem[]; recordId: string }) {
     if (!images || images.length === 0) return null
