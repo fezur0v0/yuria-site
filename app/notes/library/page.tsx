@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import Masonry from 'react-masonry-css'
 
 const supabase = createClient()
 
@@ -10,7 +11,6 @@ type Card = {
   title: string
   content: string
   category: string
-  author: string | null
   tags: string[]
   created_at: string
 }
@@ -75,7 +75,7 @@ export default function Library() {
   const [newCard, setNewCard] = useState({ title: '', content: '', category: '', author: '', tags: [] as string[] })
   const [saving, setSaving] = useState(false)
   const [editCard, setEditCard] = useState<Card | null>(null)
-  const [editForm, setEditForm] = useState({ title: '', content: '', category: '', author: '', tags: [] as string[] })
+  const [editForm, setEditForm] = useState({ title: '', content: '', category: '', tags: [] as string[] })
   const [editSaving, setEditSaving] = useState(false)
 
   useEffect(() => {
@@ -115,7 +115,6 @@ export default function Library() {
     setAllTags(Array.from(tagSet))
   }
 
-  // 按角色分组：查出所有关联该词库的记录（带角色信息），再按 character_id 分组
   async function fetchRelated(cardId: string) {
     if (relatedGroups[cardId]) return
     const { data } = await supabase
@@ -156,13 +155,7 @@ export default function Library() {
   async function addCard() {
     if (!newCard.title) return
     setSaving(true)
-    await supabase.from('theater_cards').insert({
-      title: newCard.title,
-      content: newCard.content,
-      category: newCard.category || null,
-      author: newCard.author || null,
-      tags: newCard.tags
-    })
+    await supabase.from('theater_cards').insert({ title: newCard.title, content: newCard.content, category: newCard.category || null, tags: newCard.tags })
     setNewCard({ title: '', content: '', category: '', author: '', tags: [] })
     setShowAdd(false)
     setSaving(false)
@@ -172,26 +165,13 @@ export default function Library() {
   function openEdit(card: Card, e: React.MouseEvent) {
     e.stopPropagation()
     setEditCard(card)
-    setEditForm({
-      title: card.title,
-      content: card.content,
-      category: card.category || '',
-      author: card.author || '',
-      tags: card.tags || []
-    })
+    setEditForm({ title: card.title, content: card.content, category: card.category || '', tags: card.tags || [] })
   }
 
   async function saveEdit() {
     if (!editCard) return
     setEditSaving(true)
-    await supabase.from('theater_cards').update({
-      title: editForm.title,
-      content: editForm.content,
-      category: editForm.category || null,
-      author: editForm.author || null,
-      tags: editForm.tags,
-      updated_at: new Date().toISOString(),
-    }).eq('id', editCard.id)
+    await supabase.from('theater_cards').update({ title: editForm.title, content: editForm.content, category: editForm.category || null, tags: editForm.tags, updated_at: new Date().toISOString() }).eq('id', editCard.id)
     setEditCard(null)
     setEditSaving(false)
     fetchCards(); fetchAllTags()
@@ -241,13 +221,13 @@ export default function Library() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {(tagsExpanded ? allTags : allTags.slice(0, 6)).map(t => <button key={t} onClick={() => toggleTag(t)} style={tagBtnStyle(t)}>{t}</button>)}
         </div>
-        {allTags.length > 6 && <button onClick={() => setTagsExpanded(v => !v)} style={{ marginTop: '8px', fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {tagsExpanded ? '收起' : `展开全部 (${allTags.length})`}
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-            style={{ transform: tagsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-            <path d="M6 9l6 6 6-6"/>
-          </svg>
-        </button>}
+       {allTags.length > 6 && <button onClick={() => setTagsExpanded(v => !v)} style={{ marginTop: '8px', fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+  {tagsExpanded ? '收起' : `展开全部 (${allTags.length})`}
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+    style={{ transform: tagsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+    <path d="M6 9l6 6 6-6"/>
+  </svg>
+</button>}
       </>}
       {Object.keys(selectedTags).length > 0 && <button onClick={() => { setSelectedTags({}); setPage(1) }} style={{ marginTop: '16px', fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'block' }}>清空选中</button>}
     </div>
@@ -265,11 +245,25 @@ export default function Library() {
         .sb-link.active { font-weight:500; }
         .sidebar-desktop { width: 260px !important; }
         .main-content { margin-left: 260px !important; }
+        
+        /* 瀑布流专用样式 */
+        .masonry-grid {
+          display: flex;
+          margin-left: -16px;
+          width: auto;
+        }
+        .masonry-grid_column {
+          padding-left: 16px;
+          background-clip: padding-box;
+        }
+        .masonry-grid_column > .card-item {
+          margin-bottom: 16px;
+        }
+
         @media(max-width:768px){
           .sidebar-desktop{display:none!important}
           .mobile-nav{display:flex!important}
           .main-content{margin-left:0!important;padding:16px!important;padding-bottom:80px!important}
-          .cards-grid{columns:1!important}
           .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
         }
         @media(min-width:769px){
@@ -318,50 +312,33 @@ export default function Library() {
         ) : cards.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无内容</div>
         ) : (
-          <div className="cards-grid" style={{ columns: 3, columnGap: '16px' }}>
+          <Masonry
+            breakpointCols={{ default: 3, 1100: 3, 768: 2, 480: 1 }}
+            className="masonry-grid"
+            columnClassName="masonry-grid_column"
+          >
             {cards.map(card => {
               const isExpanded = expandedId === card.id
               const groups = relatedGroups[card.id] || []
               const expandedChar = expandedCharPerCard[card.id]
               return (
                 <div key={card.id} className="card-item"
-                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s', breakInside: 'avoid', marginBottom: '16px' }}
+                  style={{
+                    background: '#fff',
+                    borderRadius: '16px',
+                    border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`,
+                    padding: '20px',
+                    cursor: 'pointer',
+                    boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)',
+                    transition: 'all 0.2s',
+                    // 移除 flex 列，瀑布流不需要强制等高
+                  }}
                   onClick={() => handleCardClick(card)}>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontSize: '15px',
-                          fontWeight: 500,
-                          color: '#1a1a1a',
-                          marginBottom: '4px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {card.title}
-                      </div>
-                      {card.author && (
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            color: '#888',
-                            marginBottom: '4px',
-                          }}
-                        >
-                          by {card.author}
-                        </div>
-                      )}
-                      <div
-                        style={{
-                          fontSize: '11px',
-                          color: '#bbb',
-                        }}
-                      >
-                        {new Date(card.created_at).toLocaleDateString('zh-CN')}
-                      </div>
+                      <div style={{ fontSize: '15px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.title}</div>
+                      <div style={{ fontSize: '11px', color: '#bbb' }}>{new Date(card.created_at).toLocaleDateString('zh-CN')}</div>
                     </div>
                     <div style={{ display: 'flex', gap: '2px', marginLeft: '8px', flexShrink: 0 }}>
                       <button onClick={e => openEdit(card, e)}
@@ -379,7 +356,25 @@ export default function Library() {
                     </div>
                   </div>
 
-                  <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, overflow: 'hidden', maxHeight: isExpanded ? 'none' : '72px', maskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', WebkitMaskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', whiteSpace: 'pre-wrap', marginBottom: '12px' }}>
+                  {/* 内容区域 - 瀑布流自然高度，通过 max-height 和 mask 控制折叠 */}
+                  <div style={{
+                    fontSize: '13px',
+                    color: '#666',
+                    lineHeight: 1.7,
+                    whiteSpace: 'pre-wrap',
+                    marginBottom: '12px',
+                    overflow: 'hidden',
+                    transition: 'max-height 0.3s ease',
+                    ...(isExpanded ? {
+                      maxHeight: 'none',
+                      maskImage: 'none',
+                      WebkitMaskImage: 'none',
+                    } : {
+                      maxHeight: '72px',
+                      maskImage: 'linear-gradient(to bottom, black 50%, transparent)',
+                      WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent)',
+                    })
+                  }}>
                     {card.content}
                   </div>
 
@@ -444,7 +439,7 @@ export default function Library() {
                 </div>
               )
             })}
-          </div>
+          </Masonry>
         )}
 
         {totalPages > 1 && (
@@ -554,36 +549,6 @@ export default function Library() {
                 <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标题</label>
                 <input value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} placeholder="标题"
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
-              </div>
-              <div style={{ marginBottom: '14px' }}>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '12px',
-                    color: '#999',
-                    marginBottom: '6px',
-                  }}
-                >
-                  作者
-                </label>
-                <input
-                  value={editForm.author}
-                  onChange={e =>
-                    setEditForm(p => ({
-                      ...p,
-                      author: e.target.value,
-                    }))
-                  }
-                  placeholder="Yuria"
-                  style={{
-                    width: '100%',
-                    border: '1px solid #ebebeb',
-                    borderRadius: '10px',
-                    padding: '10px 14px',
-                    fontSize: '13px',
-                    outline: 'none',
-                  }}
-                />
               </div>
               <div>
                 <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>主要分类</label>
