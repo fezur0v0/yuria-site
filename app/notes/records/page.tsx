@@ -32,9 +32,17 @@ const PAGE_SIZE = 9
 
 function stripMarkdown(text: string) {
   return text
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/^>\s?/gm, '')
-    .replace(/\n+/g, ' ')
+    .replace(/\*\*(.*?)\*\*/g, '$1')        // 加粗符号去掉，保留文字
+    .replace(/~~(.*?)~~/g, '$1')            // 删除线符号去掉，保留文字
+    .replace(/^>\s?/gm, '')                 // 引用符号去掉
+    .replace(/^[-*]\s+/gm, '')              // 无序列表符号去掉
+    .replace(/^\d+\.\s+/gm, '')             // 有序列表编号去掉
+    .split('\n')
+    .filter(line => !/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(line)) // 整行去掉表格的分隔线（---那一行）
+    .map(line => line.replace(/\|/g, ' ').trim())   // 表格竖线换成空格
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 export default function Records() {
