@@ -425,7 +425,7 @@ export default function Records() {
 
               {/* 角色下拉选择 */}
               <div style={{ position: 'relative' }}>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色 *</label>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色</label>
                 <div onClick={() => { setCharDropdownOpen(v => !v); setCardDropdownOpen(false) }}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', cursor: 'pointer', color: selectedChar ? '#1a1a1a' : '#bbb' }}>
                   {selectedChar ? (
@@ -512,7 +512,7 @@ export default function Records() {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标题 *</label>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标题</label>
                 <input value={newRecord.title} onChange={e => setNewRecord(p => ({ ...p, title: e.target.value }))} placeholder="标题"
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
               </div>
