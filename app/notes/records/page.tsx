@@ -179,20 +179,22 @@ export default function Records() {
   }
 
   // ---------- markdown 快捷按钮 ----------
-  function insertMarkdown(type: 'bold' | 'quote') {
+function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'table') {
     const ta = contentRef.current
     if (!ta) return
     const start = ta.selectionStart
     const end = ta.selectionEnd
     const value = newRecord.content
     const selected = value.slice(start, end)
-    let insertText = ''
+ let insertText = ''
     if (type === 'bold') {
       insertText = selected ? `**${selected}**` : '****'
-    } else {
-      insertText = selected
-        ? selected.split('\n').map(l => `> ${l}`).join('\n')
-        : '> '
+    } else if (type === 'quote') {
+      insertText = selected ? selected.split('\n').map(l => `> ${l}`).join('\n') : '> '
+    } else if (type === 'strike') {
+      insertText = selected ? `~~${selected}~~` : '~~~~'
+    } else if (type === 'table') {
+      insertText = `\n| 标题1 | 标题2 |\n| --- | --- |\n| 内容1 | 内容2 |\n`
     }
     const nextValue = value.slice(0, start) + insertText + value.slice(end)
     setNewRecord(p => ({ ...p, content: nextValue }))
@@ -519,7 +521,9 @@ export default function Records() {
                   <label style={{ fontSize: '12px', color: '#aaa' }}>正文</label>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong> 加粗</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
+<button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
+<button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s> 删除线</button>
+<button type="button" className="md-btn" onClick={() => insertMarkdown('table')}>⊞ 表格</button>
                   </div>
                 </div>
                 <textarea ref={contentRef} value={newRecord.content} onChange={e => setNewRecord(p => ({ ...p, content: e.target.value }))} rows={7}
