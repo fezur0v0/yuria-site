@@ -284,7 +284,7 @@ export default function RecordDetail() {
         {record.extra_tag && <div style={{ fontSize: '13px', color: '#aaa', marginBottom: '24px' }}>{record.extra_tag}</div>}
 
         <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f0f0ee', padding: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          {record.content && renderMarkdown(record.content)}
+       {record.content && <MarkdownContent content={record.content} />}
           {images.length > 0 && (
             <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #f0f0ee' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
@@ -483,3 +483,4 @@ export default function RecordDetail() {
     </div>
   )
 }
+
