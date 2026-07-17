@@ -432,11 +432,11 @@ export default function RecordDetail() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                   <label style={{ fontSize: '12px', color: '#aaa' }}>正文</label>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong> 加粗</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s> 删除线</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ul')}>• 列表</button>
-                    <button type="button" className="md-btn" onClick={() => setShowTableBuilder(true)}>⊞ 表格</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong></button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo;</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s></button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ul')}>•</button>
+                    <button type="button" className="md-btn" onClick={() => setShowTableBuilder(true)}>⊞</button>
                   </div>
                 </div>
                 <textarea ref={contentRef} value={editForm.content} onChange={e => setEditForm(p => ({ ...p, content: e.target.value }))} rows={7}
