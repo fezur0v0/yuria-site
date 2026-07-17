@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const supabase = createClient()
 
@@ -23,39 +25,29 @@ type RecordDetail = {
   created_at: string
 }
 
-function renderMarkdown(text: string) {
-  const blocks = text.split(/\n\s*\n/)
-  return blocks.map((block, i) => {
-    const isQuote = block.trim().startsWith('>')
-    const cleaned = block.replace(/^>\s?/gm, '')
-    const parts = cleaned.split(/(\*\*.*?\*\*)/g).map((part, j) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={j} style={{ fontWeight: 600, color: '#1a1a1a' }}>{part.slice(2, -2)}</strong>
-      }
-      return <span key={j}>{part}</span>
-    })
-   if (isQuote) {
+function MarkdownContent({ content }: { content: string }) {
   return (
-    <blockquote key={i} style={{
-      position: 'relative',
-      margin: '20px 0',
-      padding: '14px 20px 14px 44px',
-      background: '#f7f7f5',
-      borderRadius: '10px',
-      color: '#666',
-      fontSize: '14px',
-      lineHeight: 1.8,
-      whiteSpace: 'pre-wrap',
-    }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="#d4d4d0" style={{ position: 'absolute', left: '14px', top: '14px' }}>
-        <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-4v-10h10z"/>
-      </svg>
-      {parts}
-    </blockquote>
+    <div className="prose prose-neutral max-w-none prose-p:text-[14px] prose-p:leading-[1.9] prose-p:text-[#444] prose-strong:text-[#1a1a1a] prose-strong:font-semibold prose-headings:font-normal">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          blockquote: ({ children }) => (
+            <blockquote style={{
+              position: 'relative', margin: '20px 0', padding: '14px 20px 14px 44px',
+              background: '#f7f7f5', borderRadius: '10px', color: '#666', fontSize: '14px', lineHeight: 1.8,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#d4d4d0" style={{ position: 'absolute', left: '14px', top: '14px' }}>
+                <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-4v-10h10z"/>
+              </svg>
+              {children}
+            </blockquote>
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
   )
-}
-    return <p key={i} style={{ margin: '0 0 16px', color: '#444', fontSize: '14px', lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{parts}</p>
-  })
 }
 
 export default function RecordDetail() {
