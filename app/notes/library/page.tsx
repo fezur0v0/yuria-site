@@ -470,7 +470,7 @@ export default function Library() {
                 </div>
               </div>
               <div>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标签（回车新增）</label>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标签</label>
                 <TagInput tags={newCard.tags} onChange={tags => setNewCard(p => ({ ...p, tags }))} />
               </div>
               <div>
