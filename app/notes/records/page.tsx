@@ -531,7 +531,6 @@ export default function Records() {
                     <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
                     <button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s> 删除线</button>
                     <button type="button" className="md-btn" onClick={() => insertMarkdown('ul')}>• 列表</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ol')}>1. 列表</button>
                     <button type="button" className="md-btn" onClick={() => setShowTableBuilder(true)}>⊞ 表格</button>
                   </div>
                 </div>
