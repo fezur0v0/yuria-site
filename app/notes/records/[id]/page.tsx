@@ -347,7 +347,7 @@ export default function RecordDetail() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ position: 'relative' }}>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色 *</label>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色</label>
                 <div onClick={() => { setCharDropdownOpen(v => !v); setCardDropdownOpen(false) }}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', cursor: 'pointer', color: selectedChar ? '#1a1a1a' : '#bbb' }}>
                   {selectedChar ? (<>{selectedChar.avatar ? <img src={selectedChar.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}{selectedChar.name}</>) : '点击选择角色'}
@@ -418,7 +418,7 @@ export default function RecordDetail() {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标题 *</label>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标题</label>
                 <input value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} placeholder="标题"
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
               </div>
