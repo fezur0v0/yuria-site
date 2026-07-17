@@ -1,7 +1,9 @@
+```tsx
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import TableBuilderModal from '@/components/TableBuilderModal'
 
 const supabase = createClient()
 
@@ -35,8 +37,6 @@ function stripMarkdown(text: string) {
     .replace(/^>\s?/gm, '')
     .replace(/\n+/g, ' ')
 }
-
-// ------ 可复用的隐藏滚动条样式 class：scroll-hide ------
 
 export default function Records() {
   const router = useRouter()
@@ -75,6 +75,9 @@ export default function Records() {
   // 词库下拉
   const [cardDropdownOpen, setCardDropdownOpen] = useState(false)
   const [cardSearch, setCardSearch] = useState('')
+
+  // 表格构建器
+  const [showTableBuilder, setShowTableBuilder] = useState(false)
 
   useEffect(() => {
     if (sessionStorage.getItem('notes_auth') !== 'true') {
@@ -179,22 +182,24 @@ export default function Records() {
   }
 
   // ---------- markdown 快捷按钮 ----------
-function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'table') {
+  function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'ul' | 'ol') {
     const ta = contentRef.current
     if (!ta) return
     const start = ta.selectionStart
     const end = ta.selectionEnd
     const value = newRecord.content
     const selected = value.slice(start, end)
- let insertText = ''
+    let insertText = ''
     if (type === 'bold') {
       insertText = selected ? `**${selected}**` : '****'
     } else if (type === 'quote') {
       insertText = selected ? selected.split('\n').map(l => `> ${l}`).join('\n') : '> '
     } else if (type === 'strike') {
       insertText = selected ? `~~${selected}~~` : '~~~~'
-    } else if (type === 'table') {
-      insertText = `\n| 标题1 | 标题2 |\n| --- | --- |\n| 内容1 | 内容2 |\n`
+    } else if (type === 'ul') {
+      insertText = selected ? selected.split('\n').map(l => `- ${l}`).join('\n') : '- '
+    } else if (type === 'ol') {
+      insertText = selected ? selected.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n') : '1. '
     }
     const nextValue = value.slice(0, start) + insertText + value.slice(end)
     setNewRecord(p => ({ ...p, content: nextValue }))
@@ -203,6 +208,10 @@ function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'table') {
       const pos = selected ? start + insertText.length : (type === 'bold' ? start + 2 : start + 2)
       ta.selectionStart = ta.selectionEnd = pos
     })
+  }
+
+  function insertRawText(text: string) {
+    setNewRecord(p => ({ ...p, content: p.content ? `${p.content}\n\n${text}\n` : `${text}\n` }))
   }
 
   async function saveRecord() {
@@ -237,26 +246,26 @@ function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'table') {
     borderColor: active ? '#1a1a1a' : '#e8e8e6',
   } as React.CSSProperties)
 
- const CharFilter = () => (
-  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-    <button onClick={() => selectChar(null)} style={tagBtnStyle(activeChar === null)}>全部</button>
-    {(charsExpanded ? characters : characters.slice(0, 5)).map(c => (
-      <button key={c.id} onClick={() => selectChar(c.id)} style={{ ...tagBtnStyle(activeChar === c.id), display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px 4px 4px' }}>
-        {c.avatar ? <img src={c.avatar} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#e8e8e6' }} />}
-        {c.name}
-      </button>
-    ))}
-    {characters.length > 5 && (
-      <button onClick={() => setCharsExpanded(v => !v)} style={{ fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-        {charsExpanded ? '收起' : `更多 (${characters.length})`}
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-          style={{ transform: charsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
-      </button>
-    )}
-  </div>
-)
+  const CharFilter = () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+      <button onClick={() => selectChar(null)} style={tagBtnStyle(activeChar === null)}>全部</button>
+      {(charsExpanded ? characters : characters.slice(0, 5)).map(c => (
+        <button key={c.id} onClick={() => selectChar(c.id)} style={{ ...tagBtnStyle(activeChar === c.id), display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px 4px 4px' }}>
+          {c.avatar ? <img src={c.avatar} alt="" style={{ width: '18px', height: '18px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#e8e8e6' }} />}
+          {c.name}
+        </button>
+      ))}
+      {characters.length > 5 && (
+        <button onClick={() => setCharsExpanded(v => !v)} style={{ fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {charsExpanded ? '收起' : `更多 (${characters.length})`}
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+            style={{ transform: charsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+      )}
+    </div>
+  )
 
   function ThumbGrid({ images, recordId }: { images: ImageItem[]; recordId: string }) {
     if (!images || images.length === 0) return null
@@ -299,7 +308,7 @@ function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'table') {
           .sidebar-desktop{display:none!important}
           .mobile-nav{display:flex!important}
           .main-content{margin-left:0!important;padding:16px!important;padding-bottom:80px!important}
-.cards-grid{columns:1!important}
+          .cards-grid{columns:1!important}
           .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
         }
         @media(min-width:769px){
@@ -348,23 +357,22 @@ function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'table') {
         ) : records.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无记录</div>
         ) : (
-         <div className="cards-grid" style={{ columns: 3, columnGap: '16px' }}>
-          
-{records.map(r => (
-  <div key={r.id} className="card-item" onClick={() => router.push(`/notes/records/${r.id}`)}
-    style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f0f0ee', padding: '20px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', breakInside: 'avoid', marginBottom: '16px' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-      {r.characters?.avatar ? <img src={r.characters.avatar} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#e8e8e6' }} />}
-      <span style={{ fontSize: '13px', color: '#666' }}>{r.characters?.name || '未命名'}</span>
-    </div>
-    <div style={{ fontSize: '15px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px' }}>{r.title}</div>
-    {r.extra_tag && <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>{r.extra_tag}</div>}
-    {r.content && (
-      <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, overflow: 'hidden', maxHeight: '48px', maskImage: 'linear-gradient(to bottom,black 50%,transparent)', WebkitMaskImage: 'linear-gradient(to bottom,black 50%,transparent)' }}>
-        {stripMarkdown(r.content)}
-      </div>
-    )}
-    <ThumbGrid images={r.images || []} recordId={r.id} />
+          <div className="cards-grid" style={{ columns: 3, columnGap: '16px' }}>
+            {records.map(r => (
+              <div key={r.id} className="card-item" onClick={() => router.push(`/notes/records/${r.id}`)}
+                style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f0f0ee', padding: '20px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', breakInside: 'avoid', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  {r.characters?.avatar ? <img src={r.characters.avatar} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#e8e8e6' }} />}
+                  <span style={{ fontSize: '13px', color: '#666' }}>{r.characters?.name || '未命名'}</span>
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px' }}>{r.title}</div>
+                {r.extra_tag && <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>{r.extra_tag}</div>}
+                {r.content && (
+                  <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, overflow: 'hidden', maxHeight: '48px', maskImage: 'linear-gradient(to bottom,black 50%,transparent)', WebkitMaskImage: 'linear-gradient(to bottom,black 50%,transparent)' }}>
+                    {stripMarkdown(r.content)}
+                  </div>
+                )}
+                <ThumbGrid images={r.images || []} recordId={r.id} />
                 <div style={{ fontSize: '11px', color: '#bbb', marginTop: '12px' }}>{new Date(r.created_at).toLocaleDateString('zh-CN')}</div>
               </div>
             ))}
@@ -521,9 +529,11 @@ function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'table') {
                   <label style={{ fontSize: '12px', color: '#aaa' }}>正文</label>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong> 加粗</button>
-<button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
-<button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s> 删除线</button>
-<button type="button" className="md-btn" onClick={() => insertMarkdown('table')}>⊞ 表格</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s> 删除线</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ul')}>• 列表</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ol')}>1. 列表</button>
+                    <button type="button" className="md-btn" onClick={() => setShowTableBuilder(true)}>⊞ 表格</button>
                   </div>
                 </div>
                 <textarea ref={contentRef} value={newRecord.content} onChange={e => setNewRecord(p => ({ ...p, content: e.target.value }))} rows={7}
@@ -581,6 +591,15 @@ function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'table') {
           </div>
         </div>
       )}
+
+      {/* 表格构建器 */}
+      {showTableBuilder && (
+        <TableBuilderModal
+          onInsert={(md) => insertRawText(md)}
+          onClose={() => setShowTableBuilder(false)}
+        />
+      )}
     </div>
   )
 }
+```
