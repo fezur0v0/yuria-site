@@ -1,8 +1,8 @@
+
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import Masonry from 'react-masonry-css'
 
 const supabase = createClient()
 
@@ -115,6 +115,7 @@ export default function Library() {
     setAllTags(Array.from(tagSet))
   }
 
+  // 按角色分组：查出所有关联该词库的记录（带角色信息），再按 character_id 分组
   async function fetchRelated(cardId: string) {
     if (relatedGroups[cardId]) return
     const { data } = await supabase
@@ -245,25 +246,11 @@ export default function Library() {
         .sb-link.active { font-weight:500; }
         .sidebar-desktop { width: 260px !important; }
         .main-content { margin-left: 260px !important; }
-        
-        /* 瀑布流专用样式 */
-        .masonry-grid {
-          display: flex;
-          margin-left: -16px;
-          width: auto;
-        }
-        .masonry-grid_column {
-          padding-left: 16px;
-          background-clip: padding-box;
-        }
-        .masonry-grid_column > .card-item {
-          margin-bottom: 16px;
-        }
-
         @media(max-width:768px){
           .sidebar-desktop{display:none!important}
           .mobile-nav{display:flex!important}
           .main-content{margin-left:0!important;padding:16px!important;padding-bottom:80px!important}
+          .cards-grid{grid-template-columns:1fr!important}
           .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
         }
         @media(min-width:769px){
@@ -312,26 +299,14 @@ export default function Library() {
         ) : cards.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无内容</div>
         ) : (
-          <Masonry
-            breakpointCols={{ default: 3, 1100: 3, 768: 2, 480: 1 }}
-            className="masonry-grid"
-            columnClassName="masonry-grid_column"
-          >
+          <div className="cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
             {cards.map(card => {
               const isExpanded = expandedId === card.id
               const groups = relatedGroups[card.id] || []
               const expandedChar = expandedCharPerCard[card.id]
               return (
                 <div key={card.id} className="card-item"
-                  style={{
-                    background: '#fff',
-                    borderRadius: '16px',
-                    border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`,
-                    padding: '20px',
-                    cursor: 'pointer',
-                    boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)',
-                    transition: 'all 0.2s',
-                  }}
+                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s' }}
                   onClick={() => handleCardClick(card)}>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -355,24 +330,7 @@ export default function Library() {
                     </div>
                   </div>
 
-                  <div style={{
-                    fontSize: '13px',
-                    color: '#666',
-                    lineHeight: 1.7,
-                    whiteSpace: 'pre-wrap',
-                    marginBottom: '12px',
-                    overflow: 'hidden',
-                    transition: 'max-height 0.3s ease',
-                    ...(isExpanded ? {
-                      maxHeight: 'none',
-                      maskImage: 'none',
-                      WebkitMaskImage: 'none',
-                    } : {
-                      maxHeight: '72px',
-                      maskImage: 'linear-gradient(to bottom, black 50%, transparent)',
-                      WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent)',
-                    })
-                  }}>
+                  <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, overflow: 'hidden', maxHeight: isExpanded ? 'none' : '72px', maskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', WebkitMaskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', whiteSpace: 'pre-wrap', marginBottom: '12px' }}>
                     {card.content}
                   </div>
 
@@ -437,7 +395,7 @@ export default function Library() {
                 </div>
               )
             })}
-          </Masonry>
+          </div>
         )}
 
         {totalPages > 1 && (
