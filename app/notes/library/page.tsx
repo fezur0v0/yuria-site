@@ -331,7 +331,6 @@ export default function Library() {
                     cursor: 'pointer',
                     boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)',
                     transition: 'all 0.2s',
-                    // 移除 flex 列，瀑布流不需要强制等高
                   }}
                   onClick={() => handleCardClick(card)}>
 
@@ -356,7 +355,6 @@ export default function Library() {
                     </div>
                   </div>
 
-                  {/* 内容区域 - 瀑布流自然高度，通过 max-height 和 mask 控制折叠 */}
                   <div style={{
                     fontSize: '13px',
                     color: '#666',
