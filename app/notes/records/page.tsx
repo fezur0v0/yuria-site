@@ -345,7 +345,7 @@ export default function Records() {
 
         <div style={{ position: 'relative', marginBottom: '24px' }}>
           <svg style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="搜索角色名、番外标签、标题..."
+          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="搜索标题、番外标签..."
             style={{ width: '100%', padding: '11px 14px 11px 40px', border: '1px solid #ebebeb', borderRadius: '12px', fontSize: '13px', color: '#333', background: '#fff', outline: 'none' }}
             onFocus={e => e.target.style.borderColor = '#1a1a1a'}
             onBlur={e => e.target.style.borderColor = '#ebebeb'} />
