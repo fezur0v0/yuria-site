@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import TableBuilderModal from '@/components/TableBuilderModal'
 
 const supabase = createClient()
 
@@ -77,6 +78,8 @@ export default function RecordDetail() {
 
   const [cardDropdownOpen, setCardDropdownOpen] = useState(false)
   const [cardSearch, setCardSearch] = useState('')
+
+  const [showTableBuilder, setShowTableBuilder] = useState(false)
 
   useEffect(() => {
     if (sessionStorage.getItem('notes_auth') !== 'true') { router.replace('/notes'); return }
@@ -175,7 +178,7 @@ export default function RecordDetail() {
     setSavingNewChar(false)
   }
 
-  function insertMarkdown(type: 'bold' | 'quote') {
+  function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'ul' | 'ol') {
     const ta = contentRef.current
     if (!ta) return
     const start = ta.selectionStart
@@ -185,16 +188,26 @@ export default function RecordDetail() {
     let insertText = ''
     if (type === 'bold') {
       insertText = selected ? `**${selected}**` : '****'
-    } else {
+    } else if (type === 'quote') {
       insertText = selected ? selected.split('\n').map(l => `> ${l}`).join('\n') : '> '
+    } else if (type === 'strike') {
+      insertText = selected ? `~~${selected}~~` : '~~~~'
+    } else if (type === 'ul') {
+      insertText = selected ? selected.split('\n').map(l => `- ${l}`).join('\n') : '- '
+    } else if (type === 'ol') {
+      insertText = selected ? selected.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n') : '1. '
     }
     const nextValue = value.slice(0, start) + insertText + value.slice(end)
     setEditForm(p => ({ ...p, content: nextValue }))
     requestAnimationFrame(() => {
       ta.focus()
-      const pos = selected ? start + insertText.length : start + 2
+      const pos = selected ? start + insertText.length : (type === 'bold' ? start + 2 : start + 2)
       ta.selectionStart = ta.selectionEnd = pos
     })
+  }
+
+  function insertRawText(text: string) {
+    setEditForm(p => ({ ...p, content: p.content ? `${p.content}\n\n${text}\n` : `${text}\n` }))
   }
 
   async function saveEdit() {
@@ -276,7 +289,7 @@ export default function RecordDetail() {
         {record.extra_tag && <div style={{ fontSize: '13px', color: '#aaa', marginBottom: '24px' }}>{record.extra_tag}</div>}
 
         <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f0f0ee', padding: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-       {record.content && <MarkdownContent content={record.content} />}
+          {record.content && <MarkdownContent content={record.content} />}
           {images.length > 0 && (
             <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #f0f0ee' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
@@ -421,6 +434,10 @@ export default function RecordDetail() {
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong> 加粗</button>
                     <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s> 删除线</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ul')}>• 列表</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ol')}>1. 列表</button>
+                    <button type="button" className="md-btn" onClick={() => setShowTableBuilder(true)}>⊞ 表格</button>
                   </div>
                 </div>
                 <textarea ref={contentRef} value={editForm.content} onChange={e => setEditForm(p => ({ ...p, content: e.target.value }))} rows={7}
@@ -472,7 +489,14 @@ export default function RecordDetail() {
           </div>
         </div>
       )}
+
+      {/* 表格构建器 */}
+      {showTableBuilder && (
+        <TableBuilderModal
+          onInsert={(md) => insertRawText(md)}
+          onClose={() => setShowTableBuilder(false)}
+        />
+      )}
     </div>
   )
 }
-
