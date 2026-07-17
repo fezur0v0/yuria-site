@@ -1,5 +1,4 @@
 'use client'
-export const dynamic = 'force-dynamic'
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function LoginPage() {
