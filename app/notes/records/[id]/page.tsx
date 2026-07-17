@@ -67,6 +67,7 @@ export default function RecordDetail() {
   const [saving, setSaving] = useState(false)
   const [editForm, setEditForm] = useState({ character_id: '', card_id: '', title: '', extra_tag: '', content: '' })
   const [draftImages, setDraftImages] = useState<DraftImage[]>([])
+  const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null)
   const contentRef = useRef<HTMLTextAreaElement>(null)
 
   const [charDropdownOpen, setCharDropdownOpen] = useState(false)
@@ -143,12 +144,11 @@ export default function RecordDetail() {
   function removeDraftImage(index: number) {
     setDraftImages(prev => prev.filter((_, i) => i !== index))
   }
-  function moveImage(index: number, dir: -1 | 1) {
+  function reorderImages(fromIndex: number, toIndex: number) {
     setDraftImages(prev => {
       const next = [...prev]
-      const target = index + dir
-      if (target < 0 || target >= next.length) return next
-      ;[next[index], next[target]] = [next[target], next[index]]
+      const [moved] = next.splice(fromIndex, 1)
+      next.splice(toIndex, 0, moved)
       return next
     })
   }
@@ -347,7 +347,7 @@ export default function RecordDetail() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ position: 'relative' }}>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色</label>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色 *</label>
                 <div onClick={() => { setCharDropdownOpen(v => !v); setCardDropdownOpen(false) }}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', cursor: 'pointer', color: selectedChar ? '#1a1a1a' : '#bbb' }}>
                   {selectedChar ? (<>{selectedChar.avatar ? <img src={selectedChar.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}{selectedChar.name}</>) : '点击选择角色'}
@@ -418,7 +418,7 @@ export default function RecordDetail() {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标题</label>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标题 *</label>
                 <input value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} placeholder="标题"
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
               </div>
@@ -432,11 +432,12 @@ export default function RecordDetail() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                   <label style={{ fontSize: '12px', color: '#aaa' }}>正文</label>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong></button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo;</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s></button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ul')}>•</button>
-                    <button type="button" className="md-btn" onClick={() => setShowTableBuilder(true)}>⊞</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong> 加粗</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s> 删除线</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ul')}>• 列表</button>
+                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ol')}>1. 列表</button>
+                    <button type="button" className="md-btn" onClick={() => setShowTableBuilder(true)}>⊞ 表格</button>
                   </div>
                 </div>
                 <textarea ref={contentRef} value={editForm.content} onChange={e => setEditForm(p => ({ ...p, content: e.target.value }))} rows={7}
@@ -453,15 +454,23 @@ export default function RecordDetail() {
                 {draftImages.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {draftImages.map((img, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center', background: '#fafaf8', borderRadius: '10px', padding: '8px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <button onClick={() => moveImage(i, -1)} disabled={i === 0} style={{ background: 'none', border: 'none', cursor: i === 0 ? 'not-allowed' : 'pointer', color: i === 0 ? '#e0e0e0' : '#999', padding: '2px' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 15l-6-6-6 6"/></svg>
-                          </button>
-                          <button onClick={() => moveImage(i, 1)} disabled={i === draftImages.length - 1} style={{ background: 'none', border: 'none', cursor: i === draftImages.length - 1 ? 'not-allowed' : 'pointer', color: i === draftImages.length - 1 ? '#e0e0e0' : '#999', padding: '2px' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
-                          </button>
-                        </div>
+                      <div key={i}
+                        draggable
+                        onDragStart={() => setDraggedImageIndex(i)}
+                        onDragOver={e => e.preventDefault()}
+                        onDrop={() => {
+                          if (draggedImageIndex !== null && draggedImageIndex !== i) {
+                            reorderImages(draggedImageIndex, i)
+                          }
+                          setDraggedImageIndex(null)
+                        }}
+                        onDragEnd={() => setDraggedImageIndex(null)}
+                        style={{ display: 'flex', gap: '10px', alignItems: 'center', background: '#fafaf8', borderRadius: '10px', padding: '8px', opacity: draggedImageIndex === i ? 0.4 : 1, cursor: 'grab' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#ccc" style={{ flexShrink: 0 }}>
+                          <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+                          <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+                          <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+                        </svg>
                         <div style={{ width: '52px', height: '52px', borderRadius: '8px', overflow: 'hidden', background: '#eee', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {img.uploading ? <span style={{ fontSize: '10px', color: '#aaa' }}>上传中</span> : <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                         </div>
