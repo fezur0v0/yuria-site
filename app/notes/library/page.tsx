@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import Masonry from "react-masonry-css"
 
 const supabase = createClient()
 
@@ -266,22 +265,11 @@ export default function Library() {
         .sb-link.active { font-weight:500; }
         .sidebar-desktop { width: 260px !important; }
         .main-content { margin-left: 260px !important; }
-        .masonry-grid {
-          display: flex;
-          margin-left: -16px;
-          width: auto;
-        }
-        .masonry-column {
-          padding-left: 16px;
-          background-clip: padding-box;
-        }
-        .masonry-column > .card-item {
-          margin-bottom: 16px;
-        }
         @media(max-width:768px){
           .sidebar-desktop{display:none!important}
           .mobile-nav{display:flex!important}
           .main-content{margin-left:0!important;padding:16px!important;padding-bottom:80px!important}
+          .cards-grid{grid-template-columns:1fr!important}
           .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
         }
         @media(min-width:769px){
@@ -330,15 +318,7 @@ export default function Library() {
         ) : cards.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无内容</div>
         ) : (
-          <Masonry
-            breakpointCols={{
-              default: 3,
-              1100: 2,
-              768: 1,
-            }}
-            className="masonry-grid"
-            columnClassName="masonry-column"
-          >
+          <div className="cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
             {cards.map(card => {
               const isExpanded = expandedId === card.id
               const groups = relatedGroups[card.id] || []
@@ -464,7 +444,7 @@ export default function Library() {
                 </div>
               )
             })}
-          </Masonry>
+          </div>
         )}
 
         {totalPages > 1 && (
