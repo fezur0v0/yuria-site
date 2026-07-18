@@ -251,7 +251,7 @@ export default function Library() {
           .mobile-nav{display:flex!important}
           .main-content{margin-left:0!important;padding:16px!important;padding-bottom:80px!important}
           .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
-          .cards-grid{grid-template-columns:1fr!important}
+          .cards-grid{columns:1!important}
         }
         @media(min-width:769px){
           .mobile-nav{display:none!important}
@@ -299,14 +299,14 @@ export default function Library() {
         ) : cards.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无内容</div>
         ) : (
-          <div className="cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+          <div className="cards-grid" style={{ columns: 3, columnGap: '16px' }}>
             {cards.map(card => {
               const isExpanded = expandedId === card.id
               const groups = relatedGroups[card.id] || []
               const expandedChar = expandedCharPerCard[card.id]
               return (
                 <div key={card.id} className="card-item"
-                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s', overflowWrap: 'anywhere', minWidth: 0 }}
+                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s', breakInside: 'avoid', marginBottom: '16px', overflowWrap: 'anywhere', minWidth: 0 }}
                   onClick={() => handleCardClick(card)}>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
