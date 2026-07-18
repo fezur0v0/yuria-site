@@ -51,7 +51,7 @@ function TagInput({ tags, onChange }: { tags: string[], onChange: (tags: string[
       ))}
       <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
         placeholder={tags.length === 0 ? '输入标签后按回车...' : ''}
-        style={{ border: 'none', outline: 'none', fontSize: '13px', minWidth: '80px', flex: 1, background: 'transparent' }} />
+        style={{ border: 'none', outline: 'none', fontSize: '13px', minWidth: '80px', flex: 1, background: 'transparent', maxWidth: '100%' }} />
     </div>
   )
 }
@@ -115,7 +115,6 @@ export default function Library() {
     setAllTags(Array.from(tagSet))
   }
 
-  // 按角色分组：查出所有关联该词库的记录（带角色信息），再按 character_id 分组
   async function fetchRelated(cardId: string) {
     if (relatedGroups[cardId]) return
     const { data } = await supabase
@@ -239,6 +238,12 @@ export default function Library() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto Serif SC:wght@300;400&family=Inter:wght@300;400;500&display=swap');
         * { box-sizing: border-box; }
+        html, body {
+          margin: 0;
+          padding: 0;
+          overflow-x: hidden;
+          box-sizing: border-box;
+        }
         .card-item { transition: box-shadow 0.2s, transform 0.2s; }
         .card-item:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important; }
         .sb-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#888;font-size:13px;text-decoration:none;transition:all 0.2s;background:transparent;border:none;width:100%;font-family:Inter,sans-serif; }
@@ -249,9 +254,17 @@ export default function Library() {
         @media(max-width:768px){
           .sidebar-desktop{display:none!important}
           .mobile-nav{display:flex!important}
-          .main-content{margin-left:0!important;padding:16px!important;padding-bottom:80px!important}
+          .main-content{
+            margin-left:0!important;
+            padding:16px!important;
+            padding-bottom:80px!important;
+            max-width:100% !important;
+          }
           .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
-          .cards-grid{columns:1!important}
+          .cards-grid{
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
         }
         @media(min-width:769px){
           .mobile-nav{display:none!important}
@@ -277,7 +290,15 @@ export default function Library() {
         </div>
       </aside>
 
-      <div className="main-content" style={{ marginLeft: '260px', flex: 1, padding: '32px 40px', paddingBottom: '60px' }}>
+      <div className="main-content" style={{
+        marginLeft: '260px',
+        flex: 1,
+        padding: '32px 40px',
+        paddingBottom: '60px',
+        maxWidth: 'calc(100% - 260px)',
+        overflowX: 'hidden',
+        width: '100%'
+      }}>
         <div className="top-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <h1 style={{ fontFamily: 'Noto Serif SC,serif', fontSize: '24px', fontWeight: 300, letterSpacing: '0.1em', color: '#1a1a1a', margin: 0 }}>词库</h1>
           <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1a1a1a', color: '#fff', border: 'none', borderRadius: '10px', padding: '9px 18px', fontSize: '13px', cursor: 'pointer' }}>
@@ -299,14 +320,20 @@ export default function Library() {
         ) : cards.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无内容</div>
         ) : (
-          <div className="cards-grid" style={{ columns: 3, columnGap: '16px' }}>
+          <div className="cards-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '16px',
+            alignItems: 'start',
+            width: '100%'
+          }}>
             {cards.map(card => {
               const isExpanded = expandedId === card.id
               const groups = relatedGroups[card.id] || []
               const expandedChar = expandedCharPerCard[card.id]
               return (
                 <div key={card.id} className="card-item"
-                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s', breakInside: 'avoid', marginBottom: '16px', overflowWrap: 'anywhere', minWidth: 0 }}
+                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s', overflowWrap: 'anywhere', minWidth: 0 }}
                   onClick={() => handleCardClick(card)}>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
