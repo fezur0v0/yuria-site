@@ -244,13 +244,21 @@ export default function Library() {
           overflow-x: hidden;
           box-sizing: border-box;
         }
-        .card-item { transition: box-shadow 0.2s, transform 0.2s; }
+        .card-item {
+          transition: box-shadow 0.2s, transform 0.2s;
+          break-inside: avoid;
+          margin-bottom: 16px;
+        }
         .card-item:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important; }
         .sb-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#888;font-size:13px;text-decoration:none;transition:all 0.2s;background:transparent;border:none;width:100%;font-family:Inter,sans-serif; }
         .sb-link:hover,.sb-link.active { color:#1a1a1a;background:#f0f0ee; }
         .sb-link.active { font-weight:500; }
         .sidebar-desktop { width: 260px !important; }
         .main-content { margin-left: 260px !important; }
+        .cards-grid {
+          column-count: 3;
+          column-gap: 16px;
+        }
         @media(max-width:768px){
           .sidebar-desktop{display:none!important}
           .mobile-nav{display:flex!important}
@@ -260,15 +268,19 @@ export default function Library() {
             padding-bottom:80px!important;
             max-width:100% !important;
           }
-          .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
-          .cards-grid{
-            grid-template-columns: 1fr !important;
-            gap: 12px !important;
+          .cards-grid {
+            column-count: 1;
+            column-gap: 0;
           }
+          .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
         }
         @media(min-width:769px){
           .mobile-nav{display:none!important}
           .filter-float{display:none!important}
+        }
+        .card-item img {
+          max-width: 100%;
+          height: auto;
         }
       `}</style>
 
@@ -320,13 +332,7 @@ export default function Library() {
         ) : cards.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无内容</div>
         ) : (
-          <div className="cards-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '16px',
-            alignItems: 'start',
-            width: '100%'
-          }}>
+          <div className="cards-grid">
             {cards.map(card => {
               const isExpanded = expandedId === card.id
               const groups = relatedGroups[card.id] || []
