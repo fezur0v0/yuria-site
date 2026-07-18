@@ -1,8 +1,8 @@
-
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import Masonry from 'react-masonry-css'
 
 const supabase = createClient()
 
@@ -24,6 +24,13 @@ type CharacterGroup = {
 
 const MAIN_CATEGORIES = ['html', '小手机', '番外']
 const PAGE_SIZE = 10
+
+const masonryBreakpoints = {
+  default: 3,
+  1024: 3,
+  768: 2,
+  500: 1,
+}
 
 function TagInput({ tags, onChange }: { tags: string[], onChange: (tags: string[]) => void }) {
   const [input, setInput] = useState('')
@@ -250,12 +257,22 @@ export default function Library() {
           .sidebar-desktop{display:none!important}
           .mobile-nav{display:flex!important}
           .main-content{margin-left:0!important;padding:16px!important;padding-bottom:80px!important}
-          .cards-grid{grid-template-columns:1fr!important}
           .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
         }
         @media(min-width:769px){
           .mobile-nav{display:none!important}
           .filter-float{display:none!important}
+        }
+        .masonry-grid {
+          display: flex;
+          margin-left: -16px;
+        }
+        .masonry-column {
+          padding-left: 16px;
+          background-clip: padding-box;
+        }
+        .masonry-column > div {
+          margin-bottom: 16px;
         }
       `}</style>
 
@@ -299,7 +316,7 @@ export default function Library() {
         ) : cards.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无内容</div>
         ) : (
-          <div className="cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
+          <Masonry breakpointCols={masonryBreakpoints} className="masonry-grid" columnClassName="masonry-column">
             {cards.map(card => {
               const isExpanded = expandedId === card.id
               const groups = relatedGroups[card.id] || []
@@ -395,7 +412,7 @@ export default function Library() {
                 </div>
               )
             })}
-          </div>
+          </Masonry>
         )}
 
         {totalPages > 1 && (
