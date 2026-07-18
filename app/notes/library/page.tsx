@@ -306,7 +306,7 @@ export default function Library() {
               const expandedChar = expandedCharPerCard[card.id]
               return (
                 <div key={card.id} className="card-item"
-                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s', breakInside: 'avoid', marginBottom: '16px' }}
+                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s', breakInside: 'avoid', marginBottom: '16px', overflowWrap: 'anywhere', minWidth: 0 }}
                   onClick={() => handleCardClick(card)}>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -331,7 +331,7 @@ export default function Library() {
                     </div>
                   </div>
 
-                  <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, overflow: 'hidden', maxHeight: isExpanded ? 'none' : '72px', maskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', WebkitMaskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', whiteSpace: 'pre-wrap', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, overflow: 'hidden', maxHeight: isExpanded ? 'none' : '72px', maskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', WebkitMaskImage: isExpanded ? 'none' : 'linear-gradient(to bottom,black 50%,transparent)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'anywhere', marginBottom: '12px' }}>
                     {card.content}
                   </div>
 
