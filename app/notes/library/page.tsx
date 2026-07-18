@@ -24,7 +24,7 @@ type CharacterGroup = {
 }
 
 const MAIN_CATEGORIES = ['html', '小手机', '番外']
-const PAGE_SIZE = 10
+const PAGE_SIZE = 12
 
 const masonryBreakpoints = {
   default: 3,
