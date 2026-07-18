@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "Yuria",
   description: "那一天你走进了我的生命 谢谢你成为了我的几分之几",
 };
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 export default function RootLayout({
   children,
 }: Readonly<{
