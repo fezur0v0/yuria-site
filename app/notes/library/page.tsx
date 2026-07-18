@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import Masonry from 'react-masonry-css'
 
 const supabase = createClient()
 
@@ -25,13 +24,6 @@ type CharacterGroup = {
 
 const MAIN_CATEGORIES = ['html', '小手机', '番外']
 const PAGE_SIZE = 12
-
-const masonryBreakpoints = {
-  default: 3,
-  1024: 3,
-  768: 2,
-  500: 1,
-}
 
 function TagInput({ tags, onChange }: { tags: string[], onChange: (tags: string[]) => void }) {
   const [input, setInput] = useState('')
@@ -259,21 +251,11 @@ export default function Library() {
           .mobile-nav{display:flex!important}
           .main-content{margin-left:0!important;padding:16px!important;padding-bottom:80px!important}
           .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
+          .cards-grid{columns:1!important}
         }
         @media(min-width:769px){
           .mobile-nav{display:none!important}
           .filter-float{display:none!important}
-        }
-        .masonry-grid {
-          display: flex;
-          margin-left: -16px;
-        }
-        .masonry-column {
-          padding-left: 16px;
-          background-clip: padding-box;
-        }
-        .masonry-column > div {
-          margin-bottom: 16px;
         }
       `}</style>
 
@@ -317,14 +299,14 @@ export default function Library() {
         ) : cards.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无内容</div>
         ) : (
-          <Masonry breakpointCols={masonryBreakpoints} className="masonry-grid" columnClassName="masonry-column">
+          <div className="cards-grid" style={{ columns: 3, columnGap: '16px' }}>
             {cards.map(card => {
               const isExpanded = expandedId === card.id
               const groups = relatedGroups[card.id] || []
               const expandedChar = expandedCharPerCard[card.id]
               return (
                 <div key={card.id} className="card-item"
-                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s' }}
+                  style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s', breakInside: 'avoid', marginBottom: '16px' }}
                   onClick={() => handleCardClick(card)}>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -414,7 +396,7 @@ export default function Library() {
                 </div>
               )
             })}
-          </Masonry>
+          </div>
         )}
 
         {totalPages > 1 && (
