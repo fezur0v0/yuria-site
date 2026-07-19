@@ -35,16 +35,18 @@ export default function SidebarProfile() {
   const links = (profile.links ?? {}) as Record<string, string>;
 
   return (
-    <div className="text-center bg-white/70 backdrop-blur-md rounded-2xl shadow-sm p-6">
+    <div className="text-center bg-white/70 backdrop-blur-md rounded-2xl shadow-sm p-8">
       {profile.avatar_url && (
-        <img
-          src={profile.avatar_url}
-          alt={profile.nickname ?? ''}
-          className="w-20 h-20 rounded-full object-cover mx-auto mb-3"
-        />
+        <div className="inline-block bg-white p-2 pb-5 shadow-md rotate-[-2deg] mb-4">
+          <img
+            src={profile.avatar_url}
+            alt={profile.nickname ?? ''}
+            className="w-28 h-28 object-cover"
+          />
+        </div>
       )}
-      {profile.nickname && <h3 className="font-serif text-base mb-1">{profile.nickname}</h3>}
-      {profile.bio && <p className="text-xs text-black/50 leading-relaxed mb-3">{profile.bio}</p>}
+      {profile.nickname && <h3 className="font-serif text-lg mb-2">{profile.nickname}</h3>}
+      {profile.bio && <p className="text-sm text-black/50 leading-relaxed mb-4">{profile.bio}</p>}
       {Object.keys(links).length > 0 && (
         <div className="flex justify-center gap-3 flex-wrap">
           {Object.entries(links).map(([key, url]) =>
