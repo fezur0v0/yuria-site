@@ -44,16 +44,16 @@ export default function PortfolioPage() {
       <PortfolioNav />
       <PortfolioHero />
 
-      <div className="max-w-6xl mx-auto px-6 py-16 flex gap-16">
-        <aside className="hidden lg:block w-64 flex-shrink-0">
-          <div className="sticky top-24">
+     <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col lg:flex-row gap-16">
+  <aside className="order-2 lg:order-1 w-full lg:w-64 flex-shrink-0">
+    <div className="lg:sticky lg:top-24">
             <SidebarProfile />
             <SidebarCategoryTags />
             <SidebarArchiveHeatmap />
           </div>
         </aside>
 
-        <main className="flex-1 min-w-0">
+        <main className="order-1 lg:order-2 flex-1 min-w-0">
           {loading ? (
             <p className="text-sm text-black/40">加载中…</p>
           ) : items.length === 0 ? (
