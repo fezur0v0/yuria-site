@@ -47,17 +47,17 @@ export default function PortfolioPage() {
       <PortfolioNav />
       <PortfolioHero />
 
-     <div className="relative z-10 max-w-7xl mx-auto px-8 py-16 flex gap-12">
-        <aside className="hidden lg:block w-80 flex-shrink-0">
-          <div className="sticky top-24 flex flex-col gap-5">
+      <div className="relative z-10 max-w-7xl mx-auto px-8 py-16 flex flex-col lg:flex-row gap-12">
+        <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
+          <div className="lg:sticky lg:top-24 flex flex-col gap-5">
             <SidebarProfile />
-         <SidebarCategoryTags />
+            <SidebarCategoryTags />
             <SidebarTags />
             <SidebarArchiveTimeline />
           </div>
         </aside>
 
-        <main className="flex-1 min-w-0">
+        <main className="order-1 lg:order-2 flex-1 min-w-0">
           {loading ? (
             <p className="text-sm text-black/40">加载中…</p>
           ) : items.length === 0 ? (
@@ -70,7 +70,7 @@ export default function PortfolioPage() {
                   <Link
                     key={item.id}
                     href={`/portfolio/${item.id}`}
-                   className="flex items-start justify-between gap-8 p-8 mb-6 rounded-2xl bg-white/70 backdrop-blur-md shadow-sm hover:bg-white/85 transition"
+                    className="group flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 sm:gap-8 p-6 sm:p-8 mb-6 rounded-2xl bg-white/70 backdrop-blur-md shadow-sm hover:bg-white/85 transition"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 text-xs text-black/40 mb-2">
@@ -92,11 +92,13 @@ export default function PortfolioPage() {
                       )}
                     </div>
                     {item.cover_url && (
-                      <img
-                        src={item.cover_url}
-                        alt={item.title}
-                        className="w-56 h-40 object-cover rounded-xl flex-shrink-0"
-                      />
+                      <div className="w-full sm:w-56 h-48 sm:h-40 rounded-xl overflow-hidden flex-shrink-0">
+                        <img
+                          src={item.cover_url}
+                          alt={item.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
                     )}
                   </Link>
                 );
