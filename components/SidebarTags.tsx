@@ -10,7 +10,7 @@ interface Item {
   tags: string[] | null;
 }
 
-const NOTE_COLORS = ['bg-yellow-200/50', 'bg-pink-200/50', 'bg-blue-200/50', 'bg-green-200/50', 'bg-orange-200/50'];
+const NOTE_COLORS = ['bg-yellow-200/70', 'bg-pink-200/70', 'bg-blue-200/70', 'bg-green-200/70', 'bg-orange-200/70'];
 const ROTATIONS = ['-rotate-3', 'rotate-2', '-rotate-1', 'rotate-3', 'rotate-1'];
 
 export default function SidebarTags() {
