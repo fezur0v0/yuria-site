@@ -32,7 +32,7 @@ export default function SidebarProfile() {
 
   if (!profile) return null;
 
- const links = (profile.links ?? {}) as Record<string, string>;
+  const links = (profile.links ?? {}) as Record<string, string>;
 
   return (
     <div className="text-center pb-6 border-b border-black/10">
@@ -59,9 +59,6 @@ export default function SidebarProfile() {
                 {LINK_LABELS[key] ?? key}
               </a>
             ) : null
-          )}
-        </div>
-      )}
           )}
         </div>
       )}
