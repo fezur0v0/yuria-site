@@ -10,12 +10,12 @@ interface Profile {
   links: Record<string, string> | null;
 }
 
-const LINK_LABELS: Record<string, string> = {
-  github: 'GitHub',
-  bilibili: 'Bilibili',
-  qq: 'QQ',
-  twitter: 'Twitter',
-  xiaohongshu: '小红书',
+const LINK_ICON_SLUGS: Record<string, string> = {
+  github: 'github',
+  bilibili: 'bilibili',
+  qq: 'qq',
+  twitter: 'x',
+  xiaohongshu: 'xiaohongshu',
 };
 
 export default function SidebarProfile() {
@@ -49,14 +49,12 @@ export default function SidebarProfile() {
         <div className="flex justify-center gap-3 flex-wrap">
           {Object.entries(links).map(([key, url]) =>
             url ? (
-              <a
-                key={key}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-black/40 hover:text-black/70 transition"
-              >
-                {LINK_LABELS[key] ?? key}
+              <a key={key} href={url} target="_blank" rel="noopener noreferrer" className="opacity-50 hover:opacity-90 transition">
+                <img
+                  src={`https://cdn.simpleicons.org/${LINK_ICON_SLUGS[key] ?? key}/1a1a1a`}
+                  alt={key}
+                  className="w-5 h-5"
+                />
               </a>
             ) : null
           )}
