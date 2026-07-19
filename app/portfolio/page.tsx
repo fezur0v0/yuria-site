@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import PortfolioNav from '@/components/PortfolioNav';
+import PortfolioHero from '@/components/PortfolioHero';
+import SidebarProfile from '@/components/SidebarProfile';
+import SidebarCategoryTags from '@/components/SidebarCategoryTags';
+import SidebarArchiveHeatmap from '@/components/SidebarArchiveHeatmap';
 
 interface PortfolioItem {
   id: string;
@@ -11,18 +16,22 @@ interface PortfolioItem {
   date: string | null;
   tags: string[] | null;
   cover_url: string | null;
+  content: string | null;
+}
+
+function stripHtml(html: string) {
+  return html.replace(/<[^>]+>/g, '').trim();
 }
 
 export default function PortfolioPage() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<string>('全部');
 
   useEffect(() => {
     const supabase = createClient();
     supabase
       .from('portfolio_items')
-      .select('id, title, category, date, tags, cover_url')
+      .select('id, title, category, date, tags, cover_url, content')
       .order('date', { ascending: false })
       .then(({ data }) => {
         setItems(data ?? []);
@@ -30,59 +39,68 @@ export default function PortfolioPage() {
       });
   }, []);
 
-  const categories = ['全部', ...Array.from(new Set(items.map((i) => i.category).filter(Boolean) as string[]))];
-  const filtered = activeCategory === '全部' ? items : items.filter((i) => i.category === activeCategory);
-
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
-      <h1 className="text-2xl font-serif mb-6">作品集</h1>
+    <div className="min-h-screen bg-[#fafaf8]">
+      <PortfolioNav />
+      <PortfolioHero />
 
-      <div className="flex gap-2 mb-8 flex-wrap">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`text-sm px-3 py-1.5 rounded-full transition ${
-              activeCategory === cat ? 'bg-[#1a1a1a] text-white' : 'bg-black/5 hover:bg-black/10'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+      <div className="max-w-6xl mx-auto px-6 py-16 flex gap-16">
+        <aside className="hidden lg:block w-64 flex-shrink-0">
+          <div className="sticky top-24">
+            <SidebarProfile />
+            <SidebarCategoryTags />
+            <SidebarArchiveHeatmap />
+          </div>
+        </aside>
+
+        <main className="flex-1 min-w-0">
+          {loading ? (
+            <p className="text-sm text-black/40">加载中…</p>
+          ) : items.length === 0 ? (
+            <p className="text-sm text-black/40">还没有作品~</p>
+          ) : (
+            <div>
+              {items.map((item) => {
+                const excerpt = item.content ? stripHtml(item.content).slice(0, 80) : '';
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/portfolio/${item.id}`}
+                    className="flex items-start justify-between gap-6 py-8 border-b border-black/5 hover:opacity-80 transition"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 text-xs text-black/40 mb-2">
+                        {item.date && <span>{item.date}</span>}
+                        {item.category && (
+                          <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
+                        )}
+                      </div>
+                      <h2 className="font-serif text-xl mb-2">{item.title}</h2>
+                      {excerpt && <p className="text-sm text-black/50 line-clamp-2 mb-2">{excerpt}</p>}
+                      {item.tags && item.tags.length > 0 && (
+                        <div className="flex gap-1.5 flex-wrap">
+                          {item.tags.map((tag) => (
+                            <span key={tag} className="text-xs text-black/30">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {item.cover_url && (
+                      <img
+                        src={item.cover_url}
+                        alt={item.title}
+                        className="w-40 h-28 object-cover rounded-xl flex-shrink-0"
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </main>
       </div>
-
-      {loading ? (
-        <p className="text-sm text-black/40">加载中…</p>
-      ) : filtered.length === 0 ? (
-        <p className="text-sm text-black/40">这个分类还没有作品~</p>
-      ) : (
-        <div className="[column-count:1] sm:[column-count:2] lg:[column-count:3] gap-5 [column-gap:1.25rem]">
-          {filtered.map((item) => (
-            <Link
-              key={item.id}
-              href={`/portfolio/${item.id}`}
-              className="block mb-5 break-inside-avoid rounded-2xl bg-[#fafaf8] overflow-hidden hover:opacity-90 transition"
-            >
-              {item.cover_url && (
-                <img src={item.cover_url} alt={item.title} className="w-full object-cover" />
-              )}
-              <div className="p-4">
-                <h2 className="font-serif text-base mb-1">{item.title}</h2>
-                {item.date && <p className="text-xs text-black/40 mb-2">{item.date}</p>}
-                {item.tags && item.tags.length > 0 && (
-                  <div className="flex gap-1.5 flex-wrap">
-                    {item.tags.map((tag) => (
-                      <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-black/5 text-black/60">
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
