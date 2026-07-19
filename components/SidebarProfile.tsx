@@ -49,7 +49,7 @@ export default function SidebarProfile() {
         <div className="flex justify-center gap-3 flex-wrap">
           {Object.entries(links).map(([key, url]) =>
             url ? (
-              
+              <a
                 key={key}
                 href={url}
                 target="_blank"
@@ -59,6 +59,9 @@ export default function SidebarProfile() {
                 {LINK_LABELS[key] ?? key}
               </a>
             ) : null
+          )}
+        </div>
+      )}
           )}
         </div>
       )}
