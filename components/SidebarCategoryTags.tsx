@@ -4,44 +4,79 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
+interface Item {
+  id: string;
+  title: string;
+  category: string | null;
+}
+
 export default function SidebarCategoryTags() {
-  const [categories, setCategories] = useState<{ name: string; count: number }[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const supabase = createClient();
     supabase
       .from('portfolio_items')
-      .select('category')
-      .then(({ data }) => {
-        const counts: Record<string, number> = {};
-        (data ?? []).forEach((item) => {
-          if (item.category) {
-            counts[item.category] = (counts[item.category] ?? 0) + 1;
-          }
-        });
-        setCategories(
-          Object.entries(counts)
-            .map(([name, count]) => ({ name, count }))
-            .sort((a, b) => b.count - a.count)
-        );
-      });
+      .select('id, title, category')
+      .then(({ data }) => setItems(data ?? []));
   }, []);
+
+  const grouped: Record<string, Item[]> = {};
+  items.forEach((item) => {
+    if (item.category) {
+      grouped[item.category] = grouped[item.category] ?? [];
+      grouped[item.category].push(item);
+    }
+  });
+  const categories = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
 
   if (categories.length === 0) return null;
 
+  const toggle = (name: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
+
   return (
     <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-sm p-8">
-      <h4 className="text-sm text-black/40 mb-4 tracking-wide">分类</h4>
-      <div className="flex flex-wrap gap-2">
-        {categories.map((cat) => (
-          <Link
-            key={cat.name}
-            href={`/portfolio/category/${encodeURIComponent(cat.name)}`}
-            className="text-xs px-2.5 py-1 rounded-full bg-black/5 hover:bg-black/10 transition"
-          >
-            {cat.name} <span className="text-black/30">{cat.count}</span>
-          </Link>
-        ))}
+      <h4 className="font-serif text-lg text-black mb-4">分类</h4>
+      <div className="max-h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+        {categories.map(([name, catItems]) => {
+          const isOpen = expanded.has(name);
+          return (
+            <div key={name} className="mb-1">
+              <button
+                onClick={() => toggle(name)}
+                className="w-full flex items-center justify-between py-2 text-sm hover:bg-black/5 rounded-lg px-2 transition"
+              >
+                <span>
+                  {name} <span className="text-black/30">{catItems.length}</span>
+                </span>
+                <span className={`text-black/40 transition-transform ${isOpen ? 'rotate-90' : ''}`}>
+                  ›
+                </span>
+              </button>
+              {isOpen && (
+                <div className="pl-4 flex flex-col gap-1.5 pb-2">
+                  {catItems.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/portfolio/${item.id}`}
+                      className="text-xs text-black/60 hover:text-black transition line-clamp-1"
+                    >
+                      {item.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
