@@ -11,10 +11,10 @@ interface Item {
 }
 
 const NOTE_COLORS = [
-  'bg-[#D5EAE3]/50',  
-  'bg-[#F8F4E9]/50',  
-  'bg-[#775C55]/50',  
-  'bg-[#FDD3D5]/50',  
+  'bg-[#ABBBD1]/50',  
+  'bg-[#C6D8E6]/50',  
+  'bg-[#DCECED]/50',  
+  'bg-[#FEFDF8]/50',  
 ];
 const ROTATIONS = ['-rotate-3', 'rotate-2', '-rotate-1', 'rotate-3', 'rotate-1'];
 
