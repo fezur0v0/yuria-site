@@ -44,7 +44,7 @@ export default function SidebarCategoryTags() {
 
   return (
     <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-sm p-8">
-      <h4 className="font-serif text-lg text-black mb-4">分类</h4>
+      <h4 className="text-lg font-bold text-black mb-4">分类</h4>
       <div className="max-h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
         {categories.map(([name, catItems]) => {
           const isOpen = expanded.has(name);
@@ -57,17 +57,15 @@ export default function SidebarCategoryTags() {
                 <span>
                   {name} <span className="text-black/30">{catItems.length}</span>
                 </span>
-                <span className={`text-black/40 transition-transform ${isOpen ? 'rotate-90' : ''}`}>
-                  ›
-                </span>
+                <span className={`text-black/40 transition-transform ${isOpen ? 'rotate-90' : ''}`}>›</span>
               </button>
               {isOpen && (
-                <div className="pl-4 flex flex-col gap-1.5 pb-2">
+                <div className="pl-4 flex flex-col gap-2.5 pb-3 pt-1">
                   {catItems.map((item) => (
                     <Link
                       key={item.id}
                       href={`/portfolio/${item.id}`}
-                      className="text-xs text-black/60 hover:text-black transition line-clamp-1"
+                      className="text-xs text-black/60 hover:text-black transition line-clamp-1 py-0.5"
                     >
                       {item.title}
                     </Link>
