@@ -8,7 +8,7 @@ import PortfolioHero from '@/components/PortfolioHero';
 import PortfolioBackground from '@/components/PortfolioBackground';
 import SidebarProfile from '@/components/SidebarProfile';
 import SidebarCategoryTags from '@/components/SidebarCategoryTags';
-import SidebarArchiveHeatmap from '@/components/SidebarArchiveHeatmap';
+import SidebarArchiveTimeline from '@/components/SidebarArchiveTimeline';
 
 interface PortfolioItem {
   id: string;
@@ -51,7 +51,7 @@ export default function PortfolioPage() {
           <div className="sticky top-24 flex flex-col gap-5">
             <SidebarProfile />
             <SidebarCategoryTags />
-            <SidebarArchiveHeatmap />
+        <SidebarArchiveTimeline />
           </div>
         </aside>
 
