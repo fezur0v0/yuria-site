@@ -44,12 +44,11 @@ export async function proxy(request: NextRequest) {
   // ─────────────────────
   // admin 权限保护
   // ─────────────────────
-  if (pathname.startsWith('/admin')) {
+if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     // 未登录
     if (!user) {
-      return NextResponse.redirect(new URL('/', request.url))
+      return NextResponse.redirect(new URL('/admin/login', request.url))
     }
-
     // 不是管理员邮箱
     if (user.email !== ADMIN_EMAIL) {
       return NextResponse.redirect(new URL('/', request.url))
