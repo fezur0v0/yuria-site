@@ -8,6 +8,7 @@ import PortfolioHero from '@/components/PortfolioHero';
 import PortfolioBackground from '@/components/PortfolioBackground';
 import SidebarProfile from '@/components/SidebarProfile';
 import SidebarCategoryTags from '@/components/SidebarCategoryTags';
+import SidebarTags from '@/components/SidebarTags';
 import SidebarArchiveTimeline from '@/components/SidebarArchiveTimeline';
 
 interface PortfolioItem {
@@ -50,8 +51,9 @@ export default function PortfolioPage() {
         <aside className="hidden lg:block w-80 flex-shrink-0">
           <div className="sticky top-24 flex flex-col gap-5">
             <SidebarProfile />
-            <SidebarCategoryTags />
-        <SidebarArchiveTimeline />
+         <SidebarCategoryTags />
+            <SidebarTags />
+            <SidebarArchiveTimeline />
           </div>
         </aside>
 
