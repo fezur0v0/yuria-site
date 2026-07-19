@@ -33,7 +33,7 @@ export default function PortfolioNav() {
         visible ? 'translate-y-0' : '-translate-y-full'
       } ${scrolled ? 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}
     >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center">
+      <div className="px-8 h-16 flex items-center">
         <Link href="/" className="text-white font-serif text-lg tracking-wide">
           yuria
         </Link>
