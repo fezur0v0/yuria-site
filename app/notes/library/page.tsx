@@ -24,18 +24,29 @@ type CharacterGroup = {
 
 const MAIN_CATEGORIES = ['html', '小手机', '番外']
 const PAGE_SIZE = 12
+
 function TagInput({ tags, onChange }: { tags: string[], onChange: (tags: string[]) => void }) {
   const [input, setInput] = useState('')
+
+  // 抽离新增逻辑
+  function addTag() {
+    const value = input.trim()
+    if (!value) return
+    if (tags.includes(value)) return // 去重
+    onChange([...tags, value])
+    setInput('')
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter' && input.trim()) {
-      e.preventDefault()
-      if (!tags.includes(input.trim())) onChange([...tags, input.trim()])
-      setInput('')
+    if (e.key === 'Enter') {
+      e.preventDefault()    // 防止触发表单提交
+      addTag()
     }
     if (e.key === 'Backspace' && !input && tags.length > 0) {
       onChange(tags.slice(0, -1))
     }
   }
+
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center', border: '1px solid #ebebeb', borderRadius: '10px', padding: '8px 12px', minHeight: '42px', cursor: 'text' }}
       onClick={e => (e.currentTarget.querySelector('input') as HTMLInputElement)?.focus()}>
@@ -48,9 +59,14 @@ function TagInput({ tags, onChange }: { tags: string[], onChange: (tags: string[
             onMouseLeave={e => e.currentTarget.style.color = '#aaa'}>×</button>
         </span>
       ))}
-      <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
+      <input
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={addTag}   // 👈 关键：失焦时自动新增
         placeholder={tags.length === 0 ? '输入标签后按回车...' : ''}
-        style={{ border: 'none', outline: 'none', fontSize: '13px', minWidth: '80px', flex: 1, background: 'transparent', maxWidth: '100%' }} />
+        style={{ border: 'none', outline: 'none', fontSize: '13px', minWidth: '80px', flex: 1, background: 'transparent', maxWidth: '100%' }}
+      />
     </div>
   )
 }
