@@ -34,7 +34,7 @@ export default function PortfolioNav() {
       } ${scrolled ? 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}
     >
       <div className="px-8 h-16 flex items-center">
-        <Link href="/" className="text-white font-serif text-lg tracking-wide">
+        <Link href="/" className="text-white font-serif text-2xl tracking-wide">
           yuria
         </Link>
       </div>
