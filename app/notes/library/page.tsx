@@ -24,7 +24,6 @@ type CharacterGroup = {
 
 const MAIN_CATEGORIES = ['html', '小手机', '番外']
 const PAGE_SIZE = 12
-
 function TagInput({ tags, onChange }: { tags: string[], onChange: (tags: string[]) => void }) {
   const [input, setInput] = useState('')
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -55,6 +54,7 @@ function TagInput({ tags, onChange }: { tags: string[], onChange: (tags: string[
     </div>
   )
 }
+
 
 export default function Library() {
   const router = useRouter()
