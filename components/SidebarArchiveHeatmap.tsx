@@ -60,7 +60,7 @@ export default function SidebarArchiveHeatmap() {
   }
 
   return (
-    <div className="py-6">
+    <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-sm p-6">
       <h4 className="text-xs text-black/40 mb-3 tracking-wide">归档</h4>
       <div ref={scrollRef} className="overflow-x-auto [&::-webkit-scrollbar]:h-1">
         <div className="flex gap-[3px]" style={{ width: 'max-content' }}>
