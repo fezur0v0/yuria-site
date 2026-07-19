@@ -36,23 +36,28 @@ export default function SidebarProfile() {
 
   return (
     <div className="text-center bg-white/70 backdrop-blur-md rounded-2xl shadow-sm p-8">
+      {/* 注入动画样式，通过 dangerouslySetInnerHTML 规避 JSX 标签解析冲突 */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes swing {
+          0% { transform: rotate(-2deg); }
+          25% { transform: rotate(-5deg); }
+          75% { transform: rotate(1deg); }
+          100% { transform: rotate(-2deg); }
+        }
+      `}} />
+
       {profile.avatar_url && (
-        // --- 修改开始 ---
-        // 1. 增加了 transition-transform 和 duration 用于平滑动画。
-        // 2. 增加了 hover: (电脑端悬浮) 和 active: (手机端点击) 的摆动动画。
-        // 3. 这里使用了 Tailwind 的任意值特性直接定义动画：[animation:swing_0.3s_ease-in-out_infinite]
         <div className="inline-block bg-white p-2 pb-5 shadow-md rotate-[-2deg] mb-4 
                       transition-transform duration-300 ease-in-out
                       hover:[animation:swing_0.3s_ease-in-out_infinite] 
                       active:[animation:swing_0.3s_ease-in-out_infinite]
-                      origin-top"> {/* 设置旋转原点在顶部，摆动更自然 */}
+                      origin-top">
           <img
             src={profile.avatar_url}
             alt={profile.nickname ?? ''}
             className="w-28 h-28 object-cover"
           />
         </div>
-        // --- 修改结束 ---
       )}
       {profile.nickname && <h3 className="font-serif text-lg mb-2">{profile.nickname}</h3>}
       {profile.bio && <p className="text-sm text-black/50 leading-relaxed mb-4">{profile.bio}</p>}
@@ -71,3 +76,6 @@ export default function SidebarProfile() {
           )}
         </div>
       )}
+    </div>
+  );
+}
