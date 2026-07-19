@@ -58,7 +58,7 @@ export default function PortfolioHero() {
 
   return (
     <section
-      className="relative h-screen w-full flex items-end justify-start overflow-hidden"
+      className="relative h-screen w-full flex items-center justify-center overflow-hidden"
       style={{
         backgroundImage: heroData?.hero_image_url ? `url(${heroData.hero_image_url})` : undefined,
         backgroundColor: '#1a1a1a',
@@ -66,8 +66,8 @@ export default function PortfolioHero() {
         backgroundPosition: 'center',
       }}
     >
-      <div className="absolute inset-0 bg-black/20" />
-      <div className="relative z-10 px-8 pb-24 md:px-16">
+      <div className="absolute inset-0 bg-black/25" />
+      <div className="relative z-10 text-center px-6">
         <h1 className="text-white text-4xl md:text-6xl font-serif mb-4 tracking-wide">
           {heroData?.hero_title ?? ''}
         </h1>
