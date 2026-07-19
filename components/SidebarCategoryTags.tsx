@@ -30,7 +30,7 @@ export default function SidebarCategoryTags() {
   if (categories.length === 0) return null;
 
   return (
-    <div className="py-6 border-b border-black/10">
+    <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-sm p-6">
       <h4 className="text-xs text-black/40 mb-3 tracking-wide">分类</h4>
       <div className="flex flex-wrap gap-2">
         {categories.map((cat) => (
