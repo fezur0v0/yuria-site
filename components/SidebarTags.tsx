@@ -10,20 +10,17 @@ interface Item {
   tags: string[] | null;
 }
 
-const NOTE_COLORS = ['bg-yellow-100', 'bg-pink-100', 'bg-blue-100', 'bg-green-100', 'bg-orange-100'];
+const NOTE_COLORS = ['bg-yellow-200/50', 'bg-pink-200/50', 'bg-blue-200/50', 'bg-green-200/50', 'bg-orange-200/50'];
 const ROTATIONS = ['-rotate-3', 'rotate-2', '-rotate-1', 'rotate-3', 'rotate-1'];
 
 export default function SidebarTags() {
   const [items, setItems] = useState<Item[]>([]);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selected, setSelected] = useState<{ tag: string; colorIndex: number } | null>(null);
   const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
-    supabase
-      .from('portfolio_items')
-      .select('id, title, tags')
-      .then(({ data }) => setItems(data ?? []));
+    supabase.from('portfolio_items').select('id, title, tags').then(({ data }) => setItems(data ?? []));
   }, []);
 
   const tagCounts: Record<string, number> = {};
@@ -32,38 +29,42 @@ export default function SidebarTags() {
 
   if (tags.length === 0) return null;
 
-  const handleSelect = (tag: string) => {
+  const handleSelect = (tag: string, colorIndex: number) => {
     setAnimating(true);
     setTimeout(() => {
-      setSelectedTag(tag);
+      setSelected({ tag, colorIndex });
       setAnimating(false);
     }, 200);
   };
 
-  const handleBack = () => {
+  const handleClose = () => {
     setAnimating(true);
     setTimeout(() => {
-      setSelectedTag(null);
+      setSelected(null);
       setAnimating(false);
     }, 200);
   };
 
-  const filteredItems = selectedTag ? items.filter((item) => item.tags?.includes(selectedTag)) : [];
+  const filteredItems = selected ? items.filter((item) => item.tags?.includes(selected.tag)) : [];
 
   return (
     <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-sm p-8">
-      <h4 className="font-serif text-lg text-black mb-4">标签</h4>
+      <h4 className="text-lg font-bold text-black mb-4">标签</h4>
 
       <div className={`transition-all duration-200 ${animating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-        {selectedTag ? (
-          <div className="max-h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+        {selected ? (
+          <div
+            className={`relative max-h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden rounded-lg p-4 pt-6 ${NOTE_COLORS[selected.colorIndex % NOTE_COLORS.length]}`}
+            style={{ scrollbarWidth: 'none' }}
+          >
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-white/70 rotate-1 shadow-sm" />
             <button
-              onClick={handleBack}
-              className="text-xs text-black/40 hover:text-black/70 transition mb-3 flex items-center gap-1"
+              onClick={handleClose}
+              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-white/60 hover:bg-white/90 text-black/50 hover:text-black transition text-sm"
             >
-              ← 返回
+              ×
             </button>
-            <p className="text-sm font-serif mb-3">#{selectedTag}</p>
+            <p className="text-sm font-bold mb-3">#{selected.tag}</p>
             <div className="flex flex-col gap-2">
               {filteredItems.map((item) => (
                 <Link
@@ -84,10 +85,8 @@ export default function SidebarTags() {
             {tags.map((tag, i) => (
               <button
                 key={tag}
-                onClick={() => handleSelect(tag)}
-                className={`text-xs px-3 py-2 shadow-sm hover:shadow-md hover:scale-105 transition-all ${
-                  NOTE_COLORS[i % NOTE_COLORS.length]
-                } ${ROTATIONS[i % ROTATIONS.length]}`}
+                onClick={() => handleSelect(tag, i)}
+                className={`text-xs px-3 py-2 rounded-sm shadow-sm hover:shadow-md hover:scale-105 transition-all ${NOTE_COLORS[i % NOTE_COLORS.length]} ${ROTATIONS[i % ROTATIONS.length]}`}
               >
                 #{tag} <span className="text-black/30">{tagCounts[tag]}</span>
               </button>
