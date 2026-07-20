@@ -19,7 +19,7 @@ export default function PortfolioBackground() {
   useEffect(() => {
     const handleScroll = () => {
       const maxBlur = 16;
-      const distance = 500; // 滚动多少px到达最大模糊
+      const distance = 500;
       const progress = Math.min(window.scrollY / distance, 1);
       setBlur(progress * maxBlur);
     };
@@ -28,16 +28,17 @@ export default function PortfolioBackground() {
   }, []);
 
   return (
-    <div
-      className="fixed inset-0 -z-10 transition-[filter] duration-100"
-      style={{
-        backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
-        backgroundColor: '#1a1a1a',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        filter: `blur(${blur}px)`,
-      }}
-    >
+    <div className="fixed inset-0 -z-10 overflow-hidden">
+      <div
+        className="absolute -inset-10 transition-[filter] duration-100"
+        style={{
+          backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
+          backgroundColor: '#1a1a1a',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: `blur(${blur}px)`,
+        }}
+      />
       <div className="absolute inset-0 bg-black/20" />
     </div>
   );
