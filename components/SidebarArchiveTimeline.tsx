@@ -55,16 +55,16 @@ export default function SidebarArchiveTimeline() {
               const [year, month] = key.split('-');
               return (
                 <div key={key}>
-                  <button onClick={() => toggle(key)} className="w-full flex items-center gap-3 py-1.5 group">
-                    <span
-                      className={`relative z-10 flex-shrink-0 w-[7px] h-[7px] rounded-full border-[1.5px] border-black/50 transition-colors ${
-                        isOpen ? 'bg-transparent' : 'bg-black/50'
-                      }`}
-                    />
-                    <span className="text-sm text-black/70 group-hover:text-black transition">
-                      {year}年{month}月
-                    </span>
-                  </button>
+                 <button onClick={() => toggle(key)} className="w-full flex items-center gap-3 py-1.5 group">
+  <span
+    className={`relative z-10 flex-shrink-0 w-[7px] h-[7px] rounded-full border-[1.5px] border-gray-600 transition-colors ${
+      isOpen ? 'bg-transparent' : 'bg-gray-600'
+    }`}
+  />
+  <span className="text-sm text-black/70 group-hover:text-black transition">
+    {year}年{month}月
+  </span>
+</button>
                   <div
                     className="grid transition-[grid-template-rows] duration-300 ease-out"
                     style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
