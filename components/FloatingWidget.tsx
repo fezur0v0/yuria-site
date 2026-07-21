@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { FiArrowUp, FiSettings } from 'react-icons/fi';
 
 export default function FloatingWidget() {
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -20,7 +21,7 @@ export default function FloatingWidget() {
           className="w-11 h-11 rounded-full bg-white/80 backdrop-blur-md shadow-md flex items-center justify-center text-black/60 hover:text-black hover:bg-white transition"
           title="回到顶部"
         >
-          ↑
+          <FiArrowUp size={18} />
         </button>
       )}
       <Link
@@ -28,7 +29,7 @@ export default function FloatingWidget() {
         className="w-11 h-11 rounded-full bg-white/80 backdrop-blur-md shadow-md flex items-center justify-center text-black/60 hover:text-black hover:bg-white transition"
         title="设置"
       >
-        ⚙
+        <FiSettings size={18} />
       </Link>
     </div>
   );
