@@ -73,13 +73,14 @@ export default function PortfolioPage() {
           ) : (
             <>
               <div>
-                {pageItems.map((item) => {
+                {pageItems.map((item, i) => {
                   const excerpt = item.content ? stripHtml(item.content).slice(0, 80) : '';
+                  const reversed = i % 2 === 1;
                   return (
                     <Link
                       key={item.id}
                       href={`/portfolio/${item.id}`}
-                      className="group flex flex-col sm:flex-row rounded-2xl bg-white/70 backdrop-blur-md shadow-sm overflow-hidden mb-6 transition"
+                      className={`group flex flex-col ${reversed ? 'sm:flex-row-reverse' : 'sm:flex-row'} rounded-2xl bg-white/70 backdrop-blur-md shadow-sm overflow-hidden mb-6 transition`}
                     >
                       <div className="flex-1 min-w-0 p-8">
                         <div className="flex items-center gap-3 text-xs text-black/40 mb-2">
