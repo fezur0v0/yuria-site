@@ -3,11 +3,20 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import PortfolioSearch from '@/components/PortfolioSearch';
+import { createClient } from '@/utils/supabase/client';
+import { FiMoreHorizontal, FiMessageSquare, FiLink2 } from 'react-icons/fi';
+
+interface Profile {
+  avatar_url: string | null;
+  nickname: string | null;
+  bio: string | null;
+}
 
 export default function PortfolioNav() {
   const [visible, setVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -25,6 +34,15 @@ export default function PortfolioNav() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from('site_settings')
+      .select('avatar_url, nickname, bio')
+      .single()
+      .then(({ data }) => setProfile(data));
+  }, []);
+
   return (
     <>
       <nav
@@ -37,23 +55,20 @@ export default function PortfolioNav() {
             yuria
           </Link>
 
-          <div className="hidden sm:flex items-center gap-5">
+          <div className="hidden sm:flex items-center gap-6">
             <PortfolioSearch />
-            <Link href="/guestbook" className="text-sm text-white/80 hover:text-white transition">
-              留言板
+            <Link href="/guestbook" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition">
+              <FiMessageSquare size={15} /> 留言板
             </Link>
-            <button className="text-white/80 hover:text-white transition" title="明暗切换(开发中)">
-              ☀
-            </button>
-            <Link href="/links" className="text-sm text-white/80 hover:text-white transition">
-              链接
+            <Link href="/links" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition">
+              <FiLink2 size={15} /> 链接
             </Link>
           </div>
 
-          <div className="flex sm:hidden items-center gap-3">
+          <div className="flex sm:hidden items-center gap-4">
             <PortfolioSearch />
-            <button onClick={() => setDrawerOpen(true)} className="text-white text-sm">
-              更多
+            <button onClick={() => setDrawerOpen(true)} className="text-white">
+              <FiMoreHorizontal size={20} />
             </button>
           </div>
         </div>
@@ -62,17 +77,33 @@ export default function PortfolioNav() {
       {drawerOpen && (
         <div className="fixed inset-0 z-[60] sm:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
-          <div className="absolute top-0 right-0 h-full w-64 bg-white p-6 shadow-xl flex flex-col gap-4">
-            <button onClick={() => setDrawerOpen(false)} className="self-end text-black/40 text-xl mb-4">
-              ×
-            </button>
-            <Link href="/guestbook" onClick={() => setDrawerOpen(false)} className="text-black/70 hover:text-black transition">
-              留言板
-            </Link>
-            <button className="text-left text-black/70 hover:text-black transition">明暗切换(开发中)</button>
-            <Link href="/links" onClick={() => setDrawerOpen(false)} className="text-black/70 hover:text-black transition">
-              链接
-            </Link>
+          <div className="absolute top-0 right-0 h-full w-72 bg-[#f4ecdc] p-6 shadow-xl overflow-y-auto">
+            <div className="text-center mb-8 pt-4">
+              {profile?.avatar_url && (
+                <div className="inline-block bg-white p-2 pb-4 shadow-md rotate-[-2deg] mb-3">
+                  <img src={profile.avatar_url} alt="" className="w-20 h-20 object-cover" />
+                </div>
+              )}
+              {profile?.nickname && <h3 className="font-serif font-bold text-lg mb-1">{profile.nickname}</h3>}
+              {profile?.bio && <p className="text-xs text-black/50 leading-relaxed px-2">{profile.bio}</p>}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/guestbook"
+                onClick={() => setDrawerOpen(false)}
+                className="flex items-center justify-center gap-2 py-3 rounded-lg bg-white/60 border border-black/10 shadow-sm rotate-[-1deg] text-sm text-black/70 hover:bg-white/80 transition"
+              >
+                <FiMessageSquare size={15} /> 留言板
+              </Link>
+              <Link
+                href="/links"
+                onClick={() => setDrawerOpen(false)}
+                className="flex items-center justify-center gap-2 py-3 rounded-lg bg-white/60 border border-black/10 shadow-sm rotate-[1deg] text-sm text-black/70 hover:bg-white/80 transition"
+              >
+                <FiLink2 size={15} /> 链接
+              </Link>
+            </div>
           </div>
         </div>
       )}
