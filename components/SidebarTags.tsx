@@ -58,11 +58,12 @@ export default function SidebarTags() {
 
       <div className={`transition-all duration-200 ${animating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         {selected ? (
-          <div
-            className={`relative max-h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden rounded-lg p-4 pt-6 ${NOTE_COLORS[selected.colorIndex % NOTE_COLORS.length]}`}
-            style={{ scrollbarWidth: 'none' }}
-          >
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-white/70 rotate-1 shadow-sm" />
+         <div className="relative">
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-white/70 rotate-1 shadow-sm z-10" />
+            <div
+              className={`max-h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden rounded-lg p-4 pt-6 ${NOTE_COLORS[selected.colorIndex % NOTE_COLORS.length]}`}
+              style={{ scrollbarWidth: 'none' }}
+            >
             <button
               onClick={handleClose}
               className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-white/60 hover:bg-white/90 text-black/50 hover:text-black transition text-sm"
@@ -93,7 +94,7 @@ export default function SidebarTags() {
                 onClick={() => handleSelect(tag, i)}
                 className={`text-xs px-3 py-2 rounded-sm shadow-sm hover:shadow-md hover:scale-105 transition-all ${NOTE_COLORS[i % NOTE_COLORS.length]} ${ROTATIONS[i % ROTATIONS.length]}`}
               >
-                #{tag} <span className="text-black/30">{tagCounts[tag]}</span>
+                #{tag} 
               </button>
             ))}
           </div>
