@@ -54,10 +54,11 @@ export default function SidebarCategoryTags() {
                 onClick={() => toggle(name)}
                 className="w-full flex items-center justify-between py-2 text-sm hover:bg-black/5 rounded-lg px-2 transition"
               >
-                <span>
-                  {name} <span className="text-black/30">{catItems.length}</span>
+              <span>{name}</span>
+                <span className="flex items-center gap-2">
+                  <span className="text-black/30">{catItems.length}</span>
+                  <span className={`text-black/40 transition-transform ${isOpen ? 'rotate-90' : ''}`}>›</span>
                 </span>
-                <span className={`text-black/40 transition-transform ${isOpen ? 'rotate-90' : ''}`}>›</span>
               </button>
               {isOpen && (
                 <div className="pl-4 flex flex-col gap-2.5 pb-3 pt-1">
