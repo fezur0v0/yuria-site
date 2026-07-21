@@ -89,7 +89,7 @@ export default function PortfolioPage() {
                             <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
                           )}
                         </div>
-                        <h2 className="font-serif text-2xl mb-3 transition-colors group-hover:text-[#70B0CC] group-active:text-[#70B0CC]">
+                        <h2 className="font-serif text-3xl mb-3 transition-colors group-hover:text-[#70B0CC] group-active:text-[#70B0CC]">
                           {item.title}
                         </h2>
                         {excerpt && <p className="text-base text-black/50 line-clamp-2 mb-3">{excerpt}</p>}
