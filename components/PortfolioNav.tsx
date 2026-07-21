@@ -86,7 +86,7 @@ export default function PortfolioNav() {
         </div>
       </nav>
 
-      {/* 侧边栏整体容器：始终渲染，通过透明度和指针事件控制显示，保证动画流畅 */}
+      {/* 侧边栏容器 */}
       <div 
         className={`fixed inset-0 z-[60] sm:hidden transition-opacity duration-300 ease-in-out ${
           drawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -98,29 +98,34 @@ export default function PortfolioNav() {
           onClick={() => setDrawerOpen(false)} 
         />
         
-        {/* 侧边栏面板：加入位移动画和自定义背景色 */}
+        {/* 半透明玻璃质感侧边栏 */}
         <div 
-          className={`absolute top-0 right-0 h-full w-72 bg-[#F3FBFF] p-6 shadow-xl overflow-y-auto transform transition-transform duration-300 ease-out ${
+          className={`absolute top-0 right-0 h-full w-72 bg-[#F3FBFF]/70 backdrop-blur-xl p-6 shadow-2xl border-l border-white/40 overflow-y-auto transform transition-transform duration-300 ease-out ${
             drawerOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
           <div className="text-center mb-10 pt-8">
+            {/* 恢复拍立得风格相框 */}
             {profile?.avatar_url && (
-              <div className="inline-block bg-white p-2 pb-3 shadow-sm mb-4 rounded-xl">
-                <img src={profile.avatar_url} alt="" className="w-20 h-20 object-cover rounded-lg" />
+              <div className="inline-block bg-white p-2 pb-5 shadow-md rotate-[-2deg] mb-4 rounded-sm transition-transform hover:rotate-0 duration-300">
+                <img src={profile.avatar_url} alt="" className="w-20 h-20 object-cover" />
               </div>
             )}
+            
+            {/* 名字 */}
             {profile?.nickname && (
               <h3 
-                className="text-2xl mb-2 text-gray-800" 
+                className="text-2xl mb-2 text-slate-800 tracking-wide font-medium" 
                 style={{ fontFamily: 'NameFont, serif' }}
               >
                 {profile.nickname}
               </h3>
             )}
+            
+            {/* 高级 INS 风签名 */}
             {profile?.bio && (
               <p 
-                className="text-sm text-gray-500 leading-relaxed px-2 tracking-wide" 
+                className="text-xs text-slate-500/80 leading-relaxed px-3 tracking-wider font-light" 
                 style={{ fontFamily: 'BioFont, sans-serif' }}
               >
                 {profile.bio}
@@ -128,19 +133,19 @@ export default function PortfolioNav() {
             )}
           </div>
 
-          <div className="flex flex-col gap-4">
-            {/* 韩系 INS 风按钮：方正排版、大圆角、纯白底色、轻微阴影及悬浮动画 */}
+          <div className="flex flex-col gap-3.5">
+            {/* 玻璃质感韩系 INS 按钮 */}
             <Link
               href="/guestbook"
               onClick={() => setDrawerOpen(false)}
-              className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.03)] text-sm text-gray-500 hover:text-gray-800 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300"
+              className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] text-sm text-slate-600 hover:text-slate-900 hover:bg-white/60 hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300"
             >
               <FiMessageSquare size={16} /> 留言板
             </Link>
             <Link
               href="/links"
               onClick={() => setDrawerOpen(false)}
-              className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.03)] text-sm text-gray-500 hover:text-gray-800 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300"
+              className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] text-sm text-slate-600 hover:text-slate-900 hover:bg-white/60 hover:shadow-[0_6px_24px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300"
             >
               <FiLink2 size={16} /> 链接
             </Link>
