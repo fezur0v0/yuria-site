@@ -54,36 +54,6 @@ export default function PortfolioNav() {
           font-family: 'BioFont';
           src: url('https://a.tuchuangyun.top/autoupload/XpaunVhfV7QakiRQCrbgNdiO_OyvX7mIgxFBfDMDErs/20260624/4rx3/KBIZmjo__M.ttf') format('truetype');
         }
-
-        .water-glass-button {
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%);
-          backdrop-filter: blur(16px) saturate(180%);
-          -webkit-backdrop-filter: blur(16px) saturate(180%);
-          border: 1px solid rgba(255, 255, 255, 0.25);     
-          box-shadow: 
-            inset 0 1px 1px rgba(255, 255, 255, 0.3),
-            inset 0 -1px 1px rgba(0, 0, 0, 0.05),
-            0 4px 12px rgba(0, 0, 0, 0.02);
-          transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        .water-glass-button:hover {
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.15) 100%);
-          border-color: rgba(255, 255, 255, 0.4);
-          transform: translateY(-2px) scale(1.01);
-          box-shadow: 
-            inset 0 1px 2px rgba(255, 255, 255, 0.5),
-            0 8px 20px rgba(0, 0, 0, 0.05);
-        }
-
-    
-        .premium-text-stasis {
-          color: #333; 
-          text-shadow: 
-            0.5px 0.5px 0px rgba(0, 0, 0, 0.15), 
-            -2px -1px 1px rgba(150, 150, 150, 0.3), 
-            3px 2px 2px rgba(100, 100, 100, 0.2);  
-        }
       `}} />
 
       <nav
@@ -116,31 +86,30 @@ export default function PortfolioNav() {
       </nav>
 
       <div 
-        className={`fixed inset-0 z-[60] sm:hidden transition-opacity duration-400 ease-in-out ${
+        className={`fixed inset-0 z-[60] sm:hidden transition-opacity duration-300 ease-in-out ${
           drawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
         <div 
-          className="absolute inset-0 bg-black/15 backdrop-blur-sm transition-opacity duration-400" 
+          className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" 
           onClick={() => setDrawerOpen(false)} 
         />
         
-    
         <div 
-          className={`absolute top-0 right-0 h-full w-72 bg-[#F3FBFF]/75 backdrop-blur-2xl p-6 shadow-2xl border-l border-white/20 overflow-y-auto transform transition-transform duration-400 cubic-bezier(0.23, 1, 0.32, 1) ${
+          className={`absolute top-0 right-0 h-full w-72 bg-[#F3FBFF]/60 backdrop-blur-xl p-6 shadow-2xl border-l border-white/30 overflow-y-auto transform transition-transform duration-300 ease-out ${
             drawerOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          <div className="text-center mb-10 pt-10">
+          <div className="text-center mb-10 pt-8">
             {profile?.avatar_url && (
-              <div className="inline-block bg-white p-2 pb-5 shadow-lg rotate-[-2deg] mb-5 rounded-sm transition-transform hover:rotate-0 duration-300">
+              <div className="inline-block bg-white p-2 pb-5 shadow-md rotate-[-2deg] mb-4 rounded-sm transition-transform hover:rotate-0 duration-300">
                 <img src={profile.avatar_url} alt="" className="w-20 h-20 object-cover" />
               </div>
             )}
-
+            
             {profile?.nickname && (
               <h3 
-                className="text-2xl mb-3 text-slate-800 tracking-wide font-medium" 
+                className="text-2xl mb-2 text-slate-800 tracking-wide font-medium" 
                 style={{ fontFamily: 'NameFont, serif' }}
               >
                 {profile.nickname}
@@ -149,28 +118,51 @@ export default function PortfolioNav() {
             
             {profile?.bio && (
               <p 
-                className="premium-text-stasis text-xl text-slate-600 leading-snug px-3 tracking-normal font-light" 
-                style={{ fontFamily: 'BioFont, sans-serif' }}
+                className="text-sm font-light leading-relaxed px-3 tracking-wider antialiased" 
+                style={{ 
+                  fontFamily: 'BioFont, sans-serif',
+                  color: 'rgba(51, 65, 85, 0.75)', 
+                  WebkitTextStroke: '0.2px rgba(30, 41, 59, 0.5)',
+                  textShadow: '0 1px 1px rgba(255,255,255,0.7), 0 2px 3px rgba(30, 41, 59, 0.1), 0 4px 6px rgba(0,0,0,0.05)',
+                }}
               >
                 {profile.bio}
               </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3.5">
             <Link
               href="/guestbook"
               onClick={() => setDrawerOpen(false)}
-              className="water-glass-button flex items-center justify-center gap-2.5 py-4 rounded-2xl text-sm text-slate-700 hover:text-black font-medium transition-all duration-300"
+              className="flex items-center justify-center gap-2 py-3.5 rounded-2xl transition-all duration-300 group
+                bg-white/30 backdrop-blur-[24px] 
+                border border-white/60 
+                shadow-[0_8px_32px_rgba(0,0,0,0.04)] 
+                shadow-inner-[inset_0_2px_4px_rgba(255,255,255,0.6),inset_0_-1px_3px_rgba(30,41,59,0.05)]
+                text-slate-600 hover:text-slate-900 
+                hover:bg-white/40 
+                hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] 
+                hover:shadow-inner-[inset_0_4px_8px_rgba(255,255,255,0.8),inset_0_-1px_3px_rgba(30,41,59,0.05)]
+                hover:-translate-y-0.5"
             >
-              <FiMessageSquare size={17} className="opacity-80" /> 留言板
+              <FiMessageSquare size={16} /> 留言板
             </Link>
             <Link
               href="/links"
               onClick={() => setDrawerOpen(false)}
-              className="water-glass-button flex items-center justify-center gap-2.5 py-4 rounded-2xl text-sm text-slate-700 hover:text-black font-medium transition-all duration-300"
+              className="flex items-center justify-center gap-2 py-3.5 rounded-2xl transition-all duration-300 group
+                bg-white/30 backdrop-blur-[24px] 
+                border border-white/60 
+                shadow-[0_8px_32px_rgba(0,0,0,0.04)] 
+                shadow-inner-[inset_0_2px_4px_rgba(255,255,255,0.6),inset_0_-1px_3px_rgba(30,41,59,0.05)]
+                text-slate-600 hover:text-slate-900 
+                hover:bg-white/40 
+                hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] 
+                hover:shadow-inner-[inset_0_4px_8px_rgba(255,255,255,0.8),inset_0_-1px_3px_rgba(30,41,59,0.05)]
+                hover:-translate-y-0.5"
             >
-              <FiLink2 size={17} className="opacity-80" /> 链接
+              <FiLink2 size={16} /> 链接
             </Link>
           </div>
         </div>
