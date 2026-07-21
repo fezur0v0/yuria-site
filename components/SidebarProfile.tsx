@@ -35,7 +35,7 @@ export default function SidebarProfile() {
   const links = (profile.links ?? {}) as Record<string, string>;
 
   return (
-    <div className="text-center bg-white/70 backdrop-blur-md rounded-2xl shadow-sm p-8">
+    <div className="text-center bg-white/60 backdrop-blur-md rounded-2xl shadow-sm p-8">
       {profile.avatar_url && (
         <div className="inline-block bg-white p-2 pb-5 shadow-md rotate-[-2deg] mb-4">
           <img
