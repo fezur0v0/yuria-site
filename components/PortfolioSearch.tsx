@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import { FiSearch } from 'react-icons/fi';
 
 interface Item {
   id: string;
@@ -62,7 +63,7 @@ export default function PortfolioSearch() {
         className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition text-white"
         title="搜索"
       >
-        🔍
+        <FiSearch size={16} />
       </button>
 
       {open && (
