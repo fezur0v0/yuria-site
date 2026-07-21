@@ -20,6 +20,7 @@
     "bcryptjs": "^3.0.3",
     "next": "16.2.6",
     "react": "19.2.4",
+    "react-icons": "^5.7.0",
     "react-dom": "19.2.4",
     "react-masonry-css": "^1.0.16",
     "react-markdown": "^9.0.1",
