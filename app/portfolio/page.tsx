@@ -80,7 +80,7 @@ export default function PortfolioPage() {
                     <Link
                       key={item.id}
                       href={`/portfolio/${item.id}`}
-                      className={`group flex flex-col ${reversed ? 'sm:flex-row-reverse' : 'sm:flex-row'} rounded-2xl bg-white/60 backdrop-blur-md isolate transform-gpu shadow-sm overflow-hidden mb-6 transition`}
+                     className={`group flex flex-col ${reversed ? 'sm:flex-row-reverse' : 'sm:flex-row'} rounded-2xl bg-white/60 backdrop-blur-md shadow-sm overflow-hidden mb-6 transition-colors`}
                     >
 <div className="flex-1 min-w-0 p-8">
   {/* 标题 */}
