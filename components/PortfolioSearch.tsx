@@ -67,13 +67,13 @@ export default function PortfolioSearch() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white rounded-2xl shadow-lg p-4 text-black">
+      <div className="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-4 text-black">
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索标题或内容…"
-            className="w-full text-sm border-b border-black/10 pb-2 mb-3 focus:outline-none focus:border-black/30"
+            className="w-full text-sm bg-black/5 rounded-full px-4 py-2 mb-3 focus:outline-none focus:bg-black/10 transition"
           />
           <div className="max-h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
             {q && results.length === 0 && <p className="text-xs text-black/30 py-2">没有找到相关内容</p>}
