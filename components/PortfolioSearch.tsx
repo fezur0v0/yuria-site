@@ -60,7 +60,7 @@ export default function PortfolioSearch() {
     <div ref={containerRef} className="relative z-50">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition text-white"
+        className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-white"
         title="搜索"
       >
         <FiSearch size={16} />
