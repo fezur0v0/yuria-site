@@ -77,11 +77,17 @@ export default function PortfolioPage() {
                   const excerpt = item.content ? stripHtml(item.content).slice(0, 80) : '';
                   const reversed = i % 2 === 1;
                   return (
-                    <Link
-                      key={item.id}
-                      href={`/portfolio/${item.id}`}
-                     className={`group flex flex-col ${reversed ? 'sm:flex-row-reverse' : 'sm:flex-row'} rounded-2xl bg-white/60 backdrop-blur-md shadow-sm overflow-hidden mb-6 transition-colors`}
-                    >
+                  <Link
+  key={item.id}
+  href={`/portfolio/${item.id}`}
+  className={`group flex flex-col ${
+    reversed ? 'sm:flex-row-reverse' : 'sm:flex-row'
+  } rounded-2xl overflow-hidden mb-6 transition-colors border border-white/30 ring-1 ring-white/10 shadow-xl`}
+  style={{
+    background:
+      'linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,255,255,0.54))',
+  }}
+>
 <div className="flex-1 min-w-0 p-8">
   {/* 标题 */}
   <h2 className="font-serif text-3xl mb-3 transition-colors group-hover:text-[#70B0CC] group-active:text-[#70B0CC]">
