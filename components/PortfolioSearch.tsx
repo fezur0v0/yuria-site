@@ -15,24 +15,15 @@ function stripHtml(html: string) {
   return html.replace(/<[^>]+>/g, '');
 }
 
-// 修复 1：更严谨的高亮函数，支持全匹配且防正则报错
 function highlight(text: string, query: string) {
   if (!query) return text;
-  // 转义正则特殊字符，防止用户输入 [ ? * 等符号时报错
-  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
-
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
   return (
     <>
-      {parts.map((part, i) =>
-        part.toLowerCase() === query.toLowerCase() ? (
-          <span key={i} className="text-[#70B0CC] font-medium">
-            {part}
-          </span>
-        ) : (
-          part
-        )
-      )}
+      {text.slice(0, idx)}
+      <span className="text-[#70B0CC] font-medium">{text.slice(idx, idx + query.length)}</span>
+      {text.slice(idx + query.length)}
     </>
   );
 }
@@ -45,10 +36,7 @@ export default function PortfolioSearch() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase
-      .from('portfolio_items')
-      .select('id, title, content')
-      .then(({ data }) => setItems(data ?? []));
+    supabase.from('portfolio_items').select('id, title, content').then(({ data }) => setItems(data ?? []));
   }, []);
 
   useEffect(() => {
@@ -61,29 +49,17 @@ export default function PortfolioSearch() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 修复 2：关闭弹窗时清空搜索词
-  const handleToggle = () => {
-    setOpen((prev) => {
-      if (prev) setQuery(''); // 关闭时清空
-      return !prev;
-    });
-  };
-
   const q = query.trim().toLowerCase();
   const results = q
     ? items
-        .filter(
-          (item) =>
-            item.title.toLowerCase().includes(q) ||
-            stripHtml(item.content ?? '').toLowerCase().includes(q)
-        )
+        .filter((item) => item.title.toLowerCase().includes(q) || stripHtml(item.content ?? '').toLowerCase().includes(q))
         .slice(0, 8)
     : [];
 
   return (
     <div ref={containerRef} className="relative z-50">
       <button
-        onClick={handleToggle}
+        onClick={() => setOpen((v) => !v)}
         className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition text-white"
         title="搜索"
       >
@@ -91,7 +67,7 @@ export default function PortfolioSearch() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[85vw] bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-4 text-black border border-white/40">
+        <div className="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-4 text-black">
           <input
             autoFocus
             value={query}
@@ -99,44 +75,22 @@ export default function PortfolioSearch() {
             placeholder="搜索标题或内容…"
             className="w-full text-sm bg-black/5 rounded-full px-4 py-2 mb-3 focus:outline-none focus:bg-black/10 transition"
           />
-          <div
-            className="max-h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden"
-            style={{ scrollbarWidth: 'none' }}
-          >
-            {q && results.length === 0 && (
-              <p className="text-xs text-black/30 py-4 text-center">没有找到相关内容</p>
-            )}
+          <div className="max-h-72 overflow-y-auto flex flex-col gap-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+            {q && results.length === 0 && <p className="text-xs text-black/30 py-2">没有找到相关内容</p>}
             {results.map((item) => {
               const contentText = stripHtml(item.content ?? '');
               const contentIdx = contentText.toLowerCase().indexOf(q);
-
-              // 修复 3：摘要优化，不是开头的加上前缀 "..."
-              let snippet = '';
-              if (contentIdx > -1) {
-                const start = Math.max(0, contentIdx - 15);
-                snippet = (start > 0 ? '...' : '') + contentText.slice(start, contentIdx + 40);
-              } else {
-                snippet = contentText.slice(0, 40);
-              }
-
+              const snippet =
+                contentIdx > -1 ? contentText.slice(Math.max(0, contentIdx - 15), contentIdx + 40) : contentText.slice(0, 40);
               return (
                 <Link
                   key={item.id}
                   href={`/portfolio/${item.id}`}
-                  onClick={() => {
-                    setOpen(false);
-                    setQuery('');
-                  }}
-                  className="block py-2.5 border-b border-black/5 last:border-0 hover:bg-black/5 rounded-xl px-2.5 transition"
+                  onClick={() => setOpen(false)}
+                  className="block py-2 px-2.5 rounded-xl hover:bg-black/5 transition"
                 >
-                  <p className="text-sm font-medium mb-0.5 text-slate-800">
-                    {highlight(item.title, q)}
-                  </p>
-                  {snippet && (
-                    <p className="text-xs text-black/40 line-clamp-1">
-                      {highlight(snippet, q)}
-                    </p>
-                  )}
+                  <p className="text-sm mb-0.5">{highlight(item.title, q)}</p>
+                  {snippet && <p className="text-xs text-black/40 line-clamp-1">{highlight(snippet, q)}</p>}
                 </Link>
               );
             })}
