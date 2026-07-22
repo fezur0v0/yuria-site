@@ -57,10 +57,11 @@ export default function PortfolioNav() {
       `}} />
 
       <nav
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-          visible ? 'translate-y-0' : '-translate-y-full'
-        } ${scrolled ? 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}
-      >
+  className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 will-change-transform ${
+    visible ? 'translate-y-0' : '-translate-y-full'
+  } ${scrolled ? 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}
+  style={{ transform: 'translateZ(0)' }}
+>
         <div className="px-8 h-16 flex items-center justify-between">
           <Link href="/" className="text-white font-serif text-lg tracking-wide">
             yuria
