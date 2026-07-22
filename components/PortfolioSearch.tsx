@@ -67,7 +67,7 @@ export default function PortfolioSearch() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-4 text-black">
+  <div className="absolute right-0 mt-3 w-80 max-w-[90vw] bg-white/95 rounded-2xl shadow-lg p-4 text-black">
           <input
             autoFocus
             value={query}
