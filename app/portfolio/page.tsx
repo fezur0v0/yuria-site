@@ -84,7 +84,7 @@ export default function PortfolioPage() {
                     >
 <div className="flex-1 min-w-0 p-8">
   {/* 标题 */}
-  <h2 className="font-serif text-3xl mb-3 transition-colors group-hover:text-[#7080CC] group-active:text-[#7080CC]">
+  <h2 className="font-serif text-3xl mb-3 transition-colors group-hover:text-[#70B0CC] group-active:text-[#70B0CC]">
     {item.title}
   </h2>
 
