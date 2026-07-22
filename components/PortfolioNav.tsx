@@ -69,10 +69,10 @@ export default function PortfolioNav() {
 
           <div className="hidden sm:flex items-center gap-6">
             <PortfolioSearch />
-           <Link href="/links" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition">
+           <Link href="/guestbook" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition-colors">
               <FiMessageSquare size={15} /> 留言板
             </Link>
-            <Link href="/links" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition">
+            <Link href="/links" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition-colors">
               <FiLink2 size={15} /> 链接
             </Link>
           </div>
