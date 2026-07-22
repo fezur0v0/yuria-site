@@ -60,20 +60,21 @@ export default function PortfolioSearch() {
     <div ref={containerRef} className="relative z-50">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-9 h-9 flex items-center justify-center rounded-full text-white/80 hover:text-white transition-colors"
         title="搜索"
+        style={{ background: 'none' }}
+        className="w-9 h-9 flex items-center justify-center rounded-full text-white/80 hover:text-white hover:scale-110 transition-[color,transform] duration-150"
       >
         <FiSearch size={16} />
       </button>
 
       {open && (
-  <div className="absolute right-0 mt-3 w-80 max-w-[90vw] bg-white/95 rounded-2xl shadow-lg p-4 text-black">
+        <div className="absolute right-0 mt-3 w-80 max-w-[90vw] bg-white rounded-2xl shadow-lg p-4 text-black">
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索标题或内容…"
-            className="w-full text-sm bg-black/5 rounded-full px-4 py-2 mb-3 focus:outline-none focus:bg-black/10 transition"
+            className="w-full text-sm bg-black/5 rounded-full px-4 py-2 mb-3 focus:outline-none focus:bg-black/10 transition-colors"
           />
           <div className="max-h-72 overflow-y-auto flex flex-col gap-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
             {q && results.length === 0 && <p className="text-xs text-black/30 py-2">没有找到相关内容</p>}
@@ -87,7 +88,7 @@ export default function PortfolioSearch() {
                   key={item.id}
                   href={`/portfolio/${item.id}`}
                   onClick={() => setOpen(false)}
-                  className="block py-2 px-2.5 rounded-xl hover:bg-black/5 transition"
+                  className="block py-2 px-2.5 rounded-xl hover:bg-black/5 transition-colors"
                 >
                   <p className="text-sm mb-0.5">{highlight(item.title, q)}</p>
                   {snippet && <p className="text-xs text-black/40 line-clamp-1">{highlight(snippet, q)}</p>}
