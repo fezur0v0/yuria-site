@@ -82,11 +82,15 @@ export default function PortfolioPage() {
   href={`/portfolio/${item.id}`}
   className={`group flex flex-col ${
     reversed ? 'sm:flex-row-reverse' : 'sm:flex-row'
-  } rounded-2xl overflow-hidden mb-6 transition-colors border border-white/30 ring-1 ring-white/10 shadow-xl`}
+  } rounded-2xl overflow-hidden mb-6 transition-colors  shadow-xl`}
   style={{
-    background:
-      'linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,255,255,0.54))',
-  }}
+  background:
+    'linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.56))',
+  boxShadow: `
+    0 12px 40px rgba(0,0,0,.08),
+    inset 0 1px rgba(255,255,255,.45)
+  `,
+}}
 >
 <div className="flex-1 min-w-0 p-8">
   {/* 标题 */}
