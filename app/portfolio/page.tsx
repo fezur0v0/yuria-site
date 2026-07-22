@@ -82,27 +82,30 @@ export default function PortfolioPage() {
                       href={`/portfolio/${item.id}`}
                       className={`group flex flex-col ${reversed ? 'sm:flex-row-reverse' : 'sm:flex-row'} rounded-2xl bg-white/60 backdrop-blur-md shadow-sm overflow-hidden mb-6 transition`}
                     >
-                    <div className="flex-1 min-w-0 p-8">
-                        <h2 className="font-serif text-3xl mb-3 transition-colors group-hover:text-[#A7C7E7] group-active:text-[#A7C7E7]">
-                          {item.title}
-                        </h2>
-                        {excerpt && <p className="text-base text-black/50 line-clamp-2 mb-3">{excerpt}</p>}
-                        <div className="flex items-center gap-3 text-xs text-black/40 mb-3">
-                          {item.category && (
-                            <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
-                          )}
-                          {item.date && <span>{item.date}</span>}
-                        </div>
-                        {item.tags && item.tags.length > 0 && (
-                          <div className="flex gap-1.5 flex-wrap">
-                            {item.tags.map((tag) => (
-                              <span key={tag} className="text-xs text-black/30">
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                   <div className="flex-1 min-w-0 p-8">
+  <h2 className="font-serif text-3xl mb-3 transition-colors group-hover:text-[#A7C7E7] group-active:text-[#A7C7E7]">
+    {item.title}
+  </h2>
+
+  <div className="flex items-center gap-3 text-xs text-black/40 mb-3">
+    {item.category && (
+      <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
+    )}
+    {item.date && <span>{item.date}</span>}
+  </div>
+
+  {excerpt && <p className="text-base text-black/50 line-clamp-2 mb-3">{excerpt}</p>}
+
+  {item.tags && item.tags.length > 0 && (
+    <div className="flex gap-1.5 flex-wrap">
+      {item.tags.map((tag) => (
+        <span key={tag} className="text-xs text-black/30">
+          #{tag}
+        </span>
+      ))}
+    </div>
+  )}
+</div>
                       {item.cover_url && (
                         <div className="w-full h-56 sm:w-80 sm:h-auto flex-shrink-0">
                           <img
