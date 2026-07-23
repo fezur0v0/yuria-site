@@ -1,6 +1,11 @@
 import { createClient } from '@/utils/supabase/client';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { FiEdit3, FiArrowLeft } from 'react-icons/fi';
+import PortfolioBackground from '@/components/PortfolioBackground';
+import PortfolioNav from '@/components/PortfolioNav';
+import FloatingWidget from '@/components/FloatingWidget';
+import SidebarProfile from '@/components/SidebarProfile';
 
 interface PortfolioItem {
   id: string;
@@ -15,7 +20,6 @@ interface PortfolioItem {
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = createClient();
-
   const { data: item } = await supabase
     .from('portfolio_items')
     .select('id, title, category, date, tags, content, cover_url')
@@ -25,44 +29,73 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
   if (!item) notFound();
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10">
-      <Link href="/portfolio" className="text-sm text-black/40 hover:text-black/70 transition">
-        ← 返回作品集
-      </Link>
+    <>
+      <PortfolioBackground />
+      <PortfolioNav />
+      <FloatingWidget />
 
-      {item.cover_url && (
-        <img
-          src={item.cover_url}
-          alt={item.title}
-          className="w-full rounded-2xl object-cover mt-6 mb-6 max-h-[420px]"
-        />
-      )}
+      <div className="max-w-5xl mx-auto px-6 pt-28 pb-20 flex flex-col lg:flex-row gap-8 items-start">
+        {/* 信息栏 */}
+        <aside className="w-full lg:w-80 lg:sticky lg:top-24 flex flex-col gap-6 order-2 lg:order-1">
+          <SidebarProfile />
 
-      <div className="flex items-center gap-2 mb-2">
-        <h1 className="text-2xl font-serif">{item.title}</h1>
-        <Link
-          href={`/admin/portfolio/${item.id}/edit`}
-          className="text-black/30 hover:text-black/60 transition"
-          title="编辑"
-        >
-          ✏️
-        </Link>
+          {/* 目录卡片 — 占位,下一步做联动 */}
+          <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm p-6">
+            <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
+            <p className="text-xs text-black/30">目录联动开发中…</p>
+          </div>
+        </aside>
+
+        {/* 正文 */}
+        <main className="flex-1 order-1 lg:order-2 min-w-0">
+          <Link
+            href="/portfolio"
+            className="inline-flex items-center gap-1.5 text-sm text-black/50 hover:text-black/80 transition-colors mb-6"
+          >
+            <FiArrowLeft size={14} /> 返回作品集
+          </Link>
+
+          <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm overflow-hidden">
+            {item.cover_url && (
+              <img
+                src={item.cover_url}
+                alt={item.title}
+                className="w-full object-cover max-h-[420px]"
+              />
+            )}
+
+            <div className="p-8">
+              <div className="flex items-center gap-2 mb-3">
+                <h1 className="text-2xl font-serif">{item.title}</h1>
+                <Link
+                  href={`/admin/portfolio/${item.id}/edit`}
+                  className="text-black/30 hover:text-black/60 transition-colors"
+                  title="编辑"
+                >
+                  <FiEdit3 size={16} />
+                </Link>
+              </div>
+
+              <div className="flex items-center gap-3 mb-8 text-xs text-black/40 flex-wrap">
+                {item.date && <span>{item.date}</span>}
+                {item.category && (
+                  <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
+                )}
+                {item.tags?.map((tag) => (
+                  <span key={tag} className="px-2 py-0.5 rounded-full bg-black/5">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+
+              <div
+                className="prose prose-neutral max-w-none prose-img:rounded-xl"
+                dangerouslySetInnerHTML={{ __html: item.content ?? '' }}
+              />
+            </div>
+          </div>
+        </main>
       </div>
-
-      <div className="flex items-center gap-3 mb-8 text-xs text-black/40">
-        {item.date && <span>{item.date}</span>}
-        {item.category && <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>}
-        {item.tags?.map((tag) => (
-          <span key={tag} className="px-2 py-0.5 rounded-full bg-black/5">
-            #{tag}
-          </span>
-        ))}
-      </div>
-
-      <div
-        className="prose prose-neutral max-w-none prose-img:rounded-xl"
-        dangerouslySetInnerHTML={{ __html: item.content ?? '' }}
-      />
-    </div>
+    </>
   );
 }
