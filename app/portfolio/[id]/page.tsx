@@ -28,16 +28,13 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
   if (!item) notFound();
 
-  // --- 颜色提取逻辑 ---
-  let mainColor = '#80a8cc'; // 默认设为一个好看的冰蓝色，方便测试
+  let mainColor = '#c4c4c4';
   if (item.cover_url) {
     try {
-      // 直接把图片 URL 传给 Vibrant
-      const palette = await Vibrant.from(item.cover_url).getPalette();
-      const hex = palette.Vibrant?.hex ?? palette.LightVibrant?.hex ?? palette.Muted?.hex;
-      if (hex) {
-        mainColor = hex;
-      }
+      const res = await fetch(item.cover_url);
+      const buffer = Buffer.from(await res.arrayBuffer());
+      const palette = await Vibrant.from(buffer).getPalette();
+      mainColor = palette.Vibrant?.hex ?? palette.LightVibrant?.hex ?? palette.Muted?.hex ?? mainColor;
     } catch (err) {
       console.error('【提取主色调失败】:', err);
     }
@@ -55,48 +52,42 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
   return (
     <div className="relative min-h-screen">
-      {/* 
-        【图层 1：最底层画布】
-        全屏固定背景，使用提取出的 mainColor 作为大背景底色氛围
-      */}
-      <div
-        className="fixed inset-0 -z-20 transition-colors duration-700"
-        style={{
-          // 顶部是 35% 透明度的提取主色，向下慢慢过渡到原本的灰白底色 #f4f4f2
-          background: `linear-gradient(180deg, ${mainColor}55 0%, ${mainColor}15 40%, #f4f4f2 100%)`,
-        }}
-      />
+      {/* 主色调渐变背景,取代原来的固定背景图 */}
+     <div
+  className="fixed inset-0 -z-10 transition-colors duration-500"
+  style={{
+    // 直接填充提取的主色（加了 33 约 20% 透明度，看起来柔和清新）
+    // 如果想要完全 100% 不透明的提取色，直接写 backgroundColor: mainColor 即可
+    backgroundColor: `${mainColor}33`,
+  }}
+/>
 
       <PortfolioNav homeHref="/portfolio" />
       <FloatingWidget />
 
-      {/* 
-        【图层 2：中间封面图】
-        随内容滚动，只在最上方出现，带 Mask 蒙版渐隐
-      */}
+      {/* 封面横幅 — 随内容滚动,只在文章最上方出现一次,顶部不透明往下渐隐 */}
       {item.cover_url && (
         <div
-          className="absolute top-0 left-0 w-full h-[65vh] -z-10 pointer-events-none"
+          className="absolute top-0 left-0 w-full h-[60vh] -z-[5]"
           style={{
             backgroundImage: `url(${item.cover_url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)',
+            maskImage: 'linear-gradient(to bottom, black 0%, transparent 90%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 90%)',
           }}
         />
       )}
 
-      {/* 【图层 3：最上层正文与内容卡片】 */}
       <div className="relative z-10 max-w-7xl mx-auto px-8 pt-28 pb-16 flex flex-col lg:flex-row gap-12">
-        {/* 信息栏 */}
+        {/* 信息栏 — 结构跟列表页保持一致 */}
         <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
           <div className="lg:sticky lg:top-24 flex flex-col gap-5">
             <SidebarProfile />
 
-            {/* 目录卡片 */}
+            {/* 目录卡片 — 占位,下一步做联动 */}
             <div
-              className="rounded-2xl shadow-sm p-6 backdrop-blur-md"
+              className="rounded-2xl shadow-sm p-6"
               style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7))' }}
             >
               <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
@@ -108,7 +99,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         {/* 正文 */}
         <main className="order-1 lg:order-2 flex-1 min-w-0">
           <div
-            className="rounded-2xl shadow-sm p-8 backdrop-blur-md"
+            className="rounded-2xl shadow-sm p-8"
             style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
           >
             <div className="flex items-center gap-2 mb-3">
