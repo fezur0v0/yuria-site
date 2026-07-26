@@ -28,33 +28,18 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
   if (!item) notFound();
 
-  // 提取封面主色调,用于背景渐变(失败就用兜底色,不影响页面正常显示)
   let mainColor = '#c4c4c4';
   if (item.cover_url) {
     try {
       const res = await fetch(item.cover_url);
       const buffer = Buffer.from(await res.arrayBuffer());
       const palette = await Vibrant.from(buffer).getPalette();
-  // 👇 1. 打印整张图片的色彩调色板，看看所有颜色是什么
-    console.log('【Vibrant调色板结果】:', {
-      Vibrant: palette.Vibrant?.hex,
-      LightVibrant: palette.LightVibrant?.hex,
-      DarkVibrant: palette.DarkVibrant?.hex,
-      Muted: palette.Muted?.hex,
-      LightMuted: palette.LightMuted?.hex,
-      DarkMuted: palette.DarkMuted?.hex,
-    });
-
-    // 👇 2. 建议把优先顺序调整一下，优先取 Vibrant（鲜艳）色
-    mainColor = palette.Vibrant?.hex ?? palette.LightVibrant?.hex ?? palette.Muted?.hex ?? mainColor;
-    console.log('【最终选择的主色】:', mainColor);
-
-  } catch (err) {
-    console.error('【提取主色调失败】:', err);
+      mainColor = palette.Vibrant?.hex ?? palette.LightVibrant?.hex ?? palette.Muted?.hex ?? mainColor;
+    } catch (err) {
+      console.error('【提取主色调失败】:', err);
+    }
   }
-}
 
-  // 同分类的上一篇/下一篇
   const { data: siblings } = await supabase
     .from('portfolio_items')
     .select('id, title')
@@ -90,21 +75,29 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         />
       )}
 
-      <div className="max-w-5xl mx-auto px-6 pt-28 pb-20 flex flex-col lg:flex-row gap-8 items-start">
-        {/* 信息栏 */}
-        <aside className="w-full lg:w-80 lg:sticky lg:top-24 flex flex-col gap-6 order-2 lg:order-1">
-          <SidebarProfile />
+      <div className="relative z-10 max-w-7xl mx-auto px-8 pt-28 pb-16 flex flex-col lg:flex-row gap-12">
+        {/* 信息栏 — 结构跟列表页保持一致 */}
+        <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
+          <div className="lg:sticky lg:top-24 flex flex-col gap-5">
+            <SidebarProfile />
 
-          {/* 目录卡片 — 占位,下一步做联动 */}
-          <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm p-6">
-            <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
-            <p className="text-xs text-black/30">目录联动开发中…</p>
+            {/* 目录卡片 — 占位,下一步做联动 */}
+            <div
+              className="rounded-2xl shadow-sm p-6"
+              style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7))' }}
+            >
+              <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
+              <p className="text-xs text-black/30">目录联动开发中…</p>
+            </div>
           </div>
         </aside>
 
         {/* 正文 */}
-        <main className="flex-1 order-1 lg:order-2 min-w-0">
-          <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm p-8">
+        <main className="order-1 lg:order-2 flex-1 min-w-0">
+          <div
+            className="rounded-2xl shadow-sm p-8"
+            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
+          >
             <div className="flex items-center gap-2 mb-3">
               <h1 className="text-2xl font-serif">{item.title}</h1>
               <Link
@@ -133,7 +126,6 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
               dangerouslySetInnerHTML={{ __html: item.content ?? '' }}
             />
 
-            {/* 上一篇 / 下一篇(同分类) */}
             <div className="flex items-center justify-between mt-10 pt-6 border-t border-black/10">
               {prev ? (
                 <Link
