@@ -29,10 +29,11 @@ function highlight(text: string, query: string) {
 }
 
 export default function PortfolioSearch() {
-  const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<Item[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -42,7 +43,8 @@ export default function PortfolioSearch() {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
+        setExpanded(false);
+        setQuery('');
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -57,45 +59,57 @@ export default function PortfolioSearch() {
     : [];
 
   return (
-    <div ref={containerRef} className="relative z-50">
+    <div
+      ref={containerRef}
+      onMouseEnter={() => setExpanded(true)}
+      className="relative flex items-center"
+    >
+      <input
+        ref={inputRef}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="搜索标题或内容…"
+        className={`bg-white/10 text-white placeholder:text-white/40 text-sm rounded-full outline-none transition-all duration-300 overflow-hidden ${
+          expanded ? 'w-48 pl-4 pr-2 py-1.5 mr-2 opacity-100' : 'w-0 pl-0 pr-0 py-1.5 mr-0 opacity-0'
+        }`}
+      />
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          const next = !expanded;
+          setExpanded(next);
+          if (next) setTimeout(() => inputRef.current?.focus(), 60);
+        }}
         title="搜索"
-        style={{ background: 'none' }}
-        className="w-9 h-9 flex items-center justify-center rounded-full text-white/80 hover:text-white hover:scale-110 transition-[color,transform] duration-150"
+        className={`w-9 h-9 flex items-center justify-center rounded-full text-white/80 hover:text-white transition-all duration-300 shrink-0 ${
+          expanded ? '-translate-x-0.5' : ''
+        }`}
       >
         <FiSearch size={16} />
       </button>
 
-      {open && (
-        <div className="absolute right-0 mt-3 w-80 max-w-[90vw] bg-white rounded-2xl shadow-lg p-4 text-black">
-          <input
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索标题或内容…"
-            className="w-full text-sm bg-black/5 rounded-full px-4 py-2 mb-3 focus:outline-none focus:bg-black/10 transition-colors"
-          />
-          <div className="max-h-72 overflow-y-auto flex flex-col gap-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
-            {q && results.length === 0 && <p className="text-xs text-black/30 py-2">没有找到相关内容</p>}
-            {results.map((item) => {
-              const contentText = stripHtml(item.content ?? '');
-              const contentIdx = contentText.toLowerCase().indexOf(q);
-              const snippet =
-                contentIdx > -1 ? contentText.slice(Math.max(0, contentIdx - 15), contentIdx + 40) : contentText.slice(0, 40);
-              return (
-                <Link
-                  key={item.id}
-                  href={`/portfolio/${item.id}`}
-                  onClick={() => setOpen(false)}
-                  className="block py-2 px-2.5 rounded-xl hover:bg-black/5 transition-colors"
-                >
-                  <p className="text-sm mb-0.5">{highlight(item.title, q)}</p>
-                  {snippet && <p className="text-xs text-black/40 line-clamp-1">{highlight(snippet, q)}</p>}
-                </Link>
-              );
-            })}
-          </div>
+      {expanded && q && (
+        <div
+          className="absolute right-0 top-full mt-2 w-72 max-h-72 overflow-y-auto flex flex-col gap-1 [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {results.length === 0 && <p className="text-xs text-white/50 py-2 px-2">没有找到相关内容</p>}
+          {results.map((item) => {
+            const contentText = stripHtml(item.content ?? '');
+            const contentIdx = contentText.toLowerCase().indexOf(q);
+            const snippet =
+              contentIdx > -1 ? contentText.slice(Math.max(0, contentIdx - 15), contentIdx + 40) : contentText.slice(0, 40);
+            return (
+              <Link
+                key={item.id}
+                href={`/portfolio/${item.id}`}
+                onClick={() => setExpanded(false)}
+                className="block py-2 px-2.5 rounded-xl hover:bg-white/10 transition-colors"
+              >
+                <p className="text-sm text-white mb-0.5">{highlight(item.title, q)}</p>
+                {snippet && <p className="text-xs text-white/50 line-clamp-1">{highlight(snippet, q)}</p>}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
