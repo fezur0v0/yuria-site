@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import PortfolioEditor from '@/components/PortfolioEditor';
 import { FiImage, FiCamera } from 'react-icons/fi';
-import { GrFormPrevious } from 'react-icons/gr';
+import { GrFormPrevious, GrSave, GrTrash } from 'react-icons/gr';
 
 interface PortfolioFormProps {
   initialData?: {
@@ -83,7 +83,7 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
   };
 
   return (
-   <div className="max-w-[1400px] mx-auto px-12 py-10">
+ <div className="w-full px-16 py-10">
       {/* 顶部:返回箭头 + 标题 —— 保存/删除按钮 */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
@@ -98,15 +98,17 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+        <button
             onClick={handleSubmit}
             disabled={saving}
-            className="text-sm px-4 py-2 rounded-xl bg-[#1a1a1a] text-white hover:opacity-90 transition disabled:opacity-50"
+            className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-xl bg-[#1a1a1a] text-white hover:opacity-90 transition disabled:opacity-50"
           >
+            <GrSave size={13} />
             {saving ? '保存中…' : isEdit ? '保存修改' : '发布'}
           </button>
           {isEdit && (
-            <button onClick={handleDelete} className="text-sm px-4 py-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors">
+            <button onClick={handleDelete} className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors">
+              <GrTrash size={13} />
               删除
             </button>
           )}
@@ -114,8 +116,8 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
       </div>
 
       {/* 左右两栏:左边元数据,右边正文编辑器 */}
-  <div className="flex flex-col lg:flex-row gap-10">
-        <div className="w-full lg:w-[340px] flex-shrink-0 space-y-5">
+<div className="flex flex-col lg:flex-row gap-12">
+        <div className="w-full lg:w-[400px] flex-shrink-0 space-y-6">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -172,7 +174,7 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
           </div>
         </div>
 
-    <div className="w-full lg:w-[760px] flex-shrink-0">
+   <div className="flex-1 min-w-0">
           <PortfolioEditor content={content} onChange={setContent} />
         </div>
       </div>
