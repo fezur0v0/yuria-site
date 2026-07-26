@@ -52,25 +52,18 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
   return (
     <div className="relative min-h-screen">
-      {/* 
-        【图层 1：最底层纯色画布】
-        全屏固定纯色背景，不再做渐变，贯穿全局
-      */}
-      <div
-        className="fixed inset-0 -z-10 transition-colors duration-500"
-        style={{
-          // 带 20% 左右透明度的提亮纯色；如果想直接用 100% 提取原色，可以改成 `backgroundColor: mainColor`
-          backgroundColor: `${mainColor}33`,
-        }}
-      />
+      {/* 主色调渐变背景,取代原来的固定背景图 */}
+     <div
+  className="fixed inset-0 -z-10 transition-colors duration-500"
+  style={{
+    backgroundColor: `${mainColor}33`,
+  }}
+/>
 
       <PortfolioNav homeHref="/portfolio" />
       <FloatingWidget />
 
-      {/* 
-        【图层 2：封面图】
-        随内容滚动,只在文章最上方出现一次,顶部不透明往下渐隐溶解到图层 1 纯色画布中
-      */}
+      {/* 封面横幅 — 随内容滚动,只在文章最上方出现一次,顶部不透明往下渐隐 */}
       {item.cover_url && (
         <div
           className="absolute top-0 left-0 w-full h-[60vh] -z-[5]"
@@ -84,14 +77,13 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         />
       )}
 
-      {/* 【图层 3：最上层正文与内容卡片】 */}
       <div className="relative z-10 max-w-7xl mx-auto px-8 pt-28 pb-16 flex flex-col lg:flex-row gap-12">
-        {/* 信息栏 */}
+        {/* 信息栏 — 结构跟列表页保持一致 */}
         <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
           <div className="lg:sticky lg:top-24 flex flex-col gap-5">
             <SidebarProfile />
 
-            {/* 目录卡片 */}
+            {/* 目录卡片 — 占位,下一步做联动 */}
             <div
               className="rounded-2xl shadow-sm p-6"
               style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7))' }}
