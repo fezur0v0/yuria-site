@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/client';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { FiEdit3, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
-import { Vibrant } from 'node-vibrant/node';
+import Vibrant from 'node-vibrant'; // 1. 修复 Vibrant 导入方式
 import PortfolioNav from '@/components/PortfolioNav';
 import FloatingWidget from '@/components/FloatingWidget';
 import SidebarProfile from '@/components/SidebarProfile';
@@ -28,13 +28,16 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
   if (!item) notFound();
 
-  let mainColor = '#c4c4c4';
+  // --- 颜色提取逻辑 ---
+  let mainColor = '#80a8cc'; // 默认设为一个好看的冰蓝色，方便测试
   if (item.cover_url) {
     try {
-      const res = await fetch(item.cover_url);
-      const buffer = Buffer.from(await res.arrayBuffer());
-      const palette = await Vibrant.from(buffer).getPalette();
-      mainColor = palette.Vibrant?.hex ?? palette.LightVibrant?.hex ?? palette.Muted?.hex ?? mainColor;
+      // 直接把图片 URL 传给 Vibrant
+      const palette = await Vibrant.from(item.cover_url).getPalette();
+      const hex = palette.Vibrant?.hex ?? palette.LightVibrant?.hex ?? palette.Muted?.hex;
+      if (hex) {
+        mainColor = hex;
+      }
     } catch (err) {
       console.error('【提取主色调失败】:', err);
     }
@@ -52,38 +55,48 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
   return (
     <div className="relative min-h-screen">
-      {/* 主色调渐变背景,取代原来的固定背景图 */}
+      {/* 
+        【图层 1：最底层画布】
+        全屏固定背景，使用提取出的 mainColor 作为大背景底色氛围
+      */}
       <div
-        className="fixed inset-0 -z-10"
-        style={{ background: `linear-gradient(180deg, ${mainColor}55 0%, #f4f4f2 55%)` }}
+        className="fixed inset-0 -z-20 transition-colors duration-700"
+        style={{
+          // 顶部是 35% 透明度的提取主色，向下慢慢过渡到原本的灰白底色 #f4f4f2
+          background: `linear-gradient(180deg, ${mainColor}55 0%, ${mainColor}15 40%, #f4f4f2 100%)`,
+        }}
       />
 
       <PortfolioNav homeHref="/portfolio" />
       <FloatingWidget />
 
-      {/* 封面横幅 — 随内容滚动,只在文章最上方出现一次,顶部不透明往下渐隐 */}
+      {/* 
+        【图层 2：中间封面图】
+        随内容滚动，只在最上方出现，带 Mask 蒙版渐隐
+      */}
       {item.cover_url && (
         <div
-          className="absolute top-0 left-0 w-full h-[60vh] -z-[5]"
+          className="absolute top-0 left-0 w-full h-[65vh] -z-10 pointer-events-none"
           style={{
             backgroundImage: `url(${item.cover_url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            maskImage: 'linear-gradient(to bottom, black 0%, transparent 90%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 90%)',
+            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)',
           }}
         />
       )}
 
+      {/* 【图层 3：最上层正文与内容卡片】 */}
       <div className="relative z-10 max-w-7xl mx-auto px-8 pt-28 pb-16 flex flex-col lg:flex-row gap-12">
-        {/* 信息栏 — 结构跟列表页保持一致 */}
+        {/* 信息栏 */}
         <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
           <div className="lg:sticky lg:top-24 flex flex-col gap-5">
             <SidebarProfile />
 
-            {/* 目录卡片 — 占位,下一步做联动 */}
+            {/* 目录卡片 */}
             <div
-              className="rounded-2xl shadow-sm p-6"
+              className="rounded-2xl shadow-sm p-6 backdrop-blur-md"
               style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7))' }}
             >
               <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
@@ -95,7 +108,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         {/* 正文 */}
         <main className="order-1 lg:order-2 flex-1 min-w-0">
           <div
-            className="rounded-2xl shadow-sm p-8"
+            className="rounded-2xl shadow-sm p-8 backdrop-blur-md"
             style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
           >
             <div className="flex items-center gap-2 mb-3">
