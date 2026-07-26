@@ -35,7 +35,7 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
         minWidth: 80,
         maxWidth: 800,
       }),
-      Placeholder.configure({ placeholder: '开始写点什么…' }),
+      Placeholder.configure({ placeholder: '在此写下你的故事…' }),
     ],
     content,
     immediatelyRender: false,
@@ -44,8 +44,8 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
     },
     editorProps: {
       attributes: {
-        // prose-lg 调大文字与行高
-        class: 'prose prose-lg prose-neutral max-w-none focus:outline-none min-h-[600px]',
+        // prose-xl 放大排版文字，h-full 铺满容器
+        class: 'prose prose-xl prose-neutral max-w-none focus:outline-none min-h-full pb-10',
       },
     },
   });
@@ -74,53 +74,59 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
   if (!editor) return null;
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* 工具栏 — 调大 Padding 和 Icon 尺寸 */}
-      <div className="flex items-center gap-1.5 flex-wrap bg-black/[0.02] p-2 rounded-xl border border-black/5">
+    <div className="flex flex-col h-full gap-4">
+      {/* 悬浮工具栏 — 放大按键与 Icon 尺寸 */}
+      <div className="flex items-center gap-2 flex-wrap bg-white px-4 py-3 rounded-2xl border border-black/5 shadow-sm flex-shrink-0">
         <IconButton active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()} title="粗体">
-          <GrBold size={16} />
+          <GrBold size={20} />
         </IconButton>
         <IconButton active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()} title="斜体">
-          <GrItalic size={16} />
+          <GrItalic size={20} />
         </IconButton>
         <IconButton active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()} title="下划线">
-          <GrUnderline size={16} />
+          <GrUnderline size={20} />
         </IconButton>
         <IconButton active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()} title="删除线">
-          <GrStrikeThrough size={16} />
+          <GrStrikeThrough size={20} />
         </IconButton>
+
+        <div className="w-[1px] h-6 bg-black/10 mx-1" />
+
         <IconButton active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="列表">
-          <GrUnorderedList size={16} />
+          <GrUnorderedList size={20} />
         </IconButton>
         <IconButton active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="二级标题">
-          <PiTextHTwo size={18} />
+          <PiTextHTwo size={24} />
         </IconButton>
         <IconButton active={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="三级标题">
-          <PiTextHThree size={18} />
+          <PiTextHThree size={24} />
         </IconButton>
         <IconButton active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="引用">
-          <GrBlockQuote size={16} />
+          <GrBlockQuote size={20} />
         </IconButton>
+
+        <div className="w-[1px] h-6 bg-black/10 mx-1" />
+
         <label
           title="插入图片"
-          className="text-black/60 hover:text-black/90 hover:bg-black/5 p-2.5 rounded-xl cursor-pointer transition-colors flex items-center justify-center"
+          className="text-black/60 hover:text-black hover:bg-black/5 p-3 rounded-xl cursor-pointer transition-colors flex items-center justify-center"
         >
-          <GrImage size={16} />
+          <GrImage size={20} />
           <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
         </label>
       </div>
 
-      {/* 正文 — 调大编辑区高度 h-[720px] */}
-      <div className="border border-black/15 rounded-2xl overflow-hidden shadow-sm focus-within:border-black/40 transition-colors">
+      {/* 编辑器内容容器 — h-full 自适应撑满屏幕，内部出现滚动条 */}
+      <div className="flex-1 min-h-0 bg-white border border-black/5 rounded-3xl shadow-sm overflow-hidden flex flex-col">
         <div
-          className="px-8 py-6 h-[720px] overflow-y-auto
+          className="flex-1 p-8 overflow-y-auto
             [&::-webkit-scrollbar]:w-2
             [&::-webkit-scrollbar-track]:bg-transparent
             [&::-webkit-scrollbar-thumb]:bg-black/15
             [&::-webkit-scrollbar-thumb]:rounded-full
-            hover:[&::-webkit-scrollbar-thumb]:bg-black/25"
+            hover:[&::-webkit-scrollbar-thumb]:bg-black/30"
         >
-          <EditorContent editor={editor} />
+          <EditorContent editor={editor} className="h-full" />
         </div>
       </div>
     </div>
@@ -133,10 +139,10 @@ function IconButton({ children, active, onClick, title }: { children: ReactNode;
       type="button"
       title={title}
       onClick={onClick}
-      className={`p-2.5 rounded-xl transition-all ${
+      className={`p-3 rounded-xl transition-all ${
         active
-          ? 'bg-[#1a1a1a] text-white shadow-sm'
-          : 'text-black/60 hover:text-black/90 hover:bg-black/5'
+          ? 'bg-[#1a1a1a] text-white shadow-md scale-105'
+          : 'text-black/60 hover:text-black hover:bg-black/5'
       }`}
     >
       {children}
