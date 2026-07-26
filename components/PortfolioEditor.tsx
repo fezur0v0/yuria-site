@@ -44,7 +44,8 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-neutral max-w-none focus:outline-none',
+        // prose-lg 调大文字与行高
+        class: 'prose prose-lg prose-neutral max-w-none focus:outline-none min-h-[600px]',
       },
     },
   });
@@ -73,46 +74,46 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
   if (!editor) return null;
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* 工具栏 — 不带边框,悬浮在编辑框上方 */}
-      <div className="flex items-center gap-1 flex-wrap">
+    <div className="flex flex-col gap-4">
+      {/* 工具栏 — 调大 Padding 和 Icon 尺寸 */}
+      <div className="flex items-center gap-1.5 flex-wrap bg-black/[0.02] p-2 rounded-xl border border-black/5">
         <IconButton active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()} title="粗体">
-          <GrBold size={13} />
+          <GrBold size={16} />
         </IconButton>
         <IconButton active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()} title="斜体">
-          <GrItalic size={13} />
+          <GrItalic size={16} />
         </IconButton>
         <IconButton active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()} title="下划线">
-          <GrUnderline size={13} />
+          <GrUnderline size={16} />
         </IconButton>
         <IconButton active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()} title="删除线">
-          <GrStrikeThrough size={13} />
+          <GrStrikeThrough size={16} />
         </IconButton>
         <IconButton active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="列表">
-          <GrUnorderedList size={13} />
+          <GrUnorderedList size={16} />
         </IconButton>
-      <IconButton active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="二级标题">
-          <PiTextHTwo size={15} />
+        <IconButton active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="二级标题">
+          <PiTextHTwo size={18} />
         </IconButton>
         <IconButton active={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="三级标题">
-          <PiTextHThree size={15} />
+          <PiTextHThree size={18} />
         </IconButton>
         <IconButton active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="引用">
-          <GrBlockQuote size={13} />
+          <GrBlockQuote size={16} />
         </IconButton>
         <label
           title="插入图片"
-          className="text-black/50 hover:text-black/80 hover:bg-black/5 p-2 rounded-lg cursor-pointer transition-colors flex items-center"
+          className="text-black/60 hover:text-black/90 hover:bg-black/5 p-2.5 rounded-xl cursor-pointer transition-colors flex items-center justify-center"
         >
-          <GrImage size={13} />
+          <GrImage size={16} />
           <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
         </label>
       </div>
 
-      {/* 正文 — 独立的框框 */}
-      <div className="border border-black/10 rounded-2xl overflow-hidden">
+      {/* 正文 — 调大编辑区高度 h-[720px] */}
+      <div className="border border-black/15 rounded-2xl overflow-hidden shadow-sm focus-within:border-black/40 transition-colors">
         <div
-          className="px-5 py-4 h-[560px] overflow-y-auto
+          className="px-8 py-6 h-[720px] overflow-y-auto
             [&::-webkit-scrollbar]:w-2
             [&::-webkit-scrollbar-track]:bg-transparent
             [&::-webkit-scrollbar-thumb]:bg-black/15
@@ -132,10 +133,13 @@ function IconButton({ children, active, onClick, title }: { children: ReactNode;
       type="button"
       title={title}
       onClick={onClick}
-      className={`p-2 rounded-lg transition-colors ${active ? 'bg-[#1a1a1a] text-white' : 'text-black/50 hover:text-black/80 hover:bg-black/5'}`}
+      className={`p-2.5 rounded-xl transition-all ${
+        active
+          ? 'bg-[#1a1a1a] text-white shadow-sm'
+          : 'text-black/60 hover:text-black/90 hover:bg-black/5'
+      }`}
     >
       {children}
     </button>
   );
 }
-
