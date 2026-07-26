@@ -32,10 +32,12 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
   let mainColor = '#c4c4c4';
   if (item.cover_url) {
     try {
-      const palette = await Vibrant.from(item.cover_url).getPalette();
+      const res = await fetch(item.cover_url);
+      const buffer = Buffer.from(await res.arrayBuffer());
+      const palette = await Vibrant.from(buffer).getPalette();
       mainColor = palette.Muted?.hex ?? palette.Vibrant?.hex ?? mainColor;
-    } catch {
-      // 提取失败,用兜底色
+    } catch (err) {
+      console.error('提取主色调失败:', err);
     }
   }
 
