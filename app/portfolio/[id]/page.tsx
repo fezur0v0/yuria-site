@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/client';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { FiEdit3, FiEye } from 'react-icons/fi';
-import PortfolioBackground from '@/components/PortfolioBackground';
+import Vibrant from 'node-vibrant/node';
 import PortfolioNav from '@/components/PortfolioNav';
 import FloatingWidget from '@/components/FloatingWidget';
 import SidebarProfile from '@/components/SidebarProfile';
@@ -28,13 +28,26 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
   if (!item) notFound();
 
+  let mainColor = '#c4c4c4';
+  if (item.cover_url) {
+    try {
+      const palette = await Vibrant.from(item.cover_url).getPalette();
+      mainColor = palette.Muted?.hex ?? palette.Vibrant?.hex ?? mainColor;
+    } catch {
+      // 提取失败就用兜底色
+    }
+  }
+
   return (
     <div className="relative">
-      <PortfolioBackground />
-     <PortfolioNav homeHref="/portfolio" />
+      <div
+        className="fixed inset-0 -z-10"
+        style={{ background: `linear-gradient(180deg, ${mainColor}55 0%, #f4f4f2 55%)` }}
+      />
+      <PortfolioNav homeHref="/portfolio" />
       <FloatingWidget />
 
-      {/* 封面横幅 — 随内容滚动,只在文章最上方出现一次,顶部不透明往下渐隐 */}
+      {/* 封面横幅 — 随内容滚动，只在文章最上方出现一次，顶部不透明往下渐隐 */}
       {item.cover_url && (
         <div
           className="absolute top-0 left-0 w-full h-[60vh] -z-[5]"
@@ -53,7 +66,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         <aside className="w-full lg:w-80 lg:sticky lg:top-24 flex flex-col gap-6 order-2 lg:order-1">
           <SidebarProfile />
 
-          {/* 目录卡片 — 占位,下一步做联动 */}
+          {/* 目录卡片 — 占位，下一步做联动 */}
           <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm p-6">
             <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
             <p className="text-xs text-black/30">目录联动开发中…</p>
