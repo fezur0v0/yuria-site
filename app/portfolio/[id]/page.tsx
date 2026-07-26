@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/client';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { FiEdit3, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
-import Vibrant from 'node-vibrant'; // 1. 修复 Vibrant 导入方式
+import { Vibrant } from 'node-vibrant/node';
 import PortfolioNav from '@/components/PortfolioNav';
 import FloatingWidget from '@/components/FloatingWidget';
 import SidebarProfile from '@/components/SidebarProfile';
