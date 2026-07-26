@@ -1,8 +1,8 @@
 import { createClient } from '@/utils/supabase/client';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { FiEdit3, FiEye } from 'react-icons/fi';
-import Vibrant from 'node-vibrant/node';
+import { FiEdit3, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import { Vibrant } from 'node-vibrant/node';
 import PortfolioNav from '@/components/PortfolioNav';
 import FloatingWidget from '@/components/FloatingWidget';
 import SidebarProfile from '@/components/SidebarProfile';
@@ -28,26 +28,40 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
   if (!item) notFound();
 
+  // 提取封面主色调,用于背景渐变(失败就用兜底色,不影响页面正常显示)
   let mainColor = '#c4c4c4';
   if (item.cover_url) {
     try {
       const palette = await Vibrant.from(item.cover_url).getPalette();
       mainColor = palette.Muted?.hex ?? palette.Vibrant?.hex ?? mainColor;
     } catch {
-      // 提取失败就用兜底色
+      // 提取失败,用兜底色
     }
   }
 
+  // 同分类的上一篇/下一篇
+  const { data: siblings } = await supabase
+    .from('portfolio_items')
+    .select('id, title')
+    .eq('category', item.category)
+    .order('date', { ascending: true });
+
+  const idx = siblings?.findIndex((s) => s.id === item.id) ?? -1;
+  const prev = idx > 0 ? siblings![idx - 1] : null;
+  const next = siblings && idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
+
   return (
-    <div className="relative">
+    <div className="relative min-h-screen">
+      {/* 主色调渐变背景,取代原来的固定背景图 */}
       <div
         className="fixed inset-0 -z-10"
         style={{ background: `linear-gradient(180deg, ${mainColor}55 0%, #f4f4f2 55%)` }}
       />
+
       <PortfolioNav homeHref="/portfolio" />
       <FloatingWidget />
 
-      {/* 封面横幅 — 随内容滚动，只在文章最上方出现一次，顶部不透明往下渐隐 */}
+      {/* 封面横幅 — 随内容滚动,只在文章最上方出现一次,顶部不透明往下渐隐 */}
       {item.cover_url && (
         <div
           className="absolute top-0 left-0 w-full h-[60vh] -z-[5]"
@@ -66,7 +80,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         <aside className="w-full lg:w-80 lg:sticky lg:top-24 flex flex-col gap-6 order-2 lg:order-1">
           <SidebarProfile />
 
-          {/* 目录卡片 — 占位，下一步做联动 */}
+          {/* 目录卡片 — 占位,下一步做联动 */}
           <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm p-6">
             <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
             <p className="text-xs text-black/30">目录联动开发中…</p>
@@ -77,7 +91,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         <main className="flex-1 order-1 lg:order-2 min-w-0">
           <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm p-8">
             <div className="flex items-center gap-2 mb-3">
-              <h1 className="text-2xl font-serif">{item.title}</h1>      
+              <h1 className="text-2xl font-serif">{item.title}</h1>
               <Link
                 href={`/admin/portfolio/${item.id}/edit`}
                 className="text-black/30 hover:text-black/60 transition-colors"
@@ -103,6 +117,29 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
               className="prose prose-neutral max-w-none prose-img:rounded-xl"
               dangerouslySetInnerHTML={{ __html: item.content ?? '' }}
             />
+
+            {/* 上一篇 / 下一篇(同分类) */}
+            <div className="flex items-center justify-between mt-10 pt-6 border-t border-black/10">
+              {prev ? (
+                <Link
+                  href={`/portfolio/${prev.id}`}
+                  className="group flex items-center gap-2 text-sm text-black/50 hover:text-black/80 transition-colors active:scale-95"
+                >
+                  <FiArrowLeft className="transition-transform duration-200 group-hover:-translate-x-1.5" size={14} />
+                  <span className="transition-transform duration-200 group-hover:-translate-x-1">{prev.title}</span>
+                </Link>
+              ) : <span />}
+
+              {next ? (
+                <Link
+                  href={`/portfolio/${next.id}`}
+                  className="group flex items-center gap-2 text-sm text-black/50 hover:text-black/80 transition-colors active:scale-95 ml-auto"
+                >
+                  <span className="transition-transform duration-200 group-hover:translate-x-1">{next.title}</span>
+                  <FiArrowRight className="transition-transform duration-200 group-hover:translate-x-1.5" size={14} />
+                </Link>
+              ) : <span />}
+            </div>
           </div>
         </main>
       </div>
