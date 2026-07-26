@@ -31,7 +31,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
   return (
     <div className="relative">
       <PortfolioBackground />
-      <PortfolioNav />
+     <PortfolioNav homeHref="/portfolio" />
       <FloatingWidget />
 
       {/* 封面横幅 — 随内容滚动,只在文章最上方出现一次,顶部不透明往下渐隐 */}
