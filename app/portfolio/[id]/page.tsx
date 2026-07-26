@@ -64,10 +64,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         <main className="flex-1 order-1 lg:order-2 min-w-0">
           <div className="bg-white/60 backdrop-blur-md rounded-2xl shadow-sm p-8">
             <div className="flex items-center gap-2 mb-3">
-              <h1 className="text-2xl font-serif">{item.title}</h1>
-              <span className="flex items-center gap-1 text-xs text-black/30">
-                <FiEye size={13} /> 128
-              </span>
+              <h1 className="text-2xl font-serif">{item.title}</h1>      
               <Link
                 href={`/admin/portfolio/${item.id}/edit`}
                 className="text-black/30 hover:text-black/60 transition-colors"
