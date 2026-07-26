@@ -83,9 +83,8 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
   };
 
   return (
-    /* h-screen + overflow-hidden 锁定全屏视角，禁止全屏滚动 */
     <div className="w-full h-screen overflow-hidden flex flex-col bg-[#fafafa]">
-      {/* 顶部: 两端分布（最左 & 最右） */}
+      {/* 顶部: 两端分布 */}
       <header className="h-20 w-full px-8 flex items-center justify-between border-b border-black/10 bg-white/80 backdrop-blur-md flex-shrink-0">
         <div className="flex items-center gap-4">
           <button
@@ -121,58 +120,55 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
         </div>
       </header>
 
-      {/* 核心两栏内容区：flex-1 自动撑满剩余高度 */}
-      <div className="flex-1 w-full flex flex-col lg:flex-row min-h-0 p-8 gap-8">
-        {/* 左侧栏：定宽 420px，如果高度不够允许左侧局部独立滚动 */}
-        <aside className="w-full lg:w-[420px] flex-shrink-0 overflow-y-auto pr-2 space-y-7 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-black/10 [&::-webkit-scrollbar-thumb]:rounded-full">
-          <div className="bg-white p-6 rounded-3xl border border-black/5 shadow-sm space-y-6">
-            <div>
-              <label className="text-sm font-semibold text-black/40 mb-2 block tracking-wider uppercase">
-                作品标题
-              </label>
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="在此输入标题…"
-                className="w-full text-2xl font-serif font-bold border-b-2 border-black/10 pb-3 focus:outline-none focus:border-black transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-black/40 mb-2 block tracking-wider uppercase">
-                分类
-              </label>
-              <CategoryPicker value={category} onChange={setCategory} />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-black/40 mb-2 block tracking-wider uppercase">
-                发布日期
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full text-base font-medium border border-black/15 rounded-2xl px-4 py-3.5 focus:outline-none focus:border-black transition-colors bg-white"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-black/40 mb-2 block tracking-wider uppercase">
-                标签
-              </label>
-              <TagsInput tags={tags} setTags={setTags} />
-            </div>
+      {/* 核心两栏内容区 */}
+      <div className="flex-1 w-full flex flex-col lg:flex-row min-h-0 p-8 gap-12">
+        {/* 左侧栏：删除了边框卡片背景，精简且放大 Label */}
+        <aside className="w-full lg:w-[420px] flex-shrink-0 overflow-y-auto pr-2 space-y-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-black/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+          <div>
+            <label className="text-lg font-serif font-semibold text-black/80 mb-2.5 block tracking-wide">
+              作品标题
+            </label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="在此输入标题…"
+              className="w-full text-2xl font-serif font-bold border-b-2 border-black/15 bg-transparent pb-3 focus:outline-none focus:border-black transition-colors"
+            />
           </div>
 
-          {/* 封面上传卡片 */}
-          <div className="bg-white p-6 rounded-3xl border border-black/5 shadow-sm">
-            <label className="text-sm font-semibold text-black/40 mb-3 block tracking-wider uppercase">
+          <div>
+            <label className="text-lg font-serif font-semibold text-black/80 mb-2.5 block tracking-wide">
+              分类
+            </label>
+            <CategoryPicker value={category} onChange={setCategory} />
+          </div>
+
+          <div>
+            <label className="text-lg font-serif font-semibold text-black/80 mb-2.5 block tracking-wide">
+              发布日期
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full text-base font-medium border border-black/15 rounded-2xl px-4 py-3.5 focus:outline-none focus:border-black transition-colors bg-white/80"
+            />
+          </div>
+
+          <div>
+            <label className="text-lg font-serif font-semibold text-black/80 mb-2.5 block tracking-wide">
+              标签
+            </label>
+            <TagsInput tags={tags} setTags={setTags} />
+          </div>
+
+          <div>
+            <label className="text-lg font-serif font-semibold text-black/80 mb-3 block tracking-wide">
               封面图像
             </label>
             {coverUrl ? (
-              <label className="relative group rounded-2xl overflow-hidden block cursor-pointer border border-black/10 shadow-sm">
-                <img src={coverUrl} alt="封面预览" className="w-full max-h-64 object-cover" />
+              <label className="relative group rounded-3xl overflow-hidden block cursor-pointer border border-black/10 shadow-sm">
+                <img src={coverUrl} alt="封面预览" className="w-full max-h-72 object-cover" />
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <span className="text-white text-base font-medium flex items-center gap-2 bg-black/50 px-5 py-2.5 rounded-full backdrop-blur-md">
                     <FiCamera size={20} /> 更换封面图
@@ -189,9 +185,9 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
                 />
               </label>
             ) : (
-              <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-black/15 rounded-2xl h-56 cursor-pointer hover:border-black/40 hover:bg-black/[0.02] transition-colors text-black/40">
-                <FiImage size={36} />
-                <span className="text-base font-medium">点击拖拽或上传封面</span>
+              <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-black/15 rounded-3xl h-60 cursor-pointer hover:border-black/40 hover:bg-black/[0.02] transition-colors text-black/40">
+                <FiImage size={38} />
+                <span className="text-base font-medium">点击上传或替换封面</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -206,7 +202,7 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
           </div>
         </aside>
 
-        {/* 右侧主编辑区：flex-1 高度完全自适应铺满 */}
+        {/* 右侧主编辑区 */}
         <main className="flex-1 min-w-0 h-full flex flex-col">
           <PortfolioEditor content={content} onChange={setContent} />
         </main>
@@ -245,7 +241,7 @@ function CategoryPicker({ value, onChange }: { value: string; onChange: (v: stri
         onChange={(e) => { onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         placeholder="选择或输入分类"
-        className="w-full text-base font-medium border border-black/15 rounded-2xl px-4 py-3.5 focus:outline-none focus:border-black transition-colors"
+        className="w-full text-base font-medium border border-black/15 rounded-2xl px-4 py-3.5 focus:outline-none focus:border-black transition-colors bg-white/80"
       />
       {open && filtered.length > 0 && (
         <div className="absolute left-0 right-0 mt-2 bg-white border border-black/10 rounded-2xl shadow-xl max-h-56 overflow-y-auto z-30 py-1">
@@ -284,7 +280,7 @@ function TagsInput({ tags, setTags }: { tags: string[]; setTags: (t: string[]) =
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border border-black/15 rounded-2xl px-4 py-3 focus-within:border-black min-h-[54px] bg-white">
+    <div className="flex flex-wrap items-center gap-2 border border-black/15 rounded-2xl px-4 py-3 focus-within:border-black min-h-[56px] bg-white/80">
       {tags.map((tag) => (
         <span key={tag} className="flex items-center gap-1.5 text-sm bg-black/5 rounded-xl px-3 py-1.5 font-medium">
           #{tag}
