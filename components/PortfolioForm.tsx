@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import PortfolioEditor from '@/components/PortfolioEditor';
-import { FiArrowLeft, FiImage, FiCamera } from 'react-icons/fi';
+import { FiImage, FiCamera } from 'react-icons/fi';
+import { GrFormPrevious } from 'react-icons/gr';
 
 interface PortfolioFormProps {
   initialData?: {
@@ -82,7 +83,7 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+   <div className="max-w-[1400px] mx-auto px-12 py-10">
       {/* 顶部:返回箭头 + 标题 —— 保存/删除按钮 */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
@@ -91,7 +92,7 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
             className="w-8 h-8 flex items-center justify-center rounded-full text-black/40 hover:text-black/70 hover:bg-black/5 transition-colors"
             title="返回"
           >
-            <FiArrowLeft size={16} />
+           <GrFormPrevious size={18} />
           </button>
           <h1 className="text-xl font-serif">{isEdit ? '编辑作品' : '新建作品'}</h1>
         </div>
@@ -113,8 +114,8 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
       </div>
 
       {/* 左右两栏:左边元数据,右边正文编辑器 */}
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="w-full lg:w-80 flex-shrink-0 space-y-5">
+  <div className="flex flex-col lg:flex-row gap-10">
+        <div className="w-full lg:w-[340px] flex-shrink-0 space-y-5">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -171,7 +172,7 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
           </div>
         </div>
 
-        <div className="flex-1 min-w-0">
+    <div className="w-full lg:w-[760px] flex-shrink-0">
           <PortfolioEditor content={content} onChange={setContent} />
         </div>
       </div>
