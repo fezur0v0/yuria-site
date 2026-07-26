@@ -35,11 +35,24 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
       const res = await fetch(item.cover_url);
       const buffer = Buffer.from(await res.arrayBuffer());
       const palette = await Vibrant.from(buffer).getPalette();
-      mainColor = palette.Muted?.hex ?? palette.Vibrant?.hex ?? mainColor;
-    } catch (err) {
-      console.error('提取主色调失败:', err);
-    }
+  // 👇 1. 打印整张图片的色彩调色板，看看所有颜色是什么
+    console.log('【Vibrant调色板结果】:', {
+      Vibrant: palette.Vibrant?.hex,
+      LightVibrant: palette.LightVibrant?.hex,
+      DarkVibrant: palette.DarkVibrant?.hex,
+      Muted: palette.Muted?.hex,
+      LightMuted: palette.LightMuted?.hex,
+      DarkMuted: palette.DarkMuted?.hex,
+    });
+
+    // 👇 2. 建议把优先顺序调整一下，优先取 Vibrant（鲜艳）色
+    mainColor = palette.Vibrant?.hex ?? palette.LightVibrant?.hex ?? palette.Muted?.hex ?? mainColor;
+    console.log('【最终选择的主色】:', mainColor);
+
+  } catch (err) {
+    console.error('【提取主色调失败】:', err);
   }
+}
 
   // 同分类的上一篇/下一篇
   const { data: siblings } = await supabase
