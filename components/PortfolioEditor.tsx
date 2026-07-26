@@ -16,6 +16,7 @@ import {
   GrBlockQuote,
   GrImage,
 } from 'react-icons/gr';
+import { PiTextHTwo, PiTextHThree } from 'react-icons/pi';
 
 interface PortfolioEditorProps {
   content: string;
@@ -90,8 +91,12 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
         <IconButton active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="列表">
           <GrUnorderedList size={13} />
         </IconButton>
-        <ToolbarButton active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>H2</ToolbarButton>
-        <ToolbarButton active={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>H3</ToolbarButton>
+      <IconButton active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="二级标题">
+          <PiTextHTwo size={15} />
+        </IconButton>
+        <IconButton active={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="三级标题">
+          <PiTextHThree size={15} />
+        </IconButton>
         <IconButton active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="引用">
           <GrBlockQuote size={13} />
         </IconButton>
@@ -134,14 +139,3 @@ function IconButton({ children, active, onClick, title }: { children: ReactNode;
   );
 }
 
-function ToolbarButton({ children, active, onClick }: { children: ReactNode; active?: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`text-xs px-2.5 py-2 rounded-lg transition-colors ${active ? 'bg-[#1a1a1a] text-white' : 'text-black/50 hover:text-black/80 hover:bg-black/5'}`}
-    >
-      {children}
-    </button>
-  );
-}
