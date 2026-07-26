@@ -12,7 +12,7 @@ interface Profile {
   bio: string | null;
 }
 
-export default function PortfolioNav() {
+export default function PortfolioNav({ homeHref = '/' }: { homeHref?: string }) {
   const [visible, setVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function PortfolioNav() {
 >
   <div className={`transition-colors duration-300 ${scrolled ? 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
     <div className="px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="text-white font-serif text-lg tracking-wide">
+          <Link href={homeHref} className="text-white font-serif text-lg tracking-wide">
             yuria
           </Link>
 
