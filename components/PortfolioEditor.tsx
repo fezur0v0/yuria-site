@@ -44,8 +44,8 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
     },
     editorProps: {
       attributes: {
-        // 调小字号与行高，适应精致阅读
-        class: 'prose prose-base md:prose-lg prose-neutral max-w-none focus:outline-none min-h-full pb-10',
+        // prose-xl 放大排版文字，h-full 铺满容器
+        class: 'prose prose-xl prose-neutral max-w-none focus:outline-none min-h-full pb-10',
       },
     },
   });
@@ -75,8 +75,8 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
 
   return (
     <div className="flex flex-col h-full gap-4">
-      {/* 悬浮工具栏 */}
-      <div className="flex items-center gap-1.5 flex-wrap bg-white px-4 py-2 rounded-2xl border border-black/5 shadow-sm flex-shrink-0">
+      {/* 悬浮工具栏 — 放大按键与 Icon 尺寸 */}
+      <div className="flex items-center gap-2 flex-wrap bg-white px-4 py-3 rounded-2xl border border-black/5 shadow-sm flex-shrink-0">
         <IconButton active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()} title="粗体">
           <GrBold size={20} />
         </IconButton>
@@ -116,10 +116,10 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
         </label>
       </div>
 
-      {/* 编辑器卡片容器：恢复外框包裹，并限制内部文本居中 max-w-4xl */}
+      {/* 编辑器内容容器 — h-full 自适应撑满屏幕，内部出现滚动条 */}
       <div className="flex-1 min-h-0 bg-white border border-black/5 rounded-3xl shadow-sm overflow-hidden flex flex-col">
         <div
-          className="flex-1 px-8 py-6 max-w-4xl mx-auto w-full overflow-y-auto
+          className="flex-1 p-8 overflow-y-auto
             [&::-webkit-scrollbar]:w-2
             [&::-webkit-scrollbar-track]:bg-transparent
             [&::-webkit-scrollbar-thumb]:bg-black/15
