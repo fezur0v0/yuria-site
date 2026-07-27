@@ -3,6 +3,9 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageResize from 'tiptap-extension-resize-image';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import Placeholder from '@tiptap/extension-placeholder';
 
 const CustomImage = ImageResize.extend({
   addAttributes() {
@@ -18,8 +21,7 @@ const CustomImage = ImageResize.extend({
     };
   },
 });
-import Underline from '@tiptap/extension-underline';
-import Placeholder from '@tiptap/extension-placeholder';
+
 import { useCallback, type ReactNode, type ChangeEvent } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import {
@@ -45,10 +47,11 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
   const supabase = createClient();
 
   const editor = useEditor({
-    extensions: [
+extensions: [
       StarterKit,
       Underline,
-     CustomImage.configure({
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      CustomImage.configure({
         HTMLAttributes: { class: 'rounded-xl' },
         minWidth: 80,
         maxWidth: 800,
@@ -67,6 +70,22 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
       },
     },
   });
+
+ const setAlign = (align: 'left' | 'center' | 'right') => {
+    if (!editor) return;
+    if (editor.isActive('image')) {
+      editor.chain().focus().updateAttributes('image', { align }).run();
+    } else {
+      editor.chain().focus().setTextAlign(align).run();
+    }
+  };
+
+  const isAlignActive = (align: 'left' | 'center' | 'right') => {
+    if (!editor) return false;
+    return editor.isActive('image')
+      ? editor.isActive('image', { align })
+      : editor.isActive({ textAlign: align });
+  };
 
   const insertImage = useCallback(async (file: File) => {
     if (!editor) return;
@@ -111,18 +130,17 @@ const setImageAlign = (align: 'left' | 'center' | 'right') => {
         <IconButton active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()} title="删除线">
           <GrStrikeThrough size={20} />
         </IconButton>
-
-        <div className="w-[1px] h-6 bg-black/10 mx-1" />
-
-      <IconButton active={editor.isActive('image', { align: 'left' })} onClick={() => setImageAlign('left')} title="靠左">
+        <IconButton active={isAlignActive('left')} onClick={() => setAlign('left')} title="靠左">
           <GrTextAlignLeft size={20} />
         </IconButton>
-        <IconButton active={editor.isActive('image', { align: 'center' })} onClick={() => setImageAlign('center')} title="居中">
+        <IconButton active={isAlignActive('center')} onClick={() => setAlign('center')} title="居中">
           <GrTextAlignCenter size={20} />
         </IconButton>
-        <IconButton active={editor.isActive('image', { align: 'right' })} onClick={() => setImageAlign('right')} title="靠右">
+        <IconButton active={isAlignActive('right')} onClick={() => setAlign('right')} title="靠右">
           <GrTextAlignRight size={20} />
         </IconButton>
+
+        <div className="w-[1px] h-6 bg-black/10 mx-1" />
         <IconButton active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="列表">
           <GrUnorderedList size={20} />
         </IconButton>
