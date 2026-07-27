@@ -3,6 +3,21 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageResize from 'tiptap-extension-resize-image';
+
+const CustomImage = ImageResize.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      align: {
+        default: 'left',
+        parseHTML: (element: HTMLElement) => element.getAttribute('data-align') || 'left',
+        renderHTML: (attributes: { align?: string }) => ({
+          'data-align': attributes.align || 'left',
+        }),
+      },
+    };
+  },
+});
 import Underline from '@tiptap/extension-underline';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useCallback, type ReactNode, type ChangeEvent } from 'react';
@@ -12,6 +27,9 @@ import {
   GrItalic,
   GrUnderline,
   GrStrikeThrough,
+  GrTextAlignLeft,
+  GrTextAlignCenter,
+  GrTextAlignRight,
   GrUnorderedList,
   GrBlockQuote,
   GrImage,
@@ -30,7 +48,7 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
     extensions: [
       StarterKit,
       Underline,
-      ImageResize.configure({
+     CustomImage.configure({
         HTMLAttributes: { class: 'rounded-xl' },
         minWidth: 80,
         maxWidth: 800,
@@ -65,6 +83,10 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
     editor.chain().focus().setImage({ src: data.publicUrl }).run();
   }, [editor, supabase]);
 
+const setImageAlign = (align: 'left' | 'center' | 'right') => {
+    editor?.chain().focus().updateAttributes('image', { align }).run();
+  };
+
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) insertImage(file);
@@ -92,6 +114,15 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
 
         <div className="w-[1px] h-6 bg-black/10 mx-1" />
 
+      <IconButton active={editor.isActive('image', { align: 'left' })} onClick={() => setImageAlign('left')} title="靠左">
+          <GrTextAlignLeft size={20} />
+        </IconButton>
+        <IconButton active={editor.isActive('image', { align: 'center' })} onClick={() => setImageAlign('center')} title="居中">
+          <GrTextAlignCenter size={20} />
+        </IconButton>
+        <IconButton active={editor.isActive('image', { align: 'right' })} onClick={() => setImageAlign('right')} title="靠右">
+          <GrTextAlignRight size={20} />
+        </IconButton>
         <IconButton active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="列表">
           <GrUnorderedList size={20} />
         </IconButton>
