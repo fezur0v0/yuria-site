@@ -307,11 +307,24 @@ function normalizeContentHtml(html: string): string {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   doc.querySelectorAll('img[containerstyle], img[wrapperstyle]').forEach((img) => {
     const containerStyle = img.getAttribute('containerstyle') || '';
+    const wrapperStyle = img.getAttribute('wrapperstyle') || '';
+    const el = img as HTMLElement;
+
     const widthMatch = containerStyle.match(/width:\s*([\d.]+px)/);
     if (widthMatch) {
-      (img as HTMLElement).style.width = widthMatch[1];
-      (img as HTMLElement).style.height = 'auto';
+      el.style.width = widthMatch[1];
+      el.style.height = 'auto';
     }
+
+    el.style.display = 'block';
+    if (wrapperStyle.includes('justify-content: center')) {
+      el.style.margin = '0 auto';
+    } else if (wrapperStyle.includes('justify-content: flex-end')) {
+      el.style.margin = '0 0 0 auto';
+    } else {
+      el.style.margin = '0 auto 0 0';
+    }
+
     img.removeAttribute('containerstyle');
     img.removeAttribute('wrapperstyle');
   });
