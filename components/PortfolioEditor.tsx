@@ -14,9 +14,19 @@ const CustomImage = ImageResize.extend({
       align: {
         default: 'left',
         parseHTML: (element: HTMLElement) => element.getAttribute('data-align') || 'left',
-        renderHTML: (attributes: { align?: string }) => ({
-          'data-align': attributes.align || 'left',
-        }),
+     renderHTML: (attributes: { align?: string }) => {
+  const align = attributes.align || 'left';
+
+  return {
+    'data-align': align,
+    style:
+      align === 'center'
+        ? 'display:block;margin:1.5rem auto;'
+        : align === 'right'
+        ? 'display:block;margin:1.5rem 0 1.5rem auto;'
+        : 'display:block;margin:1.5rem auto 1.5rem 0;',
+            };
+         },
       },
     };
   },
