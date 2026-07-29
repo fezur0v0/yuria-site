@@ -51,7 +51,7 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
     }
     setSaving(true);
 
-  const payload = {
+    const payload = {
       title,
       category: category || null,
       date: date || null,
@@ -83,7 +83,7 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
   };
 
   return (
-    <div className="w-full h-screen overflow-hidden flex flex-col bg-[#fafafa]">
+    <div className="w-full min-h-screen lg:h-screen lg:overflow-hidden flex flex-col bg-[#fafafa]">
       {/* 顶部: 两端分布 */}
       <header className="h-20 w-full px-8 flex items-center justify-between border-b border-black/10 bg-white/80 backdrop-blur-md flex-shrink-0">
         <div className="flex items-center gap-4">
@@ -121,9 +121,9 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
       </header>
 
       {/* 核心两栏内容区 */}
-      <div className="flex-1 w-full flex flex-col lg:flex-row min-h-0 p-8 gap-12">
+      <div className="flex-1 w-full flex flex-col lg:flex-row min-h-0 p-4 sm:p-8 gap-6 lg:gap-12">
         {/* 左侧栏：删除了边框卡片背景，精简且放大 Label */}
-        <aside className="w-full lg:w-[420px] flex-shrink-0 overflow-y-auto pr-2 space-y-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-black/10 [&::-webkit-scrollbar-thumb]:rounded-full">
+        <aside className="w-full lg:w-[420px] flex-shrink-0 lg:overflow-y-auto lg:pr-2 space-y-6 lg:space-y-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-black/10 [&::-webkit-scrollbar-thumb]:rounded-full">
           <div>
             <label className="text-lg font-serif font-semibold text-black/80 mb-2.5 block tracking-wide">
               作品标题
@@ -203,7 +203,7 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
         </aside>
 
         {/* 右侧主编辑区 */}
-        <main className="flex-1 min-w-0 h-full flex flex-col">
+        <main className="flex-1 min-w-0 lg:h-full flex flex-col">
           <PortfolioEditor content={content} onChange={setContent} />
         </main>
       </div>
@@ -269,7 +269,6 @@ function TagsInput({ tags, setTags }: { tags: string[]; setTags: (t: string[]) =
     if (val && !tags.includes(val)) setTags([...tags, val]);
     setInput('');
   };
-
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
