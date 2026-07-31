@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { FiChevronDown } from 'react-icons/fi';
 
 interface TocItem {
   id: string;
@@ -10,6 +11,7 @@ interface TocItem {
 
 export default function TableOfContents({ items }: { items: TocItem[] }) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false); // 默认收起小标题
 
   useEffect(() => {
     if (items.length === 0) return;
@@ -35,46 +37,69 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
     e.preventDefault();
     const el = document.getElementById(id);
     if (!el) return;
+
+    // 平滑锚点跳转
     const y = el.getBoundingClientRect().top + window.scrollY - 100;
     window.scrollTo({ top: y, behavior: 'smooth' });
   };
 
-  // 没有目录项时直接不渲染
-  if (items.length === 0) {
-    return null;
-  }
+  if (items.length === 0) return null;
 
   return (
-    <div
-      className="rounded-2xl shadow-sm p-4 sm:p-6 max-h-96 overflow-y-auto [&::-webkit-scrollbar]:hidden"
-      style={{
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7))',
-        scrollbarWidth: 'none',
-      }}
-    >
-      <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
-      <div className="relative flex flex-col gap-0.5">
-        <div className="absolute left-[3px] top-1 bottom-1 w-px bg-black/10" />
-        {items.map((item) => {
-          const isActive = activeId === item.id;
-          return (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              onClick={(e) => handleClick(e, item.id)}
-              className={`relative flex items-center gap-2.5 py-1.5 text-xs transition-colors ${
-                item.level === 3 ? 'pl-6' : 'pl-0'
-              } ${isActive ? 'text-black font-medium' : 'text-black/45 hover:text-black/75'}`}
-            >
-              <span
-                className={`relative z-10 flex-shrink-0 rounded-full transition-all ${
-                  item.level === 2 ? 'w-[7px] h-[7px]' : 'w-[5px] h-[5px] ml-1'
-                } ${isActive ? 'bg-[#70B0CC]' : 'bg-black/20'}`}
-              />
-              <span className="line-clamp-1">{item.text}</span>
-            </a>
-          );
-        })}
+    <div className="w-full max-w-xs transition-all duration-300">
+      <div className="rounded-2xl border border-black/5 bg-white/70 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
+        {/* 大标题按键：点击展开/收起 */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-black/[0.02] transition-colors group"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-black/60 group-hover:scale-125 transition-transform" />
+            <span className="text-sm font-serif tracking-wider text-black/80 font-medium">
+              目录 <span className="text-[10px] font-sans tracking-normal opacity-40 uppercase ml-1">Index</span>
+            </span>
+          </div>
+
+          <FiChevronDown
+            size={16}
+            className={`text-black/40 transition-transform duration-300 ${
+              isOpen ? 'rotate-180 text-black/80' : ''
+            }`}
+          />
+        </button>
+
+        {/* 展开的目录列表 */}
+        {isOpen && (
+          <div className="px-5 pb-4 pt-1 border-t border-black/5 flex flex-col gap-1 max-h-80 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+            {items.map((item) => {
+              const isActive = activeId === item.id;
+              return (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => handleClick(e, item.id)}
+                  className={`group/item flex items-center gap-3 py-1.5 text-xs transition-all ${
+                    item.level === 3 ? 'pl-4' : 'pl-0'
+                  } ${
+                    isActive
+                      ? 'text-black font-semibold'
+                      : 'text-black/50 hover:text-black/90 font-normal'
+                  }`}
+                >
+                  {/* 左侧 Ins 感细线小圆点标记 */}
+                  <span
+                    className={`w-1 h-1 rounded-full transition-all ${
+                      isActive
+                        ? 'bg-black scale-125'
+                        : 'bg-black/20 group-hover/item:bg-black/40'
+                    }`}
+                  />
+                  <span className="line-clamp-1 tracking-wide">{item.text}</span>
+                </a>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
