@@ -79,7 +79,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         />
       )}
 
-      <div className="relative z-10 max-w-7xl mx-auto px-8 pt-28 pb-16 flex flex-col lg:flex-row gap-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-20 sm:pt-28 pb-8 sm:pb-16 flex flex-col lg:flex-row gap-6 lg:gap-12">
         {/* 信息栏 — 结构跟列表页保持一致 */}
         <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
           <div className="lg:sticky lg:top-24 flex flex-col gap-5">
@@ -87,9 +87,9 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
             {/* 目录卡片 — 占位,下一步做联动 */}
             <div
-              className="rounded-2xl shadow-sm p-6"
-              style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7))' }}
-            >
+className="rounded-2xl shadow-sm p-4 sm:p-6"
+style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7))' }}
+>
               <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
               <p className="text-xs text-black/30">目录联动开发中…</p>
             </div>
@@ -98,10 +98,10 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
         {/* 正文 */}
         <main className="order-1 lg:order-2 flex-1 min-w-0">
-          <div
-            className="rounded-2xl shadow-sm p-8"
-            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
-          >
+      <div
+className="rounded-2xl shadow-sm p-5 sm:p-8"
+style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
+>
             <div className="flex items-center gap-2 mb-3">
               <h1 className="text-2xl font-serif">{item.title}</h1>
               <Link
@@ -113,7 +113,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
               </Link>
             </div>
 
-            <div className="flex items-center gap-3 mb-8 text-xs text-black/40 flex-wrap">
+           <div className="flex items-center gap-3 mb-5 sm:mb-8 text-xs text-black/40 flex-wrap">
               {item.date && <span>{item.date}</span>}
               {item.category && (
                 <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
