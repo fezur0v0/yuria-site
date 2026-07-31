@@ -19,7 +19,6 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
-  // 重构成树状结构（H2 包含 H3）
   const groupedItems = useMemo(() => {
     const result: GroupedTocItem[] = [];
     let currentH2: GroupedTocItem | null = null;
@@ -40,16 +39,13 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
     return result;
   }, [items]);
 
-  // 监听页面滚动高亮
   useEffect(() => {
     if (items.length === 0) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
+          if (entry.isIntersecting) setActiveId(entry.target.id);
         });
       },
       { rootMargin: '-15% 0px -70% 0px' }
@@ -63,7 +59,6 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
     return () => observer.disconnect();
   }, [items]);
 
-  // 自动展开当前高亮子项对应的父级 H2
   useEffect(() => {
     if (!activeId) return;
     groupedItems.forEach((group) => {
@@ -95,19 +90,22 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
 
   return (
     <nav className="w-full font-sans select-none">
-      {/* 彻底同步 SidebarProfile 的同款卡片样式 */}
-      <div className="bg-white/60 backdrop-blur-md isolate transform-gpu rounded-2xl shadow-sm p-5 sm:p-6">
-        {/* 卡片头部：韩系 Ins 杂志风 Title */}
-        <div className="flex items-center gap-2 pb-3 mb-3 border-b border-black/5">
-          <span className="text-[10px] text-black/30 tracking-widest">✦.ﾟ</span>
-          <h4 className="text-xs font-serif tracking-[0.2em] text-black/60 uppercase font-medium">
-            INDEX
-          </h4>
-          <span className="text-[10px] text-black/25 font-serif italic ml-auto">.♡ *</span>
+      {/* 保持和 SidebarProfile 相同的卡片外框 */}
+      <div className="bg-white/60 backdrop-blur-md isolate transform-gpu rounded-2xl shadow-sm p-6 sm:p-7">
+        
+        {/* 标题区：极简 Ins 风格，将顶部所有符号统一改为了 ✦ */}
+        <div className="flex items-center justify-between pb-4 mb-4 border-b border-black/[0.06]">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-black/40">✦</span>
+            <h4 className="text-xs font-serif tracking-[0.25em] text-black/70 uppercase font-medium">
+              INDEX
+            </h4>
+          </div>
+          <span className="text-[10px] text-black/30 font-serif">✦</span>
         </div>
 
-        {/* 目录列表 */}
-        <div className="flex flex-col gap-1.5 max-h-[60vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        {/* 目录主列表 */}
+        <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
           {groupedItems.map((group) => {
             const isGroupActive = activeId === group.id;
             const hasChildren = group.children.length > 0;
@@ -115,44 +113,43 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
 
             return (
               <div key={group.id} className="flex flex-col gap-1">
-                {/* H2 大标题：点击整块区域收容/展开 */}
+                {/* H2 大标题：极简轻盈样式 */}
                 <div
                   onClick={(e) => handleTitleClick(group, e)}
-                  className={`group flex items-center justify-between py-1.5 px-1 rounded-lg cursor-pointer transition-all duration-300 ${
+                  className={`group flex items-center justify-between py-1.5 cursor-pointer transition-all duration-300 ${
                     isGroupActive
-                      ? 'text-[#2a6f78] font-semibold tracking-wide translate-x-1'
-                      : 'text-black/70 hover:text-[#2a6f78] hover:translate-x-1 font-normal tracking-wide'
+                      ? 'text-black font-medium tracking-wide translate-x-1'
+                      : 'text-black/50 hover:text-black/80 hover:translate-x-1 font-normal tracking-wide'
                   }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0 pr-2">
+                  <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                    {/* 左侧极其细小的黑/灰圆点，高亮时微扩大 */}
                     <span
-                      className={`text-[10px] transition-all duration-300 flex-shrink-0 ${
+                      className={`w-1 h-1 rounded-full transition-all duration-300 flex-shrink-0 ${
                         isGroupActive
-                          ? 'text-[#2a6f78] scale-125 opacity-100'
-                          : 'text-black/20 group-hover:text-[#2a6f78] group-hover:opacity-100 opacity-0'
+                          ? 'bg-black scale-125'
+                          : 'bg-black/20 group-hover:bg-black/40'
                       }`}
-                    >
-                      ✦
-                    </span>
-                    <span className="text-sm line-clamp-1">{group.text}</span>
+                    />
+                    <span className="text-xs line-clamp-1">{group.text}</span>
                   </div>
 
-                  {/* 折叠小箭头 */}
+                  {/* 右侧微型箭头 */}
                   {hasChildren && (
-                    <span className="text-black/30 group-hover:text-[#2a6f78] transition-colors flex-shrink-0">
+                    <span className="text-black/30 group-hover:text-black/60 transition-colors flex-shrink-0">
                       <FiChevronDown
-                        size={14}
+                        size={13}
                         className={`transition-transform duration-300 ${
-                          isExpanded ? 'rotate-180 text-[#2a6f78]' : ''
+                          isExpanded ? 'rotate-180 text-black/70' : ''
                         }`}
                       />
                     </span>
                   )}
                 </div>
 
-                {/* H3 子标题列表 */}
+                {/* H3 子标题列表：去掉小符号，换用极简的侧边细线指示 */}
                 {hasChildren && isExpanded && (
-                  <div className="pl-4 border-l border-black/10 flex flex-col gap-1 py-1 my-0.5 ml-2.5 transition-all">
+                  <div className="pl-3.5 border-l border-black/10 flex flex-col gap-1 py-1 my-0.5 ml-2 transition-all">
                     {group.children.map((child) => {
                       const isChildActive = activeId === child.id;
                       return (
@@ -160,21 +157,12 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
                           key={child.id}
                           href={`#${child.id}`}
                           onClick={(e) => handleChildClick(child.id, e)}
-                          className={`group/child flex items-center gap-2 py-1 text-xs transition-all duration-200 ${
+                          className={`flex items-center py-1 text-[11px] transition-all duration-200 ${
                             isChildActive
-                              ? 'text-[#2a6f78] font-medium tracking-wide translate-x-0.5'
-                              : 'text-black/50 hover:text-[#2a6f78] hover:translate-x-0.5'
+                              ? 'text-black font-medium tracking-wide translate-x-0.5'
+                              : 'text-black/40 hover:text-black/70 hover:translate-x-0.5'
                           }`}
                         >
-                          <span
-                            className={`text-[9px] transition-all duration-200 flex-shrink-0 ${
-                              isChildActive
-                                ? 'text-[#2a6f78] opacity-100'
-                                : 'text-black/20 group-hover/child:text-[#2a6f78] opacity-60'
-                            }`}
-                          >
-                          ✦
-                          </span>
                           <span className="line-clamp-1">{child.text}</span>
                         </a>
                       );
