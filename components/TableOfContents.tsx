@@ -76,7 +76,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
   const handleTitleClick = (group: GroupedTocItem, e: React.MouseEvent) => {
     e.preventDefault();
     
-    // 1. 点击 H2 区域直接切换该项的展开/收起状态
+    // 1. 点击 H2 区域直接切换展开/收起
     setExpandedIds((prev) => ({ ...prev, [group.id]: !prev[group.id] }));
 
     // 2. 跳转到对应位置
@@ -98,10 +98,10 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
 
   return (
     <nav className="w-full max-w-xs font-sans select-none">
-      {/* 彻底去除背景框，采用极简悬浮布局 */}
-      <div className="p-2 space-y-4">
-        {/* 韩系杂志风格的精致 Title */}
-        <div className="flex items-center gap-2 pb-2 border-b border-black/[0.06]">
+      {/* 恢复与其它区域一致的半透明玻璃卡片背景 */}
+      <div className="rounded-3xl border border-black/[0.04] bg-white/70 backdrop-blur-xl p-5 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
+        {/* 卡片头部：韩系 Ins 风 Title */}
+        <div className="flex items-center gap-2 pb-3 mb-3 border-b border-black/[0.04]">
           <span className="text-[10px] text-black/30 tracking-widest">✦.ﾟ</span>
           <h4 className="text-xs font-serif tracking-[0.25em] text-black/50 uppercase font-medium">
             INDEX
@@ -109,7 +109,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
           <span className="text-[10px] text-black/20 font-serif italic ml-auto">.♡ *</span>
         </div>
 
-        {/* 目录主列表 */}
+        {/* 目录列表 */}
         <div className="flex flex-col gap-2 max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
           {groupedItems.map((group) => {
             const isGroupActive = activeId === group.id;
@@ -118,17 +118,17 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
 
             return (
               <div key={group.id} className="flex flex-col gap-1">
-                {/* H2 大标题整块可点击 */}
+                {/* H2 大标题：整块区域均可点击 */}
                 <div
                   onClick={(e) => handleTitleClick(group, e)}
-                  className={`group flex items-center justify-between py-1.5 px-1 cursor-pointer transition-all duration-300 ${
+                  className={`group flex items-center justify-between py-1.5 px-1 rounded-lg cursor-pointer transition-all duration-300 ${
                     isGroupActive
-                      ? 'text-[#4A777A] font-semibold tracking-wider translate-x-1 [text-shadow:0_0_12px_rgba(74,119,122,0.2)]'
+                      ? 'text-[#4A777A] font-semibold tracking-wider translate-x-1 [text-shadow:0_0_12px_rgba(74,119,122,0.25)]'
                       : 'text-black/60 hover:text-[#4A777A] hover:translate-x-1 font-normal tracking-wide'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0 pr-2">
-                    {/* 微星星符号 ✦ */}
+                    {/* 微星星 ✦ */}
                     <span
                       className={`text-[10px] transition-all duration-300 flex-shrink-0 ${
                         isGroupActive
@@ -141,7 +141,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
                     <span className="text-xs line-clamp-1">{group.text}</span>
                   </div>
 
-                  {/* 右侧微型箭头 */}
+                  {/* 折叠小箭头 */}
                   {hasChildren && (
                     <span className="text-black/20 group-hover:text-[#4A777A] transition-colors flex-shrink-0">
                       <FiChevronRight
