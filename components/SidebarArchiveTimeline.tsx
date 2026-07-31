@@ -44,7 +44,7 @@ export default function SidebarArchiveTimeline() {
   };
 
   return (
-    <div className="bg-white/60 backdrop-blur-md isolate transform-gpu rounded-2xl shadow-sm p-8">
+    <div className="bg-white/60 backdrop-blur-md isolate transform-gpu rounded-2xl shadow-sm p-5 sm:p-8">
       <h4 className="text-lg font-bold text-black mb-4">归档</h4>
       <div className="max-h-72 overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
         <div className="relative">
