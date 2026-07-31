@@ -99,30 +99,28 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         />
       )}
 
-      {/* 主体内容区域：注意 items-start 属性，确保侧边栏吸顶生效 */}
+      {/* 主体区域 */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-[30vh] sm:pt-[36vh] pb-8 sm:pb-16 flex flex-col lg:flex-row items-start gap-6 lg:gap-12">
         
-        {/* 侧边栏：PC 端 Sticky 固定，移动端自动调整 */}
+        {/* 侧边栏 */}
         <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-24">
           <div className="flex flex-col gap-5">
-            {/* 1. 移动端隐藏目录 (hidden)，电脑端正常显示 (lg:block) */}
+            {/* 1. 个人介绍放在上面 */}
+            <SidebarProfile />
+
+            {/* 2. 目录放在个人介绍下方，且仅在 PC 端显示 */}
             {toc.length > 0 && (
               <div className="hidden lg:block">
                 <TableOfContents items={toc} />
               </div>
             )}
-            
-            {/* 2. 个人信息卡片（移动端和电脑端都保留，移动端排在正文下方） */}
-            <SidebarProfile />
           </div>
         </aside>
 
         {/* 正文区域 */}
         <main className="order-1 lg:order-2 flex-1 min-w-0 w-full">
-          <div
-            className="rounded-2xl shadow-sm p-5 sm:p-8"
-            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
-          >
+          {/* 背景样式已调整为与个人介绍、目录完全一致的 bg-white/60 和 backdrop-blur-md */}
+          <div className="bg-white/60 backdrop-blur-md isolate transform-gpu rounded-2xl shadow-sm p-5 sm:p-8">
             <div className="flex items-baseline justify-between gap-3 mb-3">
               <div className="flex items-center gap-2 min-w-0">
                 <h1 className="text-2xl font-serif truncate">{item.title}</h1>
