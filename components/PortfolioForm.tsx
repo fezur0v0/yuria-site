@@ -19,6 +19,22 @@ interface PortfolioFormProps {
   };
 }
 
+function normalizeContentHtml(html: string): string {
+  if (typeof window === 'undefined') return html;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('img[containerstyle], img[wrapperstyle]').forEach((img) => {
+    const containerStyle = img.getAttribute('containerstyle') || '';
+    const widthMatch = containerStyle.match(/width:\s*([\d.]+px)/);
+    if (widthMatch) {
+      (img as HTMLElement).style.width = widthMatch[1];
+      (img as HTMLElement).style.height = 'auto';
+    }
+    img.removeAttribute('containerstyle');
+    img.removeAttribute('wrapperstyle');
+  });
+  return doc.body.innerHTML;
+}
+
 export default function PortfolioForm({ initialData }: PortfolioFormProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -299,20 +315,4 @@ function TagsInput({ tags, setTags }: { tags: string[]; setTags: (t: string[]) =
       />
     </div>
   );
-}
-
-function normalizeContentHtml(html: string): string {
-  if (typeof window === 'undefined') return html;
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  doc.querySelectorAll('img[containerstyle], img[wrapperstyle]').forEach((img) => {
-    const containerStyle = img.getAttribute('containerstyle') || '';
-    const widthMatch = containerStyle.match(/width:\s*([\d.]+px)/);
-    if (widthMatch) {
-      (img as HTMLElement).style.width = widthMatch[1];
-      (img as HTMLElement).style.height = 'auto';
-    }
-    img.removeAttribute('containerstyle');
-    img.removeAttribute('wrapperstyle');
-  });
-  return doc.body.innerHTML;
 }
