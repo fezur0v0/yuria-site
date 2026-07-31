@@ -163,7 +163,7 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
       </BubbleMenu>
 
       {/* 编辑器内容容器 */}
-      <div className="flex-1 min-h-0 bg-white border border-black/5 rounded-3xl shadow-sm overflow-hidden flex flex-col">
+  <div className="h-[420px] lg:h-auto lg:flex-1 lg:min-h-0 bg-white border border-black/5 rounded-3xl shadow-sm overflow-hidden flex flex-col">
         <div
           className="flex-1 p-8 overflow-y-auto
           [&::-webkit-scrollbar]:w-2
