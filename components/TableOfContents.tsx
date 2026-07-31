@@ -76,10 +76,10 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
   const handleTitleClick = (group: GroupedTocItem, e: React.MouseEvent) => {
     e.preventDefault();
     
-    // 1. 点击 H2 区域直接切换展开/收起
+    // 点击 H2 区域直接切换展开/收起
     setExpandedIds((prev) => ({ ...prev, [group.id]: !prev[group.id] }));
 
-    // 2. 跳转到对应位置
+    // 跳转到对应位置
     const el = document.getElementById(group.id);
     if (!el) return;
     const y = el.getBoundingClientRect().top + window.scrollY - 100;
@@ -98,9 +98,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
 
   return (
     <nav className="w-full max-w-xs font-sans select-none">
-      {/* 恢复与其它区域一致的半透明玻璃卡片背景 */}
       <div className="rounded-3xl border border-black/[0.04] bg-white/70 backdrop-blur-xl p-5 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
-        {/* 卡片头部：韩系 Ins 风 Title */}
         <div className="flex items-center gap-2 pb-3 mb-3 border-b border-black/[0.04]">
           <span className="text-[10px] text-black/30 tracking-widest">✦.ﾟ</span>
           <h4 className="text-xs font-serif tracking-[0.25em] text-black/50 uppercase font-medium">
@@ -128,7 +126,6 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0 pr-2">
-                    {/* 微星星 ✦ */}
                     <span
                       className={`text-[10px] transition-all duration-300 flex-shrink-0 ${
                         isGroupActive
@@ -177,7 +174,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
                                 : 'text-black/15 group-hover/child:text-[#4A777A] opacity-60'
                             }`}
                           >
-                            .ﾟ*
+                           ✦
                           </span>
                           <span className="line-clamp-1">{child.text}</span>
                         </a>
