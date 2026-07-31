@@ -17,10 +17,9 @@ interface GroupedTocItem {
 
 export default function TableOfContents({ items }: { items: TocItem[] }) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  // 记录哪些一级标题（H2）是展开状态
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
-  // 将扁平的 items 结构重构成树状结构（H2 包含 H3）
+  // 重构成树状结构（H2 包含 H3）
   const groupedItems = useMemo(() => {
     const result: GroupedTocItem[] = [];
     let currentH2: GroupedTocItem | null = null;
@@ -33,7 +32,6 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
         if (currentH2) {
           currentH2.children.push(item);
         } else {
-          // 如果前面没有 H2，单独作为顶级项处理
           result.push({ id: item.id, text: item.text, children: [] });
         }
       }
@@ -42,7 +40,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
     return result;
   }, [items]);
 
-  // 监听页面滚动，高亮当前标题
+  // 监听页面滚动
   useEffect(() => {
     if (items.length === 0) return;
 
@@ -65,7 +63,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
     return () => observer.disconnect();
   }, [items]);
 
-  // 当滚动高亮到某个子标题时，自动展开其所在的父级 H2
+  // 滚动到子标题时自动展开父级 H2
   useEffect(() => {
     if (!activeId) return;
     groupedItems.forEach((group) => {
@@ -75,35 +73,44 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
     });
   }, [activeId, groupedItems]);
 
-  const handleClick = (e: React.MouseEvent, id: string) => {
+  const handleTitleClick = (group: GroupedTocItem, e: React.MouseEvent) => {
     e.preventDefault();
-    const el = document.getElementById(id);
-    if (!el) return;
+    
+    // 1. 点击 H2 区域直接切换该项的展开/收起状态
+    setExpandedIds((prev) => ({ ...prev, [group.id]: !prev[group.id] }));
 
+    // 2. 跳转到对应位置
+    const el = document.getElementById(group.id);
+    if (!el) return;
     const y = el.getBoundingClientRect().top + window.scrollY - 100;
     window.scrollTo({ top: y, behavior: 'smooth' });
   };
 
-  const toggleExpand = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  const handleChildClick = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - 100;
+    window.scrollTo({ top: y, behavior: 'smooth' });
   };
 
   if (items.length === 0) return null;
 
   return (
-    <nav className="w-full max-w-xs font-sans">
-      <div className="rounded-3xl border border-black/[0.04] bg-white/70 backdrop-blur-xl p-5 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
-        {/* 卡片头部标题 */}
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-black/[0.04]">
-          <h4 className="text-xs font-serif tracking-[0.2em] text-black/40 uppercase font-medium">
-            Contents
+    <nav className="w-full max-w-xs font-sans select-none">
+      {/* 彻底去除背景框，采用极简悬浮布局 */}
+      <div className="p-2 space-y-4">
+        {/* 韩系杂志风格的精致 Title */}
+        <div className="flex items-center gap-2 pb-2 border-b border-black/[0.06]">
+          <span className="text-[10px] text-black/30 tracking-widest">✦.ﾟ</span>
+          <h4 className="text-xs font-serif tracking-[0.25em] text-black/50 uppercase font-medium">
+            INDEX
           </h4>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#3182ce]/60" />
+          <span className="text-[10px] text-black/20 font-serif italic ml-auto">.♡ *</span>
         </div>
 
-        {/* 目录分组列表 */}
-        <div className="flex flex-col gap-1.5 max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        {/* 目录主列表 */}
+        <div className="flex flex-col gap-2 max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
           {groupedItems.map((group) => {
             const isGroupActive = activeId === group.id;
             const hasChildren = group.children.length > 0;
@@ -111,66 +118,67 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
 
             return (
               <div key={group.id} className="flex flex-col gap-1">
-                {/* 大标题 (H2) */}
+                {/* H2 大标题整块可点击 */}
                 <div
-                  onClick={(e) => handleClick(e, group.id)}
-                  className={`group relative flex items-center justify-between px-3 py-2 rounded-xl text-xs tracking-wide transition-all duration-300 cursor-pointer ${
+                  onClick={(e) => handleTitleClick(group, e)}
+                  className={`group flex items-center justify-between py-1.5 px-1 cursor-pointer transition-all duration-300 ${
                     isGroupActive
-                      ? 'bg-white text-[#3182ce] font-semibold shadow-[0_4px_14px_rgba(49,130,206,0.15)] -translate-y-[1px]'
-                      : 'text-black/70 hover:text-[#3182ce] hover:bg-white/80 hover:shadow-[0_4px_12px_rgba(0,0,0,0.04)] hover:-translate-y-[1px]'
+                      ? 'text-[#4A777A] font-semibold tracking-wider translate-x-1 [text-shadow:0_0_12px_rgba(74,119,122,0.2)]'
+                      : 'text-black/60 hover:text-[#4A777A] hover:translate-x-1 font-normal tracking-wide'
                   }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0 pr-1">
+                  <div className="flex items-center gap-2 min-w-0 pr-2">
+                    {/* 微星星符号 ✦ */}
                     <span
-                      className={`w-1 h-1 rounded-full transition-all duration-300 flex-shrink-0 ${
+                      className={`text-[10px] transition-all duration-300 flex-shrink-0 ${
                         isGroupActive
-                          ? 'bg-[#3182ce] scale-125'
-                          : 'bg-black/20 group-hover:bg-[#3182ce]'
+                          ? 'text-[#4A777A] scale-125 opacity-100'
+                          : 'text-black/20 group-hover:text-[#4A777A] group-hover:opacity-100 opacity-0'
                       }`}
-                    />
-                    <span className="line-clamp-1">{group.text}</span>
+                    >
+                      ✦
+                    </span>
+                    <span className="text-xs line-clamp-1">{group.text}</span>
                   </div>
 
-                  {/* 如果有子标题，展示小折叠箭头 */}
+                  {/* 右侧微型箭头 */}
                   {hasChildren && (
-                    <button
-                      type="button"
-                      onClick={(e) => toggleExpand(group.id, e)}
-                      className="p-1 rounded-lg text-black/30 hover:text-[#3182ce] hover:bg-black/5 transition-all flex-shrink-0"
-                    >
+                    <span className="text-black/20 group-hover:text-[#4A777A] transition-colors flex-shrink-0">
                       <FiChevronRight
-                        size={13}
+                        size={12}
                         className={`transition-transform duration-300 ${
-                          isExpanded ? 'rotate-90 text-[#3182ce]' : ''
+                          isExpanded ? 'rotate-90 text-[#4A777A]' : ''
                         }`}
                       />
-                    </button>
+                    </span>
                   )}
                 </div>
 
-                {/* 子标题列表 (H3) — 只有展开时显示 */}
+                {/* H3 子标题列表 */}
                 {hasChildren && isExpanded && (
-                  <div className="pl-4 ml-3 border-l border-black/[0.06] flex flex-col gap-1 py-1 my-0.5">
+                  <div className="pl-5 border-l border-black/[0.06] flex flex-col gap-1.5 py-1 my-0.5 ml-2 transition-all">
                     {group.children.map((child) => {
                       const isChildActive = activeId === child.id;
                       return (
                         <a
                           key={child.id}
                           href={`#${child.id}`}
-                          onClick={(e) => handleClick(e, child.id)}
-                          className={`group/child flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] tracking-wide transition-all duration-200 ${
+                          onClick={(e) => handleChildClick(child.id, e)}
+                          className={`group/child flex items-center gap-2 py-1 text-[11px] transition-all duration-200 ${
                             isChildActive
-                              ? 'bg-white text-[#3182ce] font-medium shadow-[0_2px_8px_rgba(49,130,206,0.12)] -translate-y-[0.5px]'
-                              : 'text-black/50 hover:text-[#3182ce] hover:bg-white/60 hover:shadow-[0_2px_6px_rgba(0,0,0,0.03)]'
+                              ? 'text-[#4A777A] font-medium tracking-wide translate-x-0.5'
+                              : 'text-black/40 hover:text-[#4A777A] hover:translate-x-0.5'
                           }`}
                         >
                           <span
-                            className={`w-1 h-1 rounded-full transition-all duration-200 flex-shrink-0 ${
+                            className={`text-[8px] transition-all duration-200 flex-shrink-0 ${
                               isChildActive
-                                ? 'bg-[#3182ce]'
-                                : 'bg-black/15 group-hover/child:bg-[#3182ce]'
+                                ? 'text-[#4A777A] opacity-100'
+                                : 'text-black/15 group-hover/child:text-[#4A777A] opacity-60'
                             }`}
-                          />
+                          >
+                            .ﾟ*
+                          </span>
                           <span className="line-clamp-1">{child.text}</span>
                         </a>
                       );
