@@ -8,6 +8,7 @@ import { Vibrant } from 'node-vibrant/node';
 import PortfolioNav from '@/components/PortfolioNav';
 import FloatingWidget from '@/components/FloatingWidget';
 import SidebarProfile from '@/components/SidebarProfile';
+import TableOfContents from '@/components/TableOfContents';
 
 interface PortfolioItem {
   id: string;
@@ -19,9 +20,28 @@ interface PortfolioItem {
   cover_url: string | null;
 }
 
+interface TocItem {
+  id: string;
+  text: string;
+  level: 2 | 3;
+}
+
+function injectHeadingIds(html: string): { html: string; toc: TocItem[] } {
+  const toc: TocItem[] = [];
+  let idx = 0;
+  const withIds = html.replace(/<(h2|h3)([^>]*)>([\s\S]*?)<\/\1>/g, (_match, tag: string, attrs: string, inner: string) => {
+    const id = `heading-${idx++}`;
+    const text = inner.replace(/<[^>]+>/g, '').trim();
+    if (text) toc.push({ id, text, level: tag === 'h2' ? 2 : 3 });
+    return `<${tag}${attrs} id="${id}">${inner}</${tag}>`;
+  });
+  return { html: withIds, toc };
+}
+
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = createClient();
+
   const { data: item } = await supabase
     .from('portfolio_items')
     .select('id, title, category, date, tags, content, cover_url')
@@ -52,15 +72,15 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
   const prev = idx > 0 ? siblings![idx - 1] : null;
   const next = siblings && idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
 
+  const { html: contentHtml, toc } = injectHeadingIds(item.content ?? '');
+
   return (
     <div className="relative min-h-screen">
       {/* 主色调渐变背景,取代原来的固定背景图 */}
-     <div
-  className="fixed inset-0 -z-10 transition-colors duration-500"
-  style={{
-    backgroundColor: `${mainColor}33`,
-  }}
-/>
+      <div
+        className="fixed inset-0 -z-10 transition-colors duration-500"
+        style={{ backgroundColor: `${mainColor}33` }}
+      />
 
       <PortfolioNav homeHref="/portfolio" />
       <FloatingWidget />
@@ -79,29 +99,22 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         />
       )}
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-20 sm:pt-28 pb-8 sm:pb-16 flex flex-col lg:flex-row gap-6 lg:gap-12">
-        {/* 信息栏 — 结构跟列表页保持一致 */}
+      {/* pt 用 vh 单位撑开顶部留白,让背景图露出来更多 */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-[30vh] sm:pt-[36vh] pb-8 sm:pb-16 flex flex-col lg:flex-row gap-6 lg:gap-12">
+        {/* 信息栏 — 目录放上面,自我介绍放下面 */}
         <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
           <div className="lg:sticky lg:top-24 flex flex-col gap-5">
+            <TableOfContents items={toc} />
             <SidebarProfile />
-
-            {/* 目录卡片 — 占位,下一步做联动 */}
-            <div
-className="rounded-2xl shadow-sm p-4 sm:p-6"
-style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7))' }}
->
-              <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
-              <p className="text-xs text-black/30">目录联动开发中…</p>
-            </div>
           </div>
         </aside>
 
         {/* 正文 */}
         <main className="order-1 lg:order-2 flex-1 min-w-0">
-      <div
-className="rounded-2xl shadow-sm p-5 sm:p-8"
-style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
->
+          <div
+            className="rounded-2xl shadow-sm p-5 sm:p-8"
+            style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
+          >
             <div className="flex items-center gap-2 mb-3">
               <h1 className="text-2xl font-serif">{item.title}</h1>
               <Link
@@ -113,7 +126,7 @@ style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,25
               </Link>
             </div>
 
-           <div className="flex items-center gap-3 mb-5 sm:mb-8 text-xs text-black/40 flex-wrap">
+            <div className="flex items-center gap-3 mb-5 sm:mb-8 text-xs text-black/40 flex-wrap">
               {item.date && <span>{item.date}</span>}
               {item.category && (
                 <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
@@ -127,7 +140,7 @@ style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,25
 
             <div
               className="prose prose-neutral max-w-none prose-img:rounded-xl"
-              dangerouslySetInnerHTML={{ __html: item.content ?? '' }}
+              dangerouslySetInnerHTML={{ __html: contentHtml }}
             />
 
             <div className="flex items-center justify-between mt-10 pt-6 border-t border-black/10">
@@ -140,7 +153,6 @@ style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,25
                   <span className="transition-transform duration-200 group-hover:-translate-x-1">{prev.title}</span>
                 </Link>
               ) : <span />}
-
               {next ? (
                 <Link
                   href={`/portfolio/${next.id}`}
