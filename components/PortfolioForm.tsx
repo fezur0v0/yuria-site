@@ -108,9 +108,9 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
             className="w-12 h-12 flex items-center justify-center rounded-2xl text-black/60 hover:text-black hover:bg-black/5 transition-all active:scale-95"
             title="返回"
           >
-            <GrFormPrevious size={32} />
+            <GrFormPrevious size={24} />
           </button>
-          <h1 className="text-2xl font-serif font-bold text-black/80">
+          <h1 className="text-xl font-serif font-bold text-black/80">
             {isEdit ? '编辑作品' : '新建作品'}
           </h1>
         </div>
@@ -121,8 +121,8 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
               onClick={handleDelete}
               className="flex items-center gap-2.5 text-base font-medium px-5 py-3 rounded-2xl text-red-500 hover:bg-red-50 transition-all active:scale-95"
             >
-              <GrTrash size={20} />
-              <span className="hidden sm:inline">删除作品</span>
+              <GrTrash size={16} />
+            <span className="hidden sm:inline text-sm">删除作品</span>
             </button>
           )}
           <button
@@ -130,8 +130,10 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
             disabled={saving}
             className="flex items-center gap-2.5 text-base font-semibold px-7 py-3 rounded-2xl bg-[#1a1a1a] text-white hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 shadow-md"
           >
-            <GrSave size={20} />
-            {saving ? '保存中…' : isEdit ? '保存修改' : '发布'}
+            <GrSave size={16} />
+       <span className="text-sm">
+  {saving ? '保存中…' : isEdit ? '保存修改' : '发布'}
+</span>
           </button>
         </div>
       </header>
