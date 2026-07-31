@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { FiChevronRight } from 'react-icons/fi';
+import { FiChevronDown } from 'react-icons/fi';
 
 interface TocItem {
   id: string;
@@ -40,7 +40,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
     return result;
   }, [items]);
 
-  // 监听页面滚动
+  // 监听页面滚动高亮
   useEffect(() => {
     if (items.length === 0) return;
 
@@ -63,7 +63,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
     return () => observer.disconnect();
   }, [items]);
 
-  // 滚动到子标题时自动展开父级 H2
+  // 自动展开当前高亮子项对应的父级 H2
   useEffect(() => {
     if (!activeId) return;
     groupedItems.forEach((group) => {
@@ -75,11 +75,8 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
 
   const handleTitleClick = (group: GroupedTocItem, e: React.MouseEvent) => {
     e.preventDefault();
-    
-    // 点击 H2 区域直接切换展开/收起
     setExpandedIds((prev) => ({ ...prev, [group.id]: !prev[group.id] }));
 
-    // 跳转到对应位置
     const el = document.getElementById(group.id);
     if (!el) return;
     const y = el.getBoundingClientRect().top + window.scrollY - 100;
@@ -97,18 +94,20 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <nav className="w-full max-w-xs font-sans select-none">
-      <div className="rounded-3xl border border-black/[0.04] bg-white/70 backdrop-blur-xl p-5 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
-        <div className="flex items-center gap-2 pb-3 mb-3 border-b border-black/[0.04]">
+    <nav className="w-full font-sans select-none">
+      {/* 彻底同步 SidebarProfile 的同款卡片样式 */}
+      <div className="bg-white/60 backdrop-blur-md isolate transform-gpu rounded-2xl shadow-sm p-5 sm:p-6">
+        {/* 卡片头部：韩系 Ins 杂志风 Title */}
+        <div className="flex items-center gap-2 pb-3 mb-3 border-b border-black/5">
           <span className="text-[10px] text-black/30 tracking-widest">✦.ﾟ</span>
-          <h4 className="text-xs font-serif tracking-[0.25em] text-black/50 uppercase font-medium">
+          <h4 className="text-xs font-serif tracking-[0.2em] text-black/60 uppercase font-medium">
             INDEX
           </h4>
-          <span className="text-[10px] text-black/20 font-serif italic ml-auto">.♡ *</span>
+          <span className="text-[10px] text-black/25 font-serif italic ml-auto">.♡ *</span>
         </div>
 
         {/* 目录列表 */}
-        <div className="flex flex-col gap-2 max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        <div className="flex flex-col gap-1.5 max-h-[60vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
           {groupedItems.map((group) => {
             const isGroupActive = activeId === group.id;
             const hasChildren = group.children.length > 0;
@@ -116,35 +115,35 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
 
             return (
               <div key={group.id} className="flex flex-col gap-1">
-                {/* H2 大标题：整块区域均可点击 */}
+                {/* H2 大标题：点击整块区域收容/展开 */}
                 <div
                   onClick={(e) => handleTitleClick(group, e)}
                   className={`group flex items-center justify-between py-1.5 px-1 rounded-lg cursor-pointer transition-all duration-300 ${
                     isGroupActive
-                      ? 'text-[#4A777A] font-semibold tracking-wider translate-x-1 [text-shadow:0_0_12px_rgba(74,119,122,0.25)]'
-                      : 'text-black/60 hover:text-[#4A777A] hover:translate-x-1 font-normal tracking-wide'
+                      ? 'text-[#2a6f78] font-semibold tracking-wide translate-x-1'
+                      : 'text-black/70 hover:text-[#2a6f78] hover:translate-x-1 font-normal tracking-wide'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0 pr-2">
                     <span
                       className={`text-[10px] transition-all duration-300 flex-shrink-0 ${
                         isGroupActive
-                          ? 'text-[#4A777A] scale-125 opacity-100'
-                          : 'text-black/20 group-hover:text-[#4A777A] group-hover:opacity-100 opacity-0'
+                          ? 'text-[#2a6f78] scale-125 opacity-100'
+                          : 'text-black/20 group-hover:text-[#2a6f78] group-hover:opacity-100 opacity-0'
                       }`}
                     >
                       ✦
                     </span>
-                    <span className="text-xs line-clamp-1">{group.text}</span>
+                    <span className="text-sm line-clamp-1">{group.text}</span>
                   </div>
 
                   {/* 折叠小箭头 */}
                   {hasChildren && (
-                    <span className="text-black/20 group-hover:text-[#4A777A] transition-colors flex-shrink-0">
-                      <FiChevronRight
-                        size={12}
+                    <span className="text-black/30 group-hover:text-[#2a6f78] transition-colors flex-shrink-0">
+                      <FiChevronDown
+                        size={14}
                         className={`transition-transform duration-300 ${
-                          isExpanded ? 'rotate-90 text-[#4A777A]' : ''
+                          isExpanded ? 'rotate-180 text-[#2a6f78]' : ''
                         }`}
                       />
                     </span>
@@ -153,7 +152,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
 
                 {/* H3 子标题列表 */}
                 {hasChildren && isExpanded && (
-                  <div className="pl-5 border-l border-black/[0.06] flex flex-col gap-1.5 py-1 my-0.5 ml-2 transition-all">
+                  <div className="pl-4 border-l border-black/10 flex flex-col gap-1 py-1 my-0.5 ml-2.5 transition-all">
                     {group.children.map((child) => {
                       const isChildActive = activeId === child.id;
                       return (
@@ -161,20 +160,20 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
                           key={child.id}
                           href={`#${child.id}`}
                           onClick={(e) => handleChildClick(child.id, e)}
-                          className={`group/child flex items-center gap-2 py-1 text-[11px] transition-all duration-200 ${
+                          className={`group/child flex items-center gap-2 py-1 text-xs transition-all duration-200 ${
                             isChildActive
-                              ? 'text-[#4A777A] font-medium tracking-wide translate-x-0.5'
-                              : 'text-black/40 hover:text-[#4A777A] hover:translate-x-0.5'
+                              ? 'text-[#2a6f78] font-medium tracking-wide translate-x-0.5'
+                              : 'text-black/50 hover:text-[#2a6f78] hover:translate-x-0.5'
                           }`}
                         >
                           <span
-                            className={`text-[8px] transition-all duration-200 flex-shrink-0 ${
+                            className={`text-[9px] transition-all duration-200 flex-shrink-0 ${
                               isChildActive
-                                ? 'text-[#4A777A] opacity-100'
-                                : 'text-black/15 group-hover/child:text-[#4A777A] opacity-60'
+                                ? 'text-[#2a6f78] opacity-100'
+                                : 'text-black/20 group-hover/child:text-[#2a6f78] opacity-60'
                             }`}
                           >
-                           ✦
+                              ✦
                           </span>
                           <span className="line-clamp-1">{child.text}</span>
                         </a>
