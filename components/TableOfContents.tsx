@@ -39,16 +39,9 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
     window.scrollTo({ top: y, behavior: 'smooth' });
   };
 
+  // 没有目录项时直接不渲染
   if (items.length === 0) {
-    return (
-      <div
-        className="rounded-2xl shadow-sm p-4 sm:p-6"
-        style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7))' }}
-      >
-        <h4 className="text-sm font-serif mb-3 text-black/70">目录</h4>
-        <p className="text-xs text-black/30">这篇文章还没有小标题~</p>
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -64,10 +57,10 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
         <div className="absolute left-[3px] top-1 bottom-1 w-px bg-black/10" />
         {items.map((item) => {
           const isActive = activeId === item.id;
-       return (
-          
-            key={item.id}
-            href={`#${item.id}`}
+          return (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
               onClick={(e) => handleClick(e, item.id)}
               className={`relative flex items-center gap-2.5 py-1.5 text-xs transition-colors ${
                 item.level === 3 ? 'pl-6' : 'pl-0'
