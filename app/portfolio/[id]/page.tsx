@@ -76,7 +76,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
   return (
     <div className="relative min-h-screen">
-      {/* 主色调渐变背景,取代原来的固定背景图 */}
+      {/* 主色调渐变背景 */}
       <div
         className="fixed inset-0 -z-10 transition-colors duration-500"
         style={{ backgroundColor: `${mainColor}33` }}
@@ -85,7 +85,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
       <PortfolioNav homeHref="/portfolio" />
       <FloatingWidget />
 
-      {/* 封面横幅 — 随内容滚动,只在文章最上方出现一次,顶部不透明往下渐隐 */}
+      {/* 封面横幅 */}
       {item.cover_url && (
         <div
           className="absolute top-0 left-0 w-full h-[60vh] -z-[5]"
@@ -99,23 +99,31 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         />
       )}
 
-      {/* pt 用 vh 单位撑开顶部留白,让背景图露出来更多 */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-[30vh] sm:pt-[36vh] pb-8 sm:pb-16 flex flex-col lg:flex-row gap-6 lg:gap-12">
-        {/* 信息栏 — 目录放上面,自我介绍放下面 */}
-        <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
-          <div className="lg:sticky lg:top-24 flex flex-col gap-5">
-            <TableOfContents items={toc} />
+      {/* 主体内容区域：注意 items-start 属性，确保侧边栏吸顶生效 */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-[30vh] sm:pt-[36vh] pb-8 sm:pb-16 flex flex-col lg:flex-row items-start gap-6 lg:gap-12">
+        
+        {/* 侧边栏：PC 端 Sticky 固定，移动端自动调整 */}
+        <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-24">
+          <div className="flex flex-col gap-5">
+            {/* 1. 移动端隐藏目录 (hidden)，电脑端正常显示 (lg:block) */}
+            {toc.length > 0 && (
+              <div className="hidden lg:block">
+                <TableOfContents items={toc} />
+              </div>
+            )}
+            
+            {/* 2. 个人信息卡片（移动端和电脑端都保留，移动端排在正文下方） */}
             <SidebarProfile />
           </div>
         </aside>
 
-        {/* 正文 */}
-        <main className="order-1 lg:order-2 flex-1 min-w-0">
+        {/* 正文区域 */}
+        <main className="order-1 lg:order-2 flex-1 min-w-0 w-full">
           <div
             className="rounded-2xl shadow-sm p-5 sm:p-8"
             style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
           >
-          <div className="flex items-baseline justify-between gap-3 mb-3">
+            <div className="flex items-baseline justify-between gap-3 mb-3">
               <div className="flex items-center gap-2 min-w-0">
                 <h1 className="text-2xl font-serif truncate">{item.title}</h1>
                 <Link
