@@ -173,7 +173,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
                                 : 'text-black/20 group-hover/child:text-[#2a6f78] opacity-60'
                             }`}
                           >
-                              ✦
+                          ✦
                           </span>
                           <span className="line-clamp-1">{child.text}</span>
                         </a>
