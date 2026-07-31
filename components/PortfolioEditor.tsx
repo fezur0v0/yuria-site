@@ -1,9 +1,10 @@
 'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageResize from 'tiptap-extension-resize-image';
 import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useCallback, type ReactNode, type ChangeEvent } from 'react';
 import { createClient } from '@/utils/supabase/client';
@@ -19,7 +20,7 @@ import {
 import { PiTextHTwo, PiTextHThree, PiTextAlignLeft, PiTextAlignCenter, PiTextAlignRight } from 'react-icons/pi';
 
 // 给 ImageResize 扩展加一个 align 属性，序列化成 data-align，
-// globals.css 里已经有 .prose img[data-align="..."] 的样式了，这里负责生成这个属性
+// globals.css 里已经有对应的居中/靠左/靠右样式了
 const AlignableImage = ImageResize.extend({
   addAttributes() {
     return {
@@ -48,6 +49,7 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
     extensions: [
       StarterKit,
       Underline,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
       AlignableImage.configure({
         HTMLAttributes: { class: 'rounded-xl' },
         minWidth: 80,
@@ -86,17 +88,25 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
     e.target.value = '';
   };
 
-  const setImageAlign = (align: 'left' | 'center' | 'right') => {
-    editor?.chain().focus().updateAttributes('imageResize', { align }).run();
-  };
-
   if (!editor) return null;
 
-  const isImageSelected = editor.isActive('imageResize');
+  // 选中的是图片就调图片对齐，否则调文字段落对齐——同一组按钮
+  const applyAlign = (align: 'left' | 'center' | 'right') => {
+    if (editor.isActive('imageResize')) {
+      editor.chain().focus().updateAttributes('imageResize', { align }).run();
+    } else {
+      editor.chain().focus().setTextAlign(align).run();
+    }
+  };
+
+  const isAlignActive = (align: 'left' | 'center' | 'right') => {
+    if (editor.isActive('imageResize')) return editor.isActive('imageResize', { align });
+    return editor.isActive({ textAlign: align });
+  };
 
   return (
     <div className="flex flex-col h-full gap-4">
-      {/* 悬浮工具栏 */}
+      {/* 固定工具栏 */}
       <div className="flex items-center gap-2 flex-wrap bg-white px-4 py-3 rounded-2xl border border-black/5 shadow-sm flex-shrink-0">
         <IconButton active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()} title="粗体">
           <GrBold size={20} />
@@ -131,21 +141,26 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
           <GrImage size={20} />
           <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
         </label>
-        {isImageSelected && (
-          <>
-            <div className="w-[1px] h-6 bg-black/10 mx-1" />
-            <IconButton active={editor.isActive('imageResize', { align: 'left' })} onClick={() => setImageAlign('left')} title="图片靠左">
-              <PiTextAlignLeft size={20} />
-            </IconButton>
-            <IconButton active={editor.isActive('imageResize', { align: 'center' })} onClick={() => setImageAlign('center')} title="图片居中">
-              <PiTextAlignCenter size={20} />
-            </IconButton>
-            <IconButton active={editor.isActive('imageResize', { align: 'right' })} onClick={() => setImageAlign('right')} title="图片靠右">
-              <PiTextAlignRight size={20} />
-            </IconButton>
-          </>
-        )}
       </div>
+
+      {/* 选中文字或图片时，上方弹出的浮动对齐菜单 */}
+      <BubbleMenu
+        editor={editor}
+        tippyOptions={{ duration: 100 }}
+        shouldShow={({ editor, state }) => editor.isActive('imageResize') || !state.selection.empty}
+      >
+        <div className="flex items-center gap-1 bg-[#1a1a1a] px-2 py-1.5 rounded-xl shadow-lg">
+          <BubbleButton active={isAlignActive('left')} onClick={() => applyAlign('left')} title="靠左">
+            <PiTextAlignLeft size={18} />
+          </BubbleButton>
+          <BubbleButton active={isAlignActive('center')} onClick={() => applyAlign('center')} title="居中">
+            <PiTextAlignCenter size={18} />
+          </BubbleButton>
+          <BubbleButton active={isAlignActive('right')} onClick={() => applyAlign('right')} title="靠右">
+            <PiTextAlignRight size={18} />
+          </BubbleButton>
+        </div>
+      </BubbleMenu>
 
       {/* 编辑器内容容器 */}
       <div className="flex-1 min-h-0 bg-white border border-black/5 rounded-3xl shadow-sm overflow-hidden flex flex-col">
@@ -174,6 +189,21 @@ function IconButton({ children, active, onClick, title }: { children: ReactNode;
         active
           ? 'bg-[#1a1a1a] text-white shadow-md scale-105'
           : 'text-black/60 hover:text-black hover:bg-black/5'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function BubbleButton({ children, active, onClick, title }: { children: ReactNode; active?: boolean; onClick: () => void; title: string }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className={`p-2 rounded-lg transition-all text-white/70 hover:text-white hover:bg-white/10 ${
+        active ? 'bg-white/20 text-white' : ''
       }`}
     >
       {children}
