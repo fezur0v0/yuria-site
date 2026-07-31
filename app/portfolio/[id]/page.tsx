@@ -115,19 +115,21 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
             className="rounded-2xl shadow-sm p-5 sm:p-8"
             style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.78))' }}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <h1 className="text-2xl font-serif">{item.title}</h1>
-              <Link
-                href={`/admin/portfolio/${item.id}/edit`}
-                className="text-black/30 hover:text-black/60 transition-colors"
-                title="编辑"
-              >
-                <FiEdit3 size={16} />
-              </Link>
+          <div className="flex items-baseline justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <h1 className="text-2xl font-serif truncate">{item.title}</h1>
+                <Link
+                  href={`/admin/portfolio/${item.id}/edit`}
+                  className="text-black/30 hover:text-black/60 transition-colors flex-shrink-0"
+                  title="编辑"
+                >
+                  <FiEdit3 size={16} />
+                </Link>
+              </div>
+              {item.date && <span className="text-xs text-black/40 flex-shrink-0">{item.date}</span>}
             </div>
 
             <div className="flex items-center gap-3 mb-5 sm:mb-8 text-xs text-black/40 flex-wrap">
-              {item.date && <span>{item.date}</span>}
               {item.category && (
                 <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
               )}
