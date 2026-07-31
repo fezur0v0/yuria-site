@@ -83,7 +83,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
       />
 
       <PortfolioNav homeHref="/portfolio" />
-      <FloatingWidget />
+  <FloatingWidget tocItems={toc} />
 
       {/* 封面横幅 */}
       {item.cover_url && (
