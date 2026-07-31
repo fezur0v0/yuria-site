@@ -64,10 +64,10 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
         <div className="absolute left-[3px] top-1 bottom-1 w-px bg-black/10" />
         {items.map((item) => {
           const isActive = activeId === item.id;
-          return (
-            
-              key={item.id}
-              href={`#${item.id}`}
+       return (
+          
+            key={item.id}
+            href={`#${item.id}`}
               onClick={(e) => handleClick(e, item.id)}
               className={`relative flex items-center gap-2.5 py-1.5 text-xs transition-colors ${
                 item.level === 3 ? 'pl-6' : 'pl-0'
