@@ -100,40 +100,45 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
 
   return (
     <div className="w-full min-h-screen lg:h-screen lg:overflow-hidden flex flex-col bg-[#fafafa]">
-      {/* 顶部: 两端分布 */}
-      <header className="h-20 w-full px-8 flex items-center justify-between border-b border-black/10 bg-white/80 backdrop-blur-md flex-shrink-0">
-        <div className="flex items-center gap-4">
+      {/* 顶部: 响应式适配 */}
+      <header className="h-16 sm:h-20 w-full px-4 sm:px-8 flex items-center justify-between border-b border-black/10 bg-white/80 backdrop-blur-md flex-shrink-0 gap-2">
+        {/* 左侧：返回按钮 + 标题 */}
+        <div className="flex items-center gap-1.5 sm:gap-4 min-w-0">
           <button
             onClick={() => router.back()}
-            className="w-12 h-12 flex items-center justify-center rounded-2xl text-black/60 hover:text-black hover:bg-black/5 transition-all active:scale-95"
+            className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl sm:rounded-2xl text-black/60 hover:text-black hover:bg-black/5 transition-all active:scale-95 flex-shrink-0"
             title="返回"
           >
-            <GrFormPrevious size={24} />
+            <GrFormPrevious size={20} className="sm:hidden" />
+            <GrFormPrevious size={24} className="hidden sm:block" />
           </button>
-          <h1 className="text-xl font-serif font-bold text-black/80">
+          <h1 className="text-base sm:text-xl font-serif font-bold text-black/80 truncate whitespace-nowrap">
             {isEdit ? '编辑作品' : '新建作品'}
           </h1>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* 右侧：操作按钮 */}
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           {isEdit && (
             <button
               onClick={handleDelete}
-              className="flex items-center gap-2.5 text-base font-medium px-5 py-3 rounded-2xl text-red-500 hover:bg-red-50 transition-all active:scale-95"
+              className="flex items-center justify-center p-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-red-500 hover:bg-red-50 transition-all active:scale-95"
+              title="删除作品"
             >
               <GrTrash size={16} />
-            <span className="hidden sm:inline text-sm">删除作品</span>
+              <span className="hidden sm:inline text-sm font-medium ml-2.5 whitespace-nowrap">删除作品</span>
             </button>
           )}
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="flex items-center gap-2.5 text-base font-semibold px-7 py-3 rounded-2xl bg-[#1a1a1a] text-white hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 shadow-md"
+            className="flex items-center gap-1.5 sm:gap-2.5 px-4 py-2.5 sm:px-7 sm:py-3 rounded-xl sm:rounded-2xl bg-[#1a1a1a] text-white hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 shadow-md whitespace-nowrap"
           >
-            <GrSave size={16} />
-       <span className="text-sm">
-  {saving ? '保存中…' : isEdit ? '保存修改' : '发布'}
-</span>
+            <GrSave size={15} className="sm:hidden" />
+            <GrSave size={16} className="hidden sm:block" />
+            <span className="text-xs sm:text-sm font-semibold">
+              {saving ? '保存中…' : isEdit ? '保存修改' : '发布'}
+            </span>
           </button>
         </div>
       </header>
