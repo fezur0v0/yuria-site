@@ -53,7 +53,7 @@ export default function SidebarTags() {
   const filteredItems = selected ? items.filter((item) => item.tags?.includes(selected.tag)) : [];
 
   return (
-    <div className="bg-white/60 backdrop-blur-md isolate transform-gpu rounded-2xl shadow-sm p-8">
+    <div className="bg-white/60 backdrop-blur-md isolate transform-gpu rounded-2xl shadow-sm p-5 sm:p-8">
       <h4 className="text-lg font-bold text-black mb-4">标签</h4>
 
       <div className={`transition-all duration-200 ${animating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
