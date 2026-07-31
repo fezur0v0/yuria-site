@@ -55,7 +55,7 @@ export default function PortfolioPage() {
       <PortfolioHero />
       <FloatingWidget />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-8 py-16 flex flex-col lg:flex-row gap-12">
+     <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-16 flex flex-col lg:flex-row gap-6 lg:gap-12">
         <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
           <div className="lg:sticky lg:top-24 flex flex-col gap-5">
             <SidebarProfile />
@@ -92,9 +92,9 @@ export default function PortfolioPage() {
   `,
 }}
 >
-<div className="flex-1 min-w-0 p-8">
+<div className="flex-1 min-w-0 p-5 sm:p-8">
   {/* 标题 */}
-  <h2 className="font-serif text-3xl mb-3 transition-colors group-hover:text-[#70B0CC] group-active:text-[#70B0CC]">
+ <h2 className="font-serif text-xl sm:text-3xl mb-2 sm:mb-3 transition-colors group-hover:text-[#70B0CC] group-active:text-[#70B0CC]">
     {item.title}
   </h2>
 
@@ -102,7 +102,7 @@ export default function PortfolioPage() {
   {item.date && <div className="text-xs text-black/40 mb-3">{item.date}</div>}
 
   {/* 正文 */}
-  {excerpt && <p className="text-base text-black/50 line-clamp-2 mb-3">{excerpt}</p>}
+{excerpt && <p className="text-sm sm:text-base text-black/50 line-clamp-2 mb-3">{excerpt}</p>}
 
   {/* 分类名 + 标签名 */}
   <div className="flex items-center gap-3 text-xs text-black/40 flex-wrap">
@@ -121,7 +121,7 @@ export default function PortfolioPage() {
   </div>
 </div>
                       {item.cover_url && (
-                        <div className="w-full h-56 sm:w-80 sm:h-auto flex-shrink-0">
+                       <div className="w-full h-44 sm:w-80 sm:h-auto flex-shrink-0">
                           <img
                             src={item.cover_url}
                             alt={item.title}
