@@ -111,13 +111,34 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-/* 编辑器里分割线只显示淡虚线,不放星星动画,方便专注写字 */
-.ProseMirror.prose .star-divider-stage {
-  height: auto;
-  overflow: visible;
-  border-top: 1px dashed rgba(0, 0, 0, 0.2);
+/* ==============================================
+   ✦ 编辑器 (Tiptap) 专属：淡淡的静态虚线分割线 ✦
+============================================== */
+
+/* Tiptap 编辑器节点容器 */
+.star-divider,
+div[data-type="star-divider"] {
+  position: relative;
+  width: 100%;
+  margin: 2rem 0;
+  padding: 12px 0;
+  cursor: pointer;
 }
 
-.ProseMirror.prose .star-divider-stage .sd-x {
-  display: none;
+/* 在编辑器内部绘制一条淡淡的灰色虚线 */
+.star-divider::before,
+div[data-type="star-divider"]::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  /* 淡淡的灰蓝色虚线 */
+  border-top: 1px dashed rgba(127, 178, 255, 0.4); 
+}
+
+/* 选中编辑时的轻微高亮边框（方便知道选中了它） */
+.ProseMirror-selectednode.star-divider,
+.ProseMirror-selectednode[data-type="star-divider"] {
+  outline: 2px solid rgba(127, 178, 255, 0.5);
+  border-radius: 4px;
 }
