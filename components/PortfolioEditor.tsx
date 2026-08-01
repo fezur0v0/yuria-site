@@ -17,7 +17,7 @@ import {
   GrBlockQuote,
   GrImage,
 } from 'react-icons/gr';
-import { PiTextHTwo, PiTextHThree, PiTextAlignLeft, PiTextAlignCenter, PiTextAlignRight } from 'react-icons/pi';
+import { PiTextHTwo, PiTextHThree, PiTextAlignLeft, PiTextAlignCenter, PiTextAlignRight, PiSparkle } from 'react-icons/pi';
 
 // 给 ImageResize 扩展加一个 align 属性，序列化成 data-align，
 // globals.css 里已经有对应的居中/靠左/靠右样式了
@@ -130,8 +130,11 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
         <IconButton active={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="三级标题">
           <PiTextHThree size={24} />
         </IconButton>
-        <IconButton active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="引用">
+      <IconButton active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="引用">
           <GrBlockQuote size={20} />
+        </IconButton>
+        <IconButton active={false} onClick={() => editor.chain().focus().setHorizontalRule().run()} title="分割线">
+          <PiSparkle size={20} />
         </IconButton>
         <div className="w-[1px] h-6 bg-black/10 mx-1" />
         <label
