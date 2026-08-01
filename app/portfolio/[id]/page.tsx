@@ -39,27 +39,7 @@ function processArticleContent(html: string): { html: string; toc: TocItem[] } {
     return `<${tag}${attrs} id="${id}">${inner}</${tag}>`;
   });
 
-  // 2. 将文章里的 <hr> 替换为 100% 还原的破风星星动画 HTML 结构
-  const pureStarDividerHtml = `
-    <div class="star-trail-box">
-      <svg style="display:none;">
-        <defs>
-          <g id="pure-star">
-            <path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 19.446l-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/>
-          </g>
-        </defs>
-      </svg>
-      <div class="anim-container">
-        <div class="s1-tail2"><div class="t1-x"><div class="t1-y"><div class="t1-z"><svg class="star-svg" viewBox="0 0 24 24"><use href="#pure-star"/></svg></div></div></div></div>
-        <div class="s1-tail1"><div class="t1-x"><div class="t1-y"><div class="t1-z"><svg class="star-svg" viewBox="0 0 24 24"><use href="#pure-star"/></svg></div></div></div></div>
-        <div class="s1-lead"><div class="t1-x"><div class="t1-y"><div class="t1-z"><svg class="star-svg" viewBox="0 0 24 24"><use href="#pure-star"/></svg></div></div></div></div>
-      </div>
-    </div>
-  `;
-
-  processedHtml = processedHtml.replace(/<hr\s*\/?>/gi, pureStarDividerHtml);
-
-  return { html: processedHtml, toc };
+return { html: processedHtml, toc };
 }
 
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ id: string }> }) {
