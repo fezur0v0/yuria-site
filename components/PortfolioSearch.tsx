@@ -74,7 +74,7 @@ export default function PortfolioSearch() {
     <div
       ref={containerRef}
       onMouseEnter={handleOpen}
-      className="relative flex items-center justify-end"
+      className="relative flex items-center justify-center"
     >
       {/* 搜索框容器：白色系半透明磨砂 */}
       <div
@@ -85,7 +85,7 @@ export default function PortfolioSearch() {
             : 'w-9 h-9 p-0 bg-transparent border-transparent justify-center'
         }`}
       >
-        {/* 左侧图标：始终纯白 */}
+        {/* 左侧图标：纯白 */}
         <FiSearch
           size={16}
           className={`shrink-0 text-white transition-all duration-300 ${
@@ -93,7 +93,7 @@ export default function PortfolioSearch() {
           }`}
         />
 
-        {/* 右侧输入框：白色系文本 */}
+        {/* 右侧输入框 */}
         <input
           ref={inputRef}
           value={query}
@@ -105,10 +105,10 @@ export default function PortfolioSearch() {
         />
       </div>
 
-      {/* 搜索结果弹窗：白色牛奶玻璃质感 */}
+      {/* 搜索结果弹窗：中心轴对齐 + 往下偏移 */}
       {expanded && q && (
         <div
-          className="absolute right-0 top-full mt-2.5 w-72 max-h-80 overflow-y-auto flex flex-col gap-1 p-2 rounded-2xl bg-white/85 backdrop-blur-2xl border border-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.08)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 [&::-webkit-scrollbar]:hidden"
+          className="absolute left-1/2 -translate-x-1/2 top-full mt-4 w-72 max-h-80 overflow-y-auto flex flex-col gap-1 p-2 rounded-2xl bg-white/85 backdrop-blur-2xl border border-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.08)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: 'none' }}
         >
           {results.length === 0 ? (
