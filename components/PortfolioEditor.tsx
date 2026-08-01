@@ -3,7 +3,6 @@
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ImageResize from 'tiptap-extension-resize-image';
-import StarDivider from './StarDivider';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -47,9 +46,8 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
   const supabase = createClient();
 
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ horizontalRule: false }),
-      StarDivider,
+  extensions: [
+      StarterKit,
       Underline,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       AlignableImage.configure({
