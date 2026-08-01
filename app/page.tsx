@@ -7,6 +7,15 @@ import { createClient } from '@/utils/supabase/client'
 const ADMIN_EMAIL = 'fezur0v0@gmail.com'
   const supabase = createClient()
 
+// 从正文 HTML 生成摘要：先去掉 h2/h3 整段，再去标签取纯文本
+function getExcerpt(html: string, maxLen = 80) {
+  if (!html) return ''
+  let text = html.replace(/<h[23][^>]*>[\s\S]*?<\/h[23]>/gi, '')
+  text = text.replace(/<[^>]+>/g, '')
+  text = text.replace(/&nbsp;/g, ' ').trim()
+  return text.length > maxLen ? text.slice(0, maxLen) + '…' : text
+}
+
 export default function Home() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
@@ -18,11 +27,9 @@ export default function Home() {
   const [listOpen, setListOpen] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
-  // 新增：从数据库加载的 portfolio 和 gallery 数据
   const [portfolioItems, setPortfolioItems] = useState<any[]>([])
   const [galleryItems, setGalleryItems] = useState<any[]>([])
 
-  // scroll reveal
   useEffect(() => {
     const els = document.querySelectorAll('.sr')
     const obs = new IntersectionObserver(
@@ -40,7 +47,6 @@ export default function Home() {
     return () => obs.disconnect()
 }, [portfolioItems, galleryItems])
 
-  // auth + data
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       const u = data.user
@@ -49,8 +55,8 @@ export default function Home() {
     })
     fetchConfig()
     fetchTracks()
-    fetchPortfolio() // 新增
-    fetchGallery()   // 新增
+    fetchPortfolio()
+    fetchGallery()
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       const u = session?.user ?? null
       setUser(u)
@@ -59,7 +65,6 @@ export default function Home() {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  // 自动切歌时自动播放
   useEffect(() => {
     if (!audioRef.current) return
     const track = tracks[trackIdx]
@@ -91,17 +96,17 @@ export default function Home() {
     setTracks(data || [])
   }
 
-  // 新增：从 Supabase 读取首页作品集
+  // 首页作品集：直接查真实表 portfolio_items，取最新几篇
   async function fetchPortfolio() {
     const { data } = await supabase
-      .from('homepage_portfolio')
+      .from('portfolio_items')
       .select('*')
-      .eq('is_visible', true)
-      .order('sort_order')
+      .order('date', { ascending: false })
+      .limit(4)
     setPortfolioItems(data || [])
   }
 
-  // 新增：从 Supabase 读取首页图集
+  // 图集模块还没做，暂时保留占位表
   async function fetchGallery() {
     const { data } = await supabase
       .from('homepage_gallery')
@@ -183,7 +188,6 @@ export default function Home() {
         @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
         .pw-fadein{animation:fadeUp .4s cubic-bezier(.22,1,.36,1)}
 
-        /* 桌面布局 */
         .layout{display:flex;min-height:100vh}
         .sidebar{
           position:fixed;left:0;top:0;bottom:0;width:260px;
@@ -197,15 +201,12 @@ export default function Home() {
         .main-area{margin-left:260px;flex:1;background:#fafaf8;min-height:100vh;padding-bottom:80px}
         .mobile-nav{display:none}
 
-        /* 作品集 & 图集样式调整 */
         .section-header {
           display: flex;
           align-items: baseline;
           justify-content: space-between;
           margin-top: 20px;
           margin-bottom: 28px;
-          padding-bottom: 4px;
-          border-bottom: 1px solid #e8e8e6;
         }
         .section-label {
           font-size: 13px;
@@ -224,7 +225,6 @@ export default function Home() {
         }
         .section-more:hover { color: #1a1a1a; }
 
-        /* 作品集图片 16:9 */
         .port-img-wrap {
           width: 55%;
           flex-shrink: 0;
@@ -241,7 +241,6 @@ export default function Home() {
           background-position: center;
         }
 
-        /* 图集卡片 */
         .g-card {
           cursor: pointer;
           text-decoration: none;
@@ -260,7 +259,6 @@ overflow: hidden;
           text-align: center;
         }
 
-        /* 手机端适配 */
         @media(max-width:768px){
           .sidebar{display:none}
           .main-area{margin-left:0}
@@ -314,7 +312,6 @@ overflow: hidden;
       {track && <audio ref={audioRef} onEnded={() => setTrackIdx((i) => (i + 1) % tracks.length)} />}
 
       <div className="layout" style={{ position: 'relative', zIndex: 1 }}>
-        {/* SIDEBAR */}
         <aside className="sidebar">
           <div
             style={{
@@ -396,9 +393,7 @@ overflow: hidden;
           </div>
         </aside>
 
-        {/* MAIN */}
         <main className="main-area">
-          {/* HERO */}
           <div className="hero-section" style={{ position: 'relative', height: '420px', overflow: 'hidden' }}>
             {config.cover_url ? (
               <img
@@ -439,7 +434,6 @@ overflow: hidden;
             </div>
           </div>
 
-          {/* MUSIC PLAYER */}
           <div className="player-wrap sr" style={{ padding: '0 56px', borderBottom: '0.5px solid #efefed' }} data-d="0">
             <div
               style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 0', cursor: 'pointer' }}
@@ -623,7 +617,6 @@ overflow: hidden;
               </svg>
             </div>
 
-            {/* 曲目列表 */}
             <div
               style={{
                 maxHeight: listOpen ? '220px' : '0',
@@ -661,26 +654,12 @@ overflow: hidden;
             </div>
           </div>
 
-          {/* PORTFOLIO - 动态数据 */}
           <div className="sr content-wrap" style={{ padding: '52px 56px 0' }} data-d="60">
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: '18px', marginBottom: '42px' }}>
-              <span style={{ fontSize: '13px', letterSpacing: '.32em', color: '#aaa' }}>PORTFOLIO</span>
-              <Link
-                href="/portfolio"
-                style={{
-                  fontSize: '13px',
-                  color: '#aaa',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  textDecoration: 'none',
-                  transition: 'color .2s',
-                }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = '#1a1a1a')}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = '#aaa')}
-              >
+            <div className="section-header">
+              <span className="section-label">PORTFOLIO</span>
+              <Link href="/portfolio" className="section-more">
                 全部
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
                   <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </Link>
@@ -700,7 +679,6 @@ overflow: hidden;
                     cursor: 'pointer',
                   }}
                 >
-                  {/* 图片部分 */}
                   <div
                     className="port-img-wrap"
                     style={{
@@ -741,7 +719,6 @@ overflow: hidden;
                     )}
                   </div>
 
-                  {/* 文字部分 */}
                   <div
                     className="port-text-wrap"
                     style={{
@@ -756,7 +733,7 @@ overflow: hidden;
                   >
                     <div className="port-tag-row" style={{ fontSize: '13px', letterSpacing: '.22em', color: '#bbb' }}>
                       {item.category}
-                      {item.year ? ` · ${item.year}` : ''}
+                      {item.date ? ` · ${new Date(item.date).getFullYear()}` : ''}
                     </div>
                     <div
                       className="port-name-row"
@@ -772,7 +749,7 @@ overflow: hidden;
                       {item.title}
                     </div>
                     <div className="port-excerpt-row" style={{ fontSize: '13px', color: '#999', lineHeight: 1.9 }}>
-                      {item.description}
+                      {getExcerpt(item.content)}
                     </div>
                   </div>
                 </div>
@@ -780,7 +757,6 @@ overflow: hidden;
             </div>
           </div>
 
-          {/* GALLERY - 动态数据 */}
           <div className="sr content-wrap" style={{ padding: '52px 56px 0' }} data-d="100">
             <div className="section-header">
               <span className="section-label">GALLERY</span>
@@ -824,7 +800,6 @@ overflow: hidden;
             </div>
           </div>
 
-          {/* 小剧场入口 */}
           <div className="sr content-wrap" style={{ padding: '52px 56px 72px' }} data-d="140">
             <div className="section-header">
               <span className="section-label">小剧场</span>
@@ -895,7 +870,6 @@ overflow: hidden;
         </main>
       </div>
 
-      {/* 移动端底部导航 */}
       <nav className="mobile-nav">
         {[
           { href: '/', label: '主页', d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z' },
