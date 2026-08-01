@@ -22,7 +22,7 @@ function highlight(text: string, query: string) {
   return (
     <>
       {text.slice(0, idx)}
-      <span className="text-[#70B0CC] font-semibold">{text.slice(idx, idx + query.length)}</span>
+      <span className="text-[#4A90E2] font-semibold">{text.slice(idx, idx + query.length)}</span>
       {text.slice(idx + query.length)}
     </>
   );
@@ -76,16 +76,16 @@ export default function PortfolioSearch() {
       onMouseEnter={handleOpen}
       className="relative flex items-center justify-end"
     >
-      {/* 搜索框容器 */}
+      {/* 搜索框容器：白色系半透明磨砂 */}
       <div
         onClick={handleOpen}
         className={`flex items-center rounded-2xl transition-all duration-300 ease-out cursor-pointer overflow-hidden ${
           expanded
-            ? 'w-56 px-3.5 py-2 bg-black/15 backdrop-blur-md border border-white/10 shadow-sm'
+            ? 'w-56 px-3.5 py-2 bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
             : 'w-9 h-9 p-0 bg-transparent border-transparent justify-center'
         }`}
       >
-        {/* 左侧图标：始终保持纯白色 */}
+        {/* 左侧图标：始终纯白 */}
         <FiSearch
           size={16}
           className={`shrink-0 text-white transition-all duration-300 ${
@@ -93,26 +93,26 @@ export default function PortfolioSearch() {
           }`}
         />
 
-        {/* 右侧输入框 */}
+        {/* 右侧输入框：白色系文本 */}
         <input
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="搜索"
-          className={`bg-transparent text-white placeholder:text-white/50 text-sm outline-none transition-all duration-300 ${
+          className={`bg-transparent text-white placeholder:text-white/70 text-sm outline-none transition-all duration-300 ${
             expanded ? 'w-full opacity-100' : 'w-0 opacity-0 pointer-events-none'
           }`}
         />
       </div>
 
-      {/* 搜索结果弹窗 */}
+      {/* 搜索结果弹窗：白色牛奶玻璃质感 */}
       {expanded && q && (
         <div
-          className="absolute right-0 top-full mt-2.5 w-72 max-h-80 overflow-y-auto flex flex-col gap-1 p-2 rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.25)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 [&::-webkit-scrollbar]:hidden"
+          className="absolute right-0 top-full mt-2.5 w-72 max-h-80 overflow-y-auto flex flex-col gap-1 p-2 rounded-2xl bg-white/85 backdrop-blur-2xl border border-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.08)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: 'none' }}
         >
           {results.length === 0 ? (
-            <p className="text-xs text-white/50 text-center py-5 font-medium tracking-wide">
+            <p className="text-xs text-black/40 text-center py-5 font-medium tracking-wide">
               ✦ 未找到相关内容 ✦
             </p>
           ) : (
@@ -132,13 +132,13 @@ export default function PortfolioSearch() {
                     setExpanded(false);
                     setQuery('');
                   }}
-                  className="group block p-2.5 rounded-xl hover:bg-white/15 active:scale-[0.98] transition-all duration-200"
+                  className="group block p-2.5 rounded-xl hover:bg-black/5 active:scale-[0.98] transition-all duration-200"
                 >
-                  <p className="text-xs font-semibold text-white/90 group-hover:text-white mb-0.5 line-clamp-1 transition-colors">
+                  <p className="text-xs font-semibold text-black/80 group-hover:text-black mb-0.5 line-clamp-1 transition-colors">
                     {highlight(item.title, q)}
                   </p>
                   {snippet && (
-                    <p className="text-[11px] text-white/45 group-hover:text-white/65 line-clamp-1 leading-relaxed">
+                    <p className="text-[11px] text-black/45 group-hover:text-black/65 line-clamp-1 leading-relaxed">
                       {highlight(snippet, q)}
                     </p>
                   )}
