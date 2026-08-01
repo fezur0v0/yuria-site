@@ -32,113 +32,90 @@ body {
 .prose img[data-align="left"] { display: block; margin-left: 0; margin-right: auto; }
 
 /* ==============================================
-   ✦ 经典破风拖尾动画 (卡片内优雅淡入淡出) ✦
+   ✦ 经典破风拖尾动画 (公开详情页显示) ✦
 ============================================== */
-
-.star-trail-box {
+.star-divider {
+  position: relative;
   width: 100%;
   margin: 2.5rem 0;
-  display: flex;
-  flex-direction: column;
+}
+
+.star-divider-stage {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  overflow: hidden;
   pointer-events: none;
   user-select: none;
 }
 
-.anim-container {
-  position: relative;
-  width: 100%;
-  height: 40px; 
-  /* 加上 overflow: hidden 保证绝对不会跑出卡片外框 */
-  overflow: hidden; 
-}
-
-/* 通用完美对称的星星 SVG 样式 */
-.star-svg {
+.sd-star {
   width: 20px;
   height: 20px;
   display: block;
 }
 
-/* 核心修复：t1-x 恢复绝对定位 */
-.t1-x { 
-  animation: glideX 3.5s linear infinite; 
-  position: absolute; 
-  bottom: 0; 
+.sd-x {
+  animation: sd-glide 3.5s linear infinite;
+  position: absolute;
+  bottom: 0;
 }
 
-.t1-y { animation: hopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; }
-.t1-z { animation: rollZ 1s linear infinite; }
-
-/* 尾巴 2 (最小，最后面) */
-.s1-tail2 .t1-x, .s1-tail2 .t1-y, .s1-tail2 .t1-z { animation-delay: 0s; }
-.s1-tail2 .star-svg { fill: #dbe8ff; opacity: 0.3; transform: scale(0.5); filter: blur(1px); }
-
-/* 尾巴 1 (中等，在中间) */
-.s1-tail1 .t1-x, .s1-tail1 .t1-y, .s1-tail1 .t1-z { animation-delay: -0.15s; }
-.s1-tail1 .star-svg { fill: #b4d0ff; opacity: 0.6; transform: scale(0.75); }
-
-/* 领头羊 (最大，最前面) */
-.s1-lead .t1-x, .s1-lead .t1-y, .s1-lead .t1-z { animation-delay: -0.3s; z-index: 10; }
-.s1-lead .star-svg { fill: #7fb2ff; opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(255,255,255,1)); }
-
-/* 关键帧：用 left% 锁定卡片范围 + 完美的透明度淡入淡出 */
-@keyframes glideX {
-  0% { 
-    left: 0%; 
-    opacity: 0; 
-    transform: translateX(-100%); 
-  }
-  15% { 
-    opacity: 1; 
-  }
-  85% { 
-    opacity: 1; 
-  }
-  100% { 
-    left: 100%; 
-    opacity: 0; 
-    transform: translateX(0%); 
-  }
+.sd-y {
+  animation: sd-hop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate;
 }
 
-@keyframes hopY {
+.sd-z {
+  animation: sd-roll 1s linear infinite;
+}
+
+.sd-tail2.sd-x { animation-delay: 0s; }
+.sd-tail2 .sd-star { fill: #dbe8ff; opacity: 0.3; transform: scale(0.5); filter: blur(1px); }
+
+.sd-tail1.sd-x { animation-delay: -0.15s; }
+.sd-tail1 .sd-star { fill: #b4d0ff; opacity: 0.6; transform: scale(0.75); }
+
+.sd-lead.sd-x { animation-delay: -0.3s; z-index: 10; }
+.sd-lead .sd-star { fill: #7fb2ff; opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(255,255,255,1)); }
+
+@keyframes sd-glide {
+  0% { left: 0%; opacity: 0; transform: translateX(-100%); }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { left: 100%; opacity: 0; transform: translateX(0%); }
+}
+
+@keyframes sd-hop {
   0%   { transform: translateY(0); }
   100% { transform: translateY(-22px); }
 }
 
-@keyframes rollZ {
+@keyframes sd-roll {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
 /* ==============================================
-   ✦ 编辑器 (Tiptap) 专属：淡淡的静态虚线分割线 ✦
+   ✦ 编辑器 (Tiptap) 专属：只显示淡虚线,隐藏星星动画 ✦
 ============================================== */
+.ProseMirror .star-divider-stage {
+  display: none;
+}
 
-/* Tiptap 编辑器节点容器 */
-.star-divider,
-div[data-type="star-divider"] {
-  position: relative;
-  width: 100%;
-  margin: 2rem 0;
+.ProseMirror .star-divider {
   padding: 12px 0;
   cursor: pointer;
 }
 
-/* 在编辑器内部绘制一条淡淡的灰色虚线 */
-.star-divider::before,
-div[data-type="star-divider"]::before {
+.ProseMirror .star-divider::before {
   content: '';
   display: block;
   width: 100%;
   height: 1px;
-  /* 淡淡的灰蓝色虚线 */
-  border-top: 1px dashed rgba(127, 178, 255, 0.4); 
+  border-top: 1px dashed rgba(127, 178, 255, 0.4);
 }
 
-/* 选中编辑时的轻微高亮边框（方便知道选中了它） */
-.ProseMirror-selectednode.star-divider,
-.ProseMirror-selectednode[data-type="star-divider"] {
+.ProseMirror .ProseMirror-selectednode.star-divider {
   outline: 2px solid rgba(127, 178, 255, 0.5);
   border-radius: 4px;
 }
