@@ -31,50 +31,35 @@ body {
 .prose img[data-align="right"] { display: block; margin-left: auto; margin-right: 0; }
 .prose img[data-align="left"] { display: block; margin-left: 0; margin-right: auto; }
 
-
 /* ==============================================
-   ✦ 100% 还原：经典破风拖尾星星分割线 ✦
+   ✦ 经典破风拖尾动画 (Classic Wind-Breaker) ✦
 ============================================== */
 
-/* 原版关键帧定义 */
-@keyframes glideX {
-  0%   { transform: translateX(-30px); opacity: 0; }
-  15%  { opacity: 1; }
-  75%  { opacity: 1; }
-  100% { transform: translateX(calc(100% + 30px)); opacity: 0; }
+.star-trail-box {
+  width: 100%;
+  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  user-select: none;
 }
 
-@keyframes hopY {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-22px); }
-}
-
-@keyframes rollZ {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* 隐藏原生 hr 的线条，只作为容器 */
-.prose hr {
+.anim-container {
   position: relative;
-  border: none !important;
-  height: 40px;
-  margin: 3.5rem 0;
-  overflow: visible;
-  background: transparent !important;
-  box-shadow: none !important;
+  width: 100%;
+  height: 40px; 
 }
 
-/* 通用星星基础 CSS */
+/* 通用完美对称的星星 SVG 样式 */
 .star-svg {
   width: 20px;
   height: 20px;
-  fill: #8ab4f8;
+  fill: #8ab4f8; /* 清透的蔚蓝色 */
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
 }
 
-/* 三轴运动应用 */
-.t1-x { animation: glideX 3s linear infinite; position: absolute; left: 0; bottom: 0; }
+/* 轴向动画定义 */
+.t1-x { animation: glideX 3s linear infinite; position: absolute; left: 0; bottom: 0; width: 100%; }
 .t1-y { animation: hopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; }
 .t1-z { animation: rollZ 1s linear infinite; }
 
@@ -89,3 +74,21 @@ body {
 /* 领头羊 (最大，最前面) */
 .s1-lead .t1-x, .s1-lead .t1-y, .s1-lead .t1-z { animation-delay: -0.3s; z-index: 10; }
 .s1-lead .star-svg { fill: #7fb2ff; opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(255,255,255,1)); }
+
+/* 关键帧定义区 */
+@keyframes glideX {
+  0%   { transform: translateX(-30px); opacity: 0; }
+  15%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { transform: translateX(calc(100% + 10px)); opacity: 0; }
+}
+
+@keyframes hopY {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-22px); }
+}
+
+@keyframes rollZ {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
