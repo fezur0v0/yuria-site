@@ -34,63 +34,126 @@ body {
 /* ==============================================
    ✦ 经典破风拖尾动画 (公开详情页显示) ✦
 ============================================== */
-.star-divider {
-  position: relative;
+.star-trail-box {
   width: 100%;
   margin: 2.5rem 0;
-}
-
-.star-divider-stage {
-  position: relative;
-  width: 100%;
-  height: 40px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   pointer-events: none;
   user-select: none;
 }
 
-.sd-star {
+.anim-container {
+  position: relative;
+  width: 100%;
+  height: 44px; /* 略微加大高度，方便跳跃展示 */
+  overflow: hidden;
+}
+
+/* 优雅的星光底轨：让星星仿佛沿着一条微光轨道划过 */
+.anim-container::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg, 
+    transparent 0%, 
+    rgba(138, 180, 248, 0.25) 20%, 
+    rgba(138, 180, 248, 0.25) 80%, 
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* 通用完美对称的星星 SVG 样式 */
+.star-svg {
   width: 20px;
   height: 20px;
   display: block;
 }
 
-.sd-x {
-  animation: sd-glide 3.5s linear infinite;
-  position: absolute;
-  bottom: 0;
+/* 核心：t1-x 绝对定位 + 换用高阶贝塞尔曲线让滑行更流畅 */
+.t1-x { 
+  animation: glideX 3.6s cubic-bezier(0.35, 0, 0.25, 1) infinite; 
+  position: absolute; 
+  bottom: 0; 
+  will-change: transform, opacity;
 }
 
-.sd-y {
-  animation: sd-hop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate;
+/* Y轴上下连贯蹦跳，加了一点极其微弱的变形，更有肉感灵动度 */
+.t1-y { 
+  animation: hopY 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; 
+  will-change: transform;
 }
 
-.sd-z {
-  animation: sd-roll 1s linear infinite;
+/* Z轴顺滑旋转 */
+.t1-z { 
+  animation: rollZ 1.2s linear infinite; 
+  will-change: transform;
 }
 
-.sd-tail2.sd-x { animation-delay: 0s; }
-.sd-tail2 .sd-star { fill: #dbe8ff; opacity: 0.3; transform: scale(0.5); filter: blur(1px); }
-
-.sd-tail1.sd-x { animation-delay: -0.15s; }
-.sd-tail1 .sd-star { fill: #b4d0ff; opacity: 0.6; transform: scale(0.75); }
-
-.sd-lead.sd-x { animation-delay: -0.3s; z-index: 10; }
-.sd-lead .sd-star { fill: #7fb2ff; opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(255,255,255,1)); }
-
-@keyframes sd-glide {
-  0% { left: 0%; opacity: 0; transform: translateX(-100%); }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { left: 100%; opacity: 0; transform: translateX(0%); }
+/* 尾巴 2 (最小，最后面) */
+.s1-tail2 .t1-x, .s1-tail2 .t1-y, .s1-tail2 .t1-z { animation-delay: 0s; }
+.s1-tail2 .star-svg { 
+  fill: #dbe8ff; 
+  opacity: 0.25; 
+  transform: scale(0.45); 
+  filter: blur(1px) drop-shadow(0 0 2px rgba(219, 232, 255, 0.5)); 
 }
 
-@keyframes sd-hop {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-22px); }
+/* 尾巴 1 (中等，在中间) */
+.s1-tail1 .t1-x, .s1-tail1 .t1-y, .s1-tail1 .t1-z { animation-delay: -0.15s; }
+.s1-tail1 .star-svg { 
+  fill: #b4d0ff; 
+  opacity: 0.55; 
+  transform: scale(0.7); 
+  filter: drop-shadow(0 0 3px rgba(180, 208, 255, 0.8)); 
 }
 
-@keyframes sd-roll {
+/* 领头羊 (最大，最前面，强发光) */
+.s1-lead .t1-x, .s1-lead .t1-y, .s1-lead .t1-z { animation-delay: -0.3s; z-index: 10; }
+.s1-lead .star-svg { 
+  fill: #7fb2ff; 
+  opacity: 1; 
+  transform: scale(1.1); 
+  filter: drop-shadow(0 0 6px rgba(127, 178, 255, 0.9)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); 
+}
+
+/* 关键帧：带两端极佳渐隐 + 中途灵动缩放的 X 轴平移 */
+@keyframes glideX {
+  0% { 
+    left: 0%; 
+    opacity: 0; 
+    transform: translateX(-100%) scale(0.7); 
+  }
+  18% { 
+    opacity: 1; 
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    /* 在卡片正中间时，轻微呼吸变大一点点 */
+    transform: translateX(0%) scale(1.05);
+  }
+  82% { 
+    opacity: 1; 
+    transform: translateX(50%) scale(1);
+  }
+  100% { 
+    left: 100%; 
+    opacity: 0; 
+    transform: translateX(0%) scale(0.7); 
+  }
+}
+
+@keyframes hopY {
+  0%   { transform: translateY(0) scaleY(0.95); }
+  100% { transform: translateY(-22px) scaleY(1.05); }
+}
+
+@keyframes rollZ {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
