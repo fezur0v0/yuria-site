@@ -26,25 +26,16 @@ text: string;
 level: 2 | 3;
 }
 
-/* ✦ 替换 Heading ID 以及精准清洗替换分割线为 ☆ ★ --- ★ 样式 ✦ */
 function processArticleContent(html: string): { html: string; toc: TocItem[] } {
   const toc: TocItem[] = [];
   let idx = 0;
 
-  // 1. 生成目录 ID
-  let processedHtml = html.replace(/<(h2|h3)([^>]*)>([\s\S]*?)<\/\1>/g, (_match, tag: string, attrs: string, inner: string) => {
+  const processedHtml = html.replace(/<(h2|h3)([^>]*)>([\s\S]*?)<\/\1>/g, (_match, tag: string, attrs: string, inner: string) => {
     const id = `heading-${idx++}`;
     const text = inner.replace(/<[^>]+>/g, '').trim();
     if (text) toc.push({ id, text, level: tag === 'h2' ? 2 : 3 });
     return `<${tag}${attrs} id="${id}">${inner}</${tag}>`;
   });
-
-  // 2. 清理历史数据库残留：无论旧的是 <hr> 还是旧的动画 SVG 节点，一律替换为新的文本循环分割线
-  const unit = '☆ ★ --- ★ ';
-  const lineText = unit.repeat(40);
-  const newDividerHtml = `<div class="star-divider" data-type="star-divider"><span class="star-divider-line">${lineText}</span></div>`;
-
-  processedHtml = processedHtml.replace(/<hr\s*\/?>|<div[^>]*data-type="star-divider"[^>]*>[\s\S]*?<\/div>/gi, newDividerHtml);
 
   return { html: processedHtml, toc };
 }
@@ -89,9 +80,9 @@ return (
 
 {/* 主色调渐变背景 */}
 <div
-className="fixed inset-0 -z-10 transition-colors duration-500"
-style={{ backgroundColor: ${mainColor}33 }}
-/>
+        className="fixed inset-0 -z-10 transition-colors duration-500"
+        style={{ backgroundColor: `${mainColor}33` }}
+      />
 
   <PortfolioNav homeHref="/portfolio" />
   <FloatingWidget tocItems={toc} />
