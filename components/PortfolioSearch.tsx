@@ -105,10 +105,22 @@ export default function PortfolioSearch() {
         />
       </div>
 
-      {/* 搜索结果弹窗：中心轴对齐 + 往下偏移 */}
+      {/* 搜索结果弹窗：手机端基于屏幕中心对齐，桌面端基于搜索框中心对齐 */}
       {expanded && q && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-4 w-72 max-h-80 overflow-y-auto flex flex-col gap-1 p-2 rounded-2xl bg-white/85 backdrop-blur-2xl border border-white/80 shadow-[0_12px_30px_rgba(0,0,0,0.08)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 [&::-webkit-scrollbar]:hidden"
+          className="
+            fixed sm:absolute 
+            left-1/2 -translate-x-1/2 
+            top-20 sm:top-full 
+            mt-2 sm:mt-4 
+            w-[calc(100vw-32px)] max-w-sm sm:w-72 
+            max-h-80 overflow-y-auto 
+            flex flex-col gap-1 p-2 rounded-2xl 
+            bg-white/85 backdrop-blur-2xl border border-white/80 
+            shadow-[0_12px_30px_rgba(0,0,0,0.12)] 
+            z-50 animate-in fade-in slide-in-from-top-2 duration-200 
+            [&::-webkit-scrollbar]:hidden
+          "
           style={{ scrollbarWidth: 'none' }}
         >
           {results.length === 0 ? (
@@ -132,7 +144,7 @@ export default function PortfolioSearch() {
                     setExpanded(false);
                     setQuery('');
                   }}
-                  className="group block p-2.5 rounded-xl hover:bg-black/5 active:scale-[0.98] transition-all duration-200"
+                  className="group block p-3 sm:p-2.5 rounded-xl hover:bg-black/5 active:scale-[0.98] transition-all duration-200"
                 >
                   <p className="text-xs font-semibold text-black/80 group-hover:text-black mb-0.5 line-clamp-1 transition-colors">
                     {highlight(item.title, q)}
