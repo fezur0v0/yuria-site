@@ -26,67 +26,66 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ----------------------------------------------
-   图片对齐样式
----------------------------------------------- */
-.prose img[data-align="center"] {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-.prose img[data-align="right"] {
-  display: block;
-  margin-left: auto;
-  margin-right: 0;
-}
-.prose img[data-align="left"] {
-  display: block;
-  margin-left: 0;
-  margin-right: auto;
-}
+/* 图片对齐样式 */
+.prose img[data-align="center"] { display: block; margin-left: auto; margin-right: auto; }
+.prose img[data-align="right"] { display: block; margin-left: auto; margin-right: 0; }
+.prose img[data-align="left"] { display: block; margin-left: 0; margin-right: auto; }
+
 
 /* ==============================================
-   ✦ 经典破风拖尾星星动画 ✦
+   ✦ 100% 还原：经典破风拖尾星星分割线 ✦
 ============================================== */
 
-@keyframes starGlideX {
+/* 原版关键帧定义 */
+@keyframes glideX {
   0%   { transform: translateX(-30px); opacity: 0; }
   15%  { opacity: 1; }
   75%  { opacity: 1; }
-  100% { transform: translateX(calc(100vw - 60px)); opacity: 0; }
+  100% { transform: translateX(calc(100% + 30px)); opacity: 0; }
 }
 
-@keyframes starHopY {
+@keyframes hopY {
   0%   { transform: translateY(0); }
   100% { transform: translateY(-22px); }
 }
 
-@keyframes starRollZ {
+@keyframes rollZ {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* 轴向应用 */
-.star-t1-x { animation: starGlideX 3.5s linear infinite; position: absolute; left: 0; bottom: 0; }
-.star-t1-y { animation: starHopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; }
-.star-t1-z { animation: starRollZ 1s linear infinite; }
-
-/* 拖尾延迟控制 */
-.star-anim-s1-tail2 .star-t1-x, 
-.star-anim-s1-tail2 .star-t1-y, 
-.star-anim-s1-tail2 .star-t1-z { 
-  animation-delay: 0s; 
+/* 隐藏原生 hr 的线条，只作为容器 */
+.prose hr {
+  position: relative;
+  border: none !important;
+  height: 40px;
+  margin: 3.5rem 0;
+  overflow: visible;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-.star-anim-s1-tail1 .star-t1-x, 
-.star-anim-s1-tail1 .star-t1-y, 
-.star-anim-s1-tail1 .star-t1-z { 
-  animation-delay: -0.15s; 
+/* 通用星星基础 CSS */
+.star-svg {
+  width: 20px;
+  height: 20px;
+  fill: #8ab4f8;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
 }
 
-.star-anim-s1-lead .star-t1-x, 
-.star-anim-s1-lead .star-t1-y, 
-.star-anim-s1-lead .star-t1-z { 
-  animation-delay: -0.3s; 
-  z-index: 10; 
-}
+/* 三轴运动应用 */
+.t1-x { animation: glideX 3s linear infinite; position: absolute; left: 0; bottom: 0; }
+.t1-y { animation: hopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; }
+.t1-z { animation: rollZ 1s linear infinite; }
+
+/* 尾巴 2 (最小，最后面) */
+.s1-tail2 .t1-x, .s1-tail2 .t1-y, .s1-tail2 .t1-z { animation-delay: 0s; }
+.s1-tail2 .star-svg { fill: #dbe8ff; opacity: 0.3; transform: scale(0.5); filter: blur(1px); }
+
+/* 尾巴 1 (中等，在中间) */
+.s1-tail1 .t1-x, .s1-tail1 .t1-y, .s1-tail1 .t1-z { animation-delay: -0.15s; }
+.s1-tail1 .star-svg { fill: #b4d0ff; opacity: 0.6; transform: scale(0.75); }
+
+/* 领头羊 (最大，最前面) */
+.s1-lead .t1-x, .s1-lead .t1-y, .s1-lead .t1-z { animation-delay: -0.3s; z-index: 10; }
+.s1-lead .star-svg { fill: #7fb2ff; opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(255,255,255,1)); }
