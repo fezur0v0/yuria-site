@@ -83,7 +83,7 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
         {tocItems.length > 0 && (
           <button
             onClick={handleOpen}
-            className="lg:hidden w-11 h-11 rounded-full bg-white/40 backdrop-blur-xl shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-white/50 flex items-center justify-center text-black/70 hover:text-black active:scale-95 transition-all"
+            className="lg:hidden w-11 h-11 rounded-full bg-white/30 backdrop-blur-xl shadow-[0_8px_20px_rgba(0,0,0,0.06)] flex items-center justify-center text-white/90 hover:text-white active:scale-95 transition-all"
             title="目录"
           >
             <PiListBullets size={20} />
@@ -92,7 +92,7 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
         {showBackToTop && (
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-11 h-11 rounded-full bg-white/40 backdrop-blur-xl shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-white/50 flex items-center justify-center text-black/70 hover:text-black active:scale-95 transition-all"
+            className="w-11 h-11 rounded-full bg-white/30 backdrop-blur-xl shadow-[0_8px_20px_rgba(0,0,0,0.06)] flex items-center justify-center text-white/90 hover:text-white active:scale-95 transition-all"
             title="回到顶部"
           >
             <PiArrowCircleUp size={20} />
@@ -100,7 +100,7 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
         )}
         <Link
           href="/admin/portfolio"
-          className="w-11 h-11 rounded-full bg-white/40 backdrop-blur-xl shadow-[0_8px_20px_rgba(0,0,0,0.06)] border border-white/50 flex items-center justify-center text-black/70 hover:text-black active:scale-95 transition-all"
+          className="w-11 h-11 rounded-full bg-white/30 backdrop-blur-xl shadow-[0_8px_20px_rgba(0,0,0,0.06)] flex items-center justify-center text-white/90 hover:text-white active:scale-95 transition-all"
           title="设置"
         >
           <PiGearSix size={20} />
