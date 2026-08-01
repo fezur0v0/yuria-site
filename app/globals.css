@@ -110,3 +110,14 @@ body {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* 编辑器里分割线只显示淡虚线,不放星星动画,方便专注写字 */
+.ProseMirror.prose .star-divider-stage {
+  height: auto;
+  overflow: visible;
+  border-top: 1px dashed rgba(0, 0, 0, 0.2);
+}
+
+.ProseMirror.prose .star-divider-stage .sd-x {
+  display: none;
+}
