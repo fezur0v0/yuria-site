@@ -46,57 +46,47 @@ body {
 }
 
 /* ==============================================
-   ✦ 三颗纯正五角星·灵动破风跳跳队（无线版）✦
+   ✦ 经典破风拖尾星星动画 ✦
 ============================================== */
 
-/* 1. X轴水平滑过动画 */
 @keyframes starGlideX {
-  0%   { left: -20px; opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { left: calc(100% + 20px); opacity: 0; }
+  0%   { transform: translateX(-30px); opacity: 0; }
+  15%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { transform: translateX(calc(100vw - 60px)); opacity: 0; }
 }
 
-/* 2. Y轴上下弹跳 + 旋转动画 */
 @keyframes starHopY {
-  0%   { transform: translateY(-50%) translateY(0px) rotate(0deg); }
-  100% { transform: translateY(-50%) translateY(-14px) rotate(140deg); }
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-22px); }
 }
 
-/* 分割线容器：彻底隐藏线条，留出跳跳空间 */
-.prose hr {
-  position: relative;
-  border: none !important;
-  height: 36px;
-  margin: 3.5rem 0;
-  overflow: visible;
-  background: transparent !important;
-  box-shadow: none !important;
+@keyframes starRollZ {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* 第一颗：领头大五角星 ★ */
-.prose hr::before {
-  content: '★';
-  position: absolute;
-  top: 50%;
-  font-size: 16px;
-  color: #70b0cc;
-  filter: drop-shadow(0 0 6px rgba(112, 176, 204, 0.9));
-  animation: 
-    starGlideX 4.5s linear infinite,
-    starHopY 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate;
+/* 轴向应用 */
+.star-t1-x { animation: starGlideX 3.5s linear infinite; position: absolute; left: 0; bottom: 0; }
+.star-t1-y { animation: starHopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; }
+.star-t1-z { animation: starRollZ 1s linear infinite; }
+
+/* 拖尾延迟控制 */
+.star-anim-s1-tail2 .star-t1-x, 
+.star-anim-s1-tail2 .star-t1-y, 
+.star-anim-s1-tail2 .star-t1-z { 
+  animation-delay: 0s; 
 }
 
-/* 第二与第三颗：跟着的两颗小五角星 ★ ★ */
-.prose hr::after {
-  content: '★  ★';
-  position: absolute;
-  top: 50%;
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: rgba(112, 176, 204, 0.65);
-  filter: drop-shadow(0 0 4px rgba(112, 176, 204, 0.5));
-  animation: 
-    starGlideX 4.5s linear infinite -0.18s,
-    starHopY 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate -0.18s;
+.star-anim-s1-tail1 .star-t1-x, 
+.star-anim-s1-tail1 .star-t1-y, 
+.star-anim-s1-tail1 .star-t1-z { 
+  animation-delay: -0.15s; 
+}
+
+.star-anim-s1-lead .star-t1-x, 
+.star-anim-s1-lead .star-t1-y, 
+.star-anim-s1-lead .star-t1-z { 
+  animation-delay: -0.3s; 
+  z-index: 10; 
 }
