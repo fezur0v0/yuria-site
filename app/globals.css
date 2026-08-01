@@ -32,12 +32,12 @@ body {
 .prose img[data-align="left"] { display: block; margin-left: 0; margin-right: auto; }
 
 /* ==============================================
-   ✦ 经典破风拖尾动画 (Classic Wind-Breaker) ✦
+   ✦ 经典破风拖尾动画 (100% 还原 Demo) ✦
 ============================================== */
 
 .star-trail-box {
   width: 100%;
-  margin: 2rem 0;
+  margin: 2.5rem 0;
   display: flex;
   flex-direction: column;
   pointer-events: none;
@@ -48,18 +48,23 @@ body {
   position: relative;
   width: 100%;
   height: 40px; 
+  overflow: hidden; /* 规避跨屏溢出 */
 }
 
 /* 通用完美对称的星星 SVG 样式 */
 .star-svg {
   width: 20px;
   height: 20px;
-  fill: #8ab4f8; /* 清透的蔚蓝色 */
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
+  display: block;
 }
 
-/* 轴向动画定义 */
-.t1-x { animation: glideX 3s linear infinite; position: absolute; left: 0; bottom: 0; width: 100%; }
+/* 关键纠错：t1-x 绝对定位 + 不能加 width:100% */
+.t1-x { 
+  animation: glideX 3s linear infinite; 
+  position: absolute; 
+  left: 0; 
+  bottom: 0; 
+}
 .t1-y { animation: hopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; }
 .t1-z { animation: rollZ 1s linear infinite; }
 
@@ -75,12 +80,12 @@ body {
 .s1-lead .t1-x, .s1-lead .t1-y, .s1-lead .t1-z { animation-delay: -0.3s; z-index: 10; }
 .s1-lead .star-svg { fill: #7fb2ff; opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(255,255,255,1)); }
 
-/* 关键帧定义区 */
+/* 关键帧定义 */
 @keyframes glideX {
   0%   { transform: translateX(-30px); opacity: 0; }
   15%  { opacity: 1; }
   75%  { opacity: 1; }
-  100% { transform: translateX(calc(100% + 10px)); opacity: 0; }
+  100% { transform: translateX(calc(100% + 30px)); opacity: 0; }
 }
 
 @keyframes hopY {
@@ -91,102 +96,4 @@ body {
 @keyframes rollZ {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-
-.prose .star-divider {
-  margin: 2.5rem 0;
-}
-
-.prose .star-divider-stage {
-  position: relative;
-  width: 100%;
-  height: 32px;
-  overflow: hidden;
-}
-
-.prose .sd-x {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  animation: sd-glide 3s linear infinite;
-}
-
-.prose .sd-y {
-  animation: sd-hop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate;
-}
-
-.prose .sd-z {
-  animation: sd-roll 1s linear infinite;
-}
-
-.prose .sd-star {
-  width: 18px;
-  height: 18px;
-}
-
-.prose .sd-tail2 .sd-x,
-.prose .star-divider .sd-tail2.sd-x {
-  animation-delay: 0s;
-}
-.prose .sd-tail2 .sd-star {
-  fill: #dbe8ff;
-  opacity: 0.3;
-  transform: scale(0.5);
-  filter: blur(1px);
-}
-
-.prose .sd-tail1.sd-x {
-  animation-delay: -0.15s;
-}
-.prose .sd-tail1 .sd-star {
-  fill: #b4d0ff;
-  opacity: 0.6;
-  transform: scale(0.75);
-}
-
-.prose .sd-lead.sd-x {
-  animation-delay: -0.3s;
-  z-index: 10;
-}
-.prose .sd-lead .sd-star {
-  fill: #7fb2ff;
-  opacity: 1;
-  transform: scale(1.1);
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 1));
-}
-
-@keyframes sd-glide {
-  0% {
-    transform: translateX(-30px);
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-  }
-  75% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(calc(100% + 30px));
-    opacity: 0;
-  }
-}
-
-@keyframes sd-hop {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-14px);
-  }
-}
-
-@keyframes sd-roll {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
