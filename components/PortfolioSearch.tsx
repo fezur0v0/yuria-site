@@ -54,14 +54,9 @@ export default function PortfolioSearch() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleToggle = () => {
-    const next = !expanded;
-    setExpanded(next);
-    if (next) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    } else {
-      setQuery('');
-    }
+  const handleOpen = () => {
+    setExpanded(true);
+    setTimeout(() => inputRef.current?.focus(), 150);
   };
 
   const q = query.trim().toLowerCase();
@@ -78,49 +73,47 @@ export default function PortfolioSearch() {
   return (
     <div
       ref={containerRef}
-      onMouseEnter={() => {
-        setExpanded(true);
-        setTimeout(() => inputRef.current?.focus(), 100);
-      }}
-      className="relative flex items-center"
+      onMouseEnter={handleOpen}
+      className="relative flex items-center justify-end"
     >
-      {/* 搜索容器：点击/悬浮时图标向右移动，输入框在左侧展开 */}
+      {/* 搜索框容器：初始无背景，展开时变宽并显现灰色半透明质感 */}
       <div
-        className={`flex items-center rounded-full border border-white/20 bg-black/15 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out overflow-hidden ${
-          expanded ? 'w-60 pl-3.5 pr-1.5 py-1' : 'w-9 h-9 p-0 bg-transparent border-transparent backdrop-blur-none shadow-none justify-center'
+        onClick={handleOpen}
+        className={`flex items-center rounded-2xl transition-all duration-300 ease-out cursor-pointer overflow-hidden ${
+          expanded
+            ? 'w-56 px-3.5 py-2 bg-black/10 backdrop-blur-md border border-white/10 shadow-sm'
+            : 'w-9 h-9 p-0 bg-transparent border-transparent justify-center'
         }`}
       >
+        {/* 左侧图标：始终在最左侧，随容器变宽向左平滑移动 */}
+        <FiSearch
+          size={16}
+          className={`shrink-0 transition-colors duration-300 ${
+            expanded ? 'text-black/50 mr-2.5' : 'text-black/70 hover:text-black'
+          }`}
+        />
+
+        {/* 右侧输入框：展开时顺滑显现 */}
         <input
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="搜索标题或内容…"
-          className={`bg-transparent text-white placeholder:text-white/40 text-xs font-medium outline-none transition-all duration-300 ${
+          placeholder="搜索"
+          className={`bg-transparent text-black/80 placeholder:text-black/40 text-sm outline-none transition-all duration-300 ${
             expanded ? 'w-full opacity-100' : 'w-0 opacity-0 pointer-events-none'
           }`}
         />
-
-        {/* 搜索按钮：处于右侧 */}
-        <button
-          onClick={handleToggle}
-          title="搜索"
-          className={`w-7 h-7 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 active:scale-95 transition-all duration-300 shrink-0 ${
-            !expanded ? 'w-9 h-9 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20' : ''
-          }`}
-        >
-          <FiSearch size={15} />
-        </button>
       </div>
 
-      {/* 搜索结果弹窗（绝美半透明磨砂质感卡片） */}
+      {/* 搜索结果弹窗（配合灰色质感） */}
       {expanded && q && (
         <div
-          className="absolute right-0 top-full mt-3 w-80 max-h-80 overflow-y-auto flex flex-col gap-1 p-2 rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.25)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 [&::-webkit-scrollbar]:hidden"
+          className="absolute right-0 top-full mt-2.5 w-72 max-h-80 overflow-y-auto flex flex-col gap-1 p-2 rounded-2xl bg-white/80 backdrop-blur-2xl border border-black/5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: 'none' }}
         >
           {results.length === 0 ? (
-            <p className="text-xs text-white/50 text-center py-6 font-medium tracking-wide">
-              ✦ 未找到相关作品 ✦
+            <p className="text-xs text-black/40 text-center py-5 font-medium tracking-wide">
+              ✦ 未找到相关内容 ✦
             </p>
           ) : (
             results.map((item) => {
@@ -139,13 +132,13 @@ export default function PortfolioSearch() {
                     setExpanded(false);
                     setQuery('');
                   }}
-                  className="group block p-3 rounded-xl hover:bg-white/15 active:bg-white/20 transition-all duration-200 border border-transparent hover:border-white/10"
+                  className="group block p-2.5 rounded-xl hover:bg-black/5 active:scale-[0.98] transition-all duration-200"
                 >
-                  <p className="text-xs font-semibold text-white/90 group-hover:text-white mb-1 line-clamp-1 transition-colors">
+                  <p className="text-xs font-semibold text-black/80 group-hover:text-black mb-0.5 line-clamp-1 transition-colors">
                     {highlight(item.title, q)}
                   </p>
                   {snippet && (
-                    <p className="text-[11px] text-white/45 group-hover:text-white/65 line-clamp-1 leading-relaxed">
+                    <p className="text-[11px] text-black/45 group-hover:text-black/65 line-clamp-1 leading-relaxed">
                       {highlight(snippet, q)}
                     </p>
                   )}
