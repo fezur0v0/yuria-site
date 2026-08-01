@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { PiArrowCircleUp, PiGearSix, PiListBullets } from 'react-icons/pi';
+import { PiCaretUpLight, PiGearSix, PiListBullets } from 'react-icons/pi';
 
 interface TocItem {
   id: string;
