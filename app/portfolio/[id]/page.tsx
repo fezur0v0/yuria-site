@@ -149,7 +149,7 @@ return (
           dangerouslySetInnerHTML={{ __html: contentHtml }}
         />
 
-        <div className="flex items-center justify-between mt-10 pt-6 border-t border-black/10">
+        <div className="flex items-center justify-between mt-10 pt-6">
           {prev ? (
             <Link
               href={`/portfolio/${prev.id}`}
