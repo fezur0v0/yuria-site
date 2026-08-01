@@ -2,28 +2,28 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+--background: #ffffff;
+--foreground: #171717;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+--color-background: var(--background);
+--color-foreground: var(--foreground);
+--font-sans: var(--font-geist-sans);
+--font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+--background: #0a0a0a;
+--foreground: #ededed;
+}
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+background: var(--background);
+color: var(--foreground);
+font-family: Arial, Helvetica, sans-serif;
 }
 
 /* 图片对齐样式 */
@@ -32,44 +32,54 @@ body {
 .prose img[data-align="left"] { display: block; margin-left: 0; margin-right: auto; }
 
 /* ==============================================
-   ✦ 分割线：星星虚线循环样式 ✦
+✦ 分割线：星星虚线循环样式 ✦
 ============================================== */
 .star-divider {
-  width: 100%;
-  margin: 2.5rem 0;
-  overflow: hidden;
+width: 100%;
+margin: 2.5rem 0;
+overflow: hidden;
+user-select: none;
+pointer-events: none;
+}
+
+/* 兜底防护：隐蔽历史遗留的 SVG 元素，彻底解决变巨大黑星的 bug */
+.star-divider svg,
+.star-divider img {
+display: none !important;
 }
 
 .star-divider-line {
-  display: block;
-  white-space: nowrap;
-  text-align: center;
-  letter-spacing: 3px;
-  font-size: 13px;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.35);
-  user-select: none;
+display: block;
+white-space: nowrap;
+text-align: center;
+letter-spacing: 4px;
+font-size: 13px;
+line-height: 1;
+color: var(--foreground);
+opacity: 0.35;
 }
 
-/* 编辑器里换成淡虚线,不显示重复图案文字,避免太花 */
+/* 编辑器 (ProseMirror) 专属：淡虚线状态 */
 .ProseMirror .star-divider {
-  padding: 12px 0;
-  cursor: pointer;
+padding: 12px 0;
+margin: 1.5rem 0;
+cursor: pointer;
+pointer-events: auto;
 }
 
 .ProseMirror .star-divider-line {
-  display: none;
+display: none;
 }
 
 .ProseMirror .star-divider::before {
-  content: '';
-  display: block;
-  width: 100%;
-  height: 1px;
-  border-top: 1px dashed rgba(127, 178, 255, 0.4);
+content: '';
+display: block;
+width: 100%;
+height: 1px;
+border-top: 1px dashed rgba(127, 178, 255, 0.4);
 }
 
 .ProseMirror .ProseMirror-selectednode.star-divider {
-  outline: 2px solid rgba(127, 178, 255, 0.5);
-  border-radius: 4px;
+outline: 2px solid rgba(127, 178, 255, 0.5);
+border-radius: 4px;
 }
