@@ -83,7 +83,7 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
         {tocItems.length > 0 && (
           <button
             onClick={handleOpen}
-            className="lg:hidden w-11 h-11 rounded-full bg-slate-900/60 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/20 flex items-center justify-center text-white hover:scale-105 hover:bg-slate-900/80 hover:border-white/40 active:scale-95 transition-all duration-300"
+            className="lg:hidden w-11 h-11 rounded-full bg-slate-900/45 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/20 flex items-center justify-center text-white hover:scale-105 hover:bg-slate-900/80 hover:border-white/40 active:scale-95 transition-all duration-300"
             title="目录"
           >
             <PiListBullets size={20} />
@@ -92,7 +92,7 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
         {showBackToTop && (
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-11 h-11 rounded-full bg-slate-900/60 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/20 flex items-center justify-center text-white hover:scale-105 hover:bg-slate-900/80 hover:border-white/40 active:scale-95 transition-all duration-300"
+            className="w-11 h-11 rounded-full bg-slate-900/45 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/20 flex items-center justify-center text-white hover:scale-105 hover:bg-slate-900/80 hover:border-white/40 active:scale-95 transition-all duration-300"
             title="回到顶部"
           >
             <PiArrowCircleUp size={20} />
@@ -100,7 +100,7 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
         )}
         <Link
           href="/admin/portfolio"
-          className="w-11 h-11 rounded-full bg-slate-900/60 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/20 flex items-center justify-center text-white hover:scale-105 hover:bg-slate-900/80 hover:border-white/40 active:scale-95 transition-all duration-300"
+          className="w-11 h-11 rounded-full bg-slate-900/45 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/20 flex items-center justify-center text-white hover:scale-105 hover:bg-slate-900/80 hover:border-white/40 active:scale-95 transition-all duration-300"
           title="设置"
         >
           <PiGearSix size={20} />
