@@ -35,6 +35,65 @@ body {
    ✦ 经典破风拖尾动画 (Classic Wind-Breaker) ✦
 ============================================== */
 
+.star-trail-box {
+  width: 100%;
+  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  user-select: none;
+}
+
+.anim-container {
+  position: relative;
+  width: 100%;
+  height: 40px; 
+}
+
+/* 通用完美对称的星星 SVG 样式 */
+.star-svg {
+  width: 20px;
+  height: 20px;
+  fill: #8ab4f8; /* 清透的蔚蓝色 */
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
+}
+
+/* 轴向动画定义 */
+.t1-x { animation: glideX 3s linear infinite; position: absolute; left: 0; bottom: 0; width: 100%; }
+.t1-y { animation: hopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; }
+.t1-z { animation: rollZ 1s linear infinite; }
+
+/* 尾巴 2 (最小，最后面) */
+.s1-tail2 .t1-x, .s1-tail2 .t1-y, .s1-tail2 .t1-z { animation-delay: 0s; }
+.s1-tail2 .star-svg { fill: #dbe8ff; opacity: 0.3; transform: scale(0.5); filter: blur(1px); }
+
+/* 尾巴 1 (中等，在中间) */
+.s1-tail1 .t1-x, .s1-tail1 .t1-y, .s1-tail1 .t1-z { animation-delay: -0.15s; }
+.s1-tail1 .star-svg { fill: #b4d0ff; opacity: 0.6; transform: scale(0.75); }
+
+/* 领头羊 (最大，最前面) */
+.s1-lead .t1-x, .s1-lead .t1-y, .s1-lead .t1-z { animation-delay: -0.3s; z-index: 10; }
+.s1-lead .star-svg { fill: #7fb2ff; opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(255,255,255,1)); }
+
+/* 关键帧定义区 */
+@keyframes glideX {
+  0%   { transform: translateX(-30px); opacity: 0; }
+  15%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { transform: translateX(calc(100% + 10px)); opacity: 0; }
+}
+
+@keyframes hopY {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-22px); }
+}
+
+@keyframes rollZ {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
 .prose .star-divider {
   margin: 2.5rem 0;
 }
