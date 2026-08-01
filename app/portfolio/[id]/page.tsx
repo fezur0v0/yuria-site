@@ -77,12 +77,12 @@ const next = siblings && idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 
 const { html: contentHtml, toc } = processArticleContent(item.content ?? '');
 
 return (
-
-{/* 主色调渐变背景 */}
-<div
-        className="fixed inset-0 -z-10 transition-colors duration-500"
-        style={{ backgroundColor: `${mainColor}33` }}
-      />
+  <div className="relative min-h-screen">
+    {/* 主色调渐变背景 */}
+    <div
+      className="fixed inset-0 -z-10 transition-colors duration-500"
+      style={{ backgroundColor: `${mainColor}33` }}
+    />
 
   <PortfolioNav homeHref="/portfolio" />
   <FloatingWidget tocItems={toc} />
@@ -170,10 +170,8 @@ return (
           ) : <span />}
         </div>
       </div>
-    </main>
+     </main>
   </div>
-</div>
-
-
+  </div>
 );
 }
