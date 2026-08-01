@@ -42,13 +42,14 @@ body {
   flex-direction: column;
   pointer-events: none;
   user-select: none;
+  clear: both; /* 确保不被浮动图片干扰 */
 }
 
 .anim-container {
   position: relative;
   width: 100%;
   height: 40px; 
-  overflow: hidden; /* 规避跨屏溢出 */
+  /* 移除 overflow: hidden; 允许星星稍微飞出边界，更灵动 */
 }
 
 /* 通用完美对称的星星 SVG 样式 */
@@ -58,14 +59,22 @@ body {
   display: block;
 }
 
-/* 关键纠错：t1-x 绝对定位 + 不能加 width:100% */
+/* 关键修正：t1-x 改为相对定位，并强制撑满父容器宽度 */
 .t1-x { 
-  animation: glideX 3s linear infinite; 
-  position: absolute; 
-  left: 0; 
-  bottom: 0; 
+  animation: glideX 3.5s linear infinite; /* 稍微减慢一点速度，更大气 */
+  position: relative; /* 改为相对定位 */
+  width: 100%; /* 强制撑满文章宽度 */
+  height: 100%;
 }
-.t1-y { animation: hopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; }
+
+/* y轴和z轴保持绝对定位，在 t1-x 内部叠加动画 */
+.t1-y { 
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  animation: hopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; 
+}
+
 .t1-z { animation: rollZ 1s linear infinite; }
 
 /* 尾巴 2 (最小，最后面) */
@@ -80,12 +89,12 @@ body {
 .s1-lead .t1-x, .s1-lead .t1-y, .s1-lead .t1-z { animation-delay: -0.3s; z-index: 10; }
 .s1-lead .star-svg { fill: #7fb2ff; opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(255,255,255,1)); }
 
-/* 关键帧定义 */
+/* 关键帧定义：配合 width:100%，实现跨屏幕滑行 */
 @keyframes glideX {
-  0%   { transform: translateX(-30px); opacity: 0; }
-  15%  { opacity: 1; }
-  75%  { opacity: 1; }
-  100% { transform: translateX(calc(100% + 30px)); opacity: 0; }
+  0%   { transform: translateX(-10%); opacity: 0; } /* 从屏幕左侧外一点开始 */
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(110%); opacity: 0; } /* 滑行到屏幕右侧外 */
 }
 
 @keyframes hopY {
