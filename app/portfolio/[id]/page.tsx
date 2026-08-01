@@ -136,7 +136,7 @@ return (
           {item.category && (
             <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
           )}
-          {item.tags?.map((tag) => (
+    {item.tags?.map((tag: string) => (
             <span key={tag} className="px-2 py-0.5 rounded-full bg-black/5">
               #{tag}
             </span>
