@@ -80,30 +80,35 @@ export default function PortfolioSearch() {
       onMouseEnter={handleOpen}
       className="relative flex items-center justify-center"
     >
-      {/* 搜索框胶囊容器：丝滑贝塞尔曲线，固定白系色彩，消除灰色过渡 */}
+      {/* 搜索框胶囊容器：收起时使用 500ms + cubic-bezier(0.25, 1, 0.5, 1) 柔和缓出 */}
       <div
         onClick={handleOpen}
-        className={`flex items-center rounded-full border transition-all duration-500 cursor-pointer ${
+        className={`flex items-center rounded-full border cursor-pointer ${
           expanded
-            ? 'w-56 px-3.5 py-1.5 bg-white/35 border-white/60 backdrop-blur-md shadow-[0_4px_20px_rgba(255,255,255,0.15)]'
-            : 'w-9 h-9 p-0 bg-white/0 border-transparent justify-center'
+            ? 'w-56 px-3.5 py-1.5 bg-white/35 border-white/60 backdrop-blur-md shadow-[0_4px_20px_rgba(255,255,255,0.15)] duration-300'
+            : 'w-9 h-9 p-0 bg-white/0 border-transparent justify-center duration-500'
         }`}
         style={{
-          transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+          transitionProperty: 'width, padding, background-color, border-color, box-shadow',
+          transitionTimingFunction: expanded
+            ? 'cubic-bezier(0.16, 1, 0.3, 1)'
+            : 'cubic-bezier(0.25, 1, 0.5, 1)',
         }}
       >
-        {/* 图标：固定白色 */}
+        {/* 图标：固定白色，缩放微微缓动 */}
         <FiSearch
           size={16}
-          className={`shrink-0 text-white transition-opacity duration-300 ${
-            expanded ? 'mr-2 opacity-90' : 'opacity-100'
+          className={`shrink-0 text-white transition-all duration-300 ${
+            expanded ? 'mr-2 opacity-90 scale-100' : 'opacity-100 scale-95'
           }`}
         />
 
-        {/* 输入框：受控宽与透明度，实现顺滑淡入淡出 */}
+        {/* 输入框：收起时文字率先淡出（200ms），避免文字被挤压变形 */}
         <div
-          className={`overflow-hidden flex-1 flex items-center transition-all duration-300 ${
-            expanded ? 'w-full opacity-100' : 'w-0 opacity-0'
+          className={`overflow-hidden flex-1 flex items-center transition-all ${
+            expanded
+              ? 'w-full opacity-100 duration-300 ease-out'
+              : 'w-0 opacity-0 duration-200 ease-in pointer-events-none'
           }`}
         >
           <input
