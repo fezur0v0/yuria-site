@@ -32,54 +32,32 @@ font-family: Arial, Helvetica, sans-serif;
 .prose img[data-align="left"] { display: block; margin-left: 0; margin-right: auto; }
 
 /* ==============================================
-✦ 分割线：星星虚线循环样式 ✦
+   ✦ 分割线：重复图案，公开页面显示；编辑器里简化成淡虚线 ✦
 ============================================== */
-.star-divider {
-width: 100%;
-margin: 2.5rem 0;
-overflow: hidden;
-user-select: none;
-pointer-events: none;
+.prose hr {
+  border: none;
+  margin: 2.5rem 0;
+  position: relative;
+  overflow: hidden;
+  height: 20px;
 }
 
-/* 兜底防护：隐蔽历史遗留的 SVG 元素，彻底解决变巨大黑星的 bug */
-.star-divider svg,
-.star-divider img {
-display: none !important;
+.prose hr::after {
+  content: '☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ --- ☆ ★ ---';
+  display: block;
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: 3px;
+  font-size: 13px;
+  line-height: 20px;
+  color: rgba(0, 0, 0, 0.35);
 }
 
-.star-divider-line {
-display: block;
-white-space: nowrap;
-text-align: center;
-letter-spacing: 4px;
-font-size: 13px;
-line-height: 1;
-color: var(--foreground);
-opacity: 0.35;
+.ProseMirror hr {
+  height: auto;
+  border-top: 1px dashed rgba(127, 178, 255, 0.4);
 }
 
-/* 编辑器 (ProseMirror) 专属：淡虚线状态 */
-.ProseMirror .star-divider {
-padding: 12px 0;
-margin: 1.5rem 0;
-cursor: pointer;
-pointer-events: auto;
-}
-
-.ProseMirror .star-divider-line {
-display: none;
-}
-
-.ProseMirror .star-divider::before {
-content: '';
-display: block;
-width: 100%;
-height: 1px;
-border-top: 1px dashed rgba(127, 178, 255, 0.4);
-}
-
-.ProseMirror .ProseMirror-selectednode.star-divider {
-outline: 2px solid rgba(127, 178, 255, 0.5);
-border-radius: 4px;
+.ProseMirror hr::after {
+  content: none;
 }
