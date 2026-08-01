@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { PiCaretUpLight, PiGearSix, PiListBullets } from 'react-icons/pi';
+import { PiCaretUpBold, PiGearSix, PiListBullets } from 'react-icons/pi';
 
 interface TocItem {
   id: string;
@@ -91,7 +91,7 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
             className={buttonStyle}
             title="回到顶部"
           >
-            <PiCaretUpLight size={20} />
+            <PiCaretUpBold size={20} />
           </button>
         )}
 
