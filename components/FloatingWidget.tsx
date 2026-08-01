@@ -91,7 +91,7 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
             className={buttonStyle}
             title="回到顶部"
           >
-            <PiArrowCircleUp size={20} />
+            <PiCaretUpLight size={20} />
           </button>
         )}
 
