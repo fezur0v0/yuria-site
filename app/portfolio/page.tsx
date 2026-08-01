@@ -22,8 +22,13 @@ interface PortfolioItem {
   content: string | null;
 }
 
+// 核心修改：先匹配去掉 h2, h3 及其标签内部的所有内容，再剥离普通 HTML 标签
 function stripHtml(html: string) {
-  return html.replace(/<[^>]+>/g, '').trim();
+  if (!html) return '';
+  return html
+    .replace(/<h[23][^>]*>[\s\S]*?<\/h[23]>/gi, '') // 过滤掉 <h2>...</h2> 和 <h3>...</h3>
+    .replace(/<[^>]+>/g, '')                        // 剥离剩余的 HTML 标签
+    .trim();
 }
 
 const PAGE_SIZE = 10;
@@ -55,7 +60,7 @@ export default function PortfolioPage() {
       <PortfolioHero />
       <FloatingWidget />
 
-     <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-16 flex flex-col lg:flex-row gap-6 lg:gap-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-16 flex flex-col lg:flex-row gap-6 lg:gap-12">
         <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0">
           <div className="lg:sticky lg:top-24 flex flex-col gap-5">
             <SidebarProfile />
@@ -77,51 +82,58 @@ export default function PortfolioPage() {
                   const excerpt = item.content ? stripHtml(item.content).slice(0, 80) : '';
                   const reversed = i % 2 === 1;
                   return (
-                  <Link
-  key={item.id}
-  href={`/portfolio/${item.id}`}
-  className={`group flex flex-col ${
-    reversed ? 'sm:flex-row-reverse' : 'sm:flex-row'
-  } rounded-2xl overflow-hidden mb-6 transition-colors  shadow-xl`}
-  style={{
-  background:
-    'linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.56))',
-  boxShadow: `
-    0 12px 40px rgba(0,0,0,.08),
-    inset 0 1px rgba(255,255,255,.45)
-  `,
-}}
->
-<div className="flex-1 min-w-0 p-5 sm:p-8">
-  {/* 标题 */}
- <h2 className="font-serif text-xl sm:text-3xl mb-2 sm:mb-3 transition-colors group-hover:text-[#70B0CC] group-active:text-[#70B0CC]">
-    {item.title}
-  </h2>
+                    <Link
+                      key={item.id}
+                      href={`/portfolio/${item.id}`}
+                      className={`group flex flex-col ${
+                        reversed ? 'sm:flex-row-reverse' : 'sm:flex-row'
+                      } rounded-2xl overflow-hidden mb-6 transition-colors shadow-xl`}
+                      style={{
+                        background:
+                          'linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.56))',
+                        boxShadow: `
+                          0 12px 40px rgba(0,0,0,.08),
+                          inset 0 1px rgba(255,255,255,.45)
+                        `,
+                      }}
+                    >
+                      <div className="flex-1 min-w-0 p-5 sm:p-8">
+                        {/* 标题 */}
+                        <h2 className="font-serif text-xl sm:text-3xl mb-2 sm:mb-3 transition-colors group-hover:text-[#70B0CC] group-active:text-[#70B0CC]">
+                          {item.title}
+                        </h2>
 
-  {/* 时间 */}
-  {item.date && <div className="text-xs text-black/40 mb-3">{item.date}</div>}
+                        {/* 时间 */}
+                        {item.date && <div className="text-xs text-black/40 mb-3">{item.date}</div>}
 
-  {/* 正文 */}
-{excerpt && <p className="text-sm sm:text-base text-black/50 line-clamp-2 mb-3">{excerpt}</p>}
+                        {/* 正文摘要（已剔除h2, h3） */}
+                        {excerpt && (
+                          <p className="text-sm sm:text-base text-black/50 line-clamp-2 mb-3">
+                            {excerpt}
+                          </p>
+                        )}
 
-  {/* 分类名 + 标签名 */}
-  <div className="flex items-center gap-3 text-xs text-black/40 flex-wrap">
-    {item.category && (
-      <span className="px-2 py-0.5 rounded-full bg-black/5">{item.category}</span>
-    )}
-    {item.tags && item.tags.length > 0 && (
-      <>
-        {item.tags.map((tag) => (
-          <span key={tag} className="text-black/30">
-            #{tag}
-          </span>
-        ))}
-      </>
-    )}
-  </div>
-</div>
+                        {/* 分类名 + 标签名 */}
+                        <div className="flex items-center gap-3 text-xs text-black/40 flex-wrap">
+                          {item.category && (
+                            <span className="px-2 py-0.5 rounded-full bg-black/5">
+                              {item.category}
+                            </span>
+                          )}
+                          {item.tags && item.tags.length > 0 && (
+                            <>
+                              {item.tags.map((tag) => (
+                                <span key={tag} className="text-black/30">
+                                  #{tag}
+                                </span>
+                              ))}
+                            </>
+                          )}
+                        </div>
+                      </div>
+
                       {item.cover_url && (
-                       <div className="w-full h-44 sm:w-80 sm:h-auto flex-shrink-0">
+                        <div className="w-full h-44 sm:w-80 sm:h-auto flex-shrink-0">
                           <img
                             src={item.cover_url}
                             alt={item.title}
