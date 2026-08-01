@@ -12,7 +12,11 @@ interface Item {
 }
 
 function stripHtml(html: string) {
-  return html.replace(/<[^>]+>/g, '');
+  if (!html) return '';
+  return html
+    .replace(/<h[23][^>]*>[\s\S]*?<\/h[23]>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .trim();
 }
 
 function highlight(text: string, query: string) {
@@ -76,36 +80,43 @@ export default function PortfolioSearch() {
       onMouseEnter={handleOpen}
       className="relative flex items-center justify-center"
     >
-      {/* 搜索框容器：白色系半透明磨砂 */}
+      {/* 搜索框胶囊容器：丝滑贝塞尔曲线，固定白系色彩，消除灰色过渡 */}
       <div
         onClick={handleOpen}
-        className={`flex items-center rounded-2xl transition-all duration-300 ease-out cursor-pointer overflow-hidden ${
+        className={`flex items-center rounded-full border transition-all duration-500 cursor-pointer ${
           expanded
-            ? 'w-56 px-3.5 py-2 bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
-            : 'w-9 h-9 p-0 bg-transparent border-transparent justify-center'
+            ? 'w-56 px-3.5 py-1.5 bg-white/35 border-white/60 backdrop-blur-md shadow-[0_4px_20px_rgba(255,255,255,0.15)]'
+            : 'w-9 h-9 p-0 bg-white/0 border-transparent justify-center'
         }`}
+        style={{
+          transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
       >
-        {/* 左侧图标：纯白 */}
+        {/* 图标：固定白色 */}
         <FiSearch
           size={16}
-          className={`shrink-0 text-white transition-all duration-300 ${
-            expanded ? 'mr-2.5 opacity-90' : 'opacity-100'
+          className={`shrink-0 text-white transition-opacity duration-300 ${
+            expanded ? 'mr-2 opacity-90' : 'opacity-100'
           }`}
         />
 
-        {/* 右侧输入框 */}
-        <input
-          ref={inputRef}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="搜索"
-          className={`bg-transparent text-white placeholder:text-white/70 text-sm outline-none transition-all duration-300 ${
-            expanded ? 'w-full opacity-100' : 'w-0 opacity-0 pointer-events-none'
+        {/* 输入框：受控宽与透明度，实现顺滑淡入淡出 */}
+        <div
+          className={`overflow-hidden flex-1 flex items-center transition-all duration-300 ${
+            expanded ? 'w-full opacity-100' : 'w-0 opacity-0'
           }`}
-        />
+        >
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="搜索"
+            className="w-full bg-transparent text-white placeholder:text-white/70 text-sm outline-none border-none p-0 focus:ring-0"
+          />
+        </div>
       </div>
 
-      {/* 搜索结果弹窗：手机端基于屏幕中心对齐，桌面端基于搜索框中心对齐 */}
+      {/* 搜索结果弹窗：中心轴对齐 + 响应式定位 */}
       {expanded && q && (
         <div
           className="
@@ -117,8 +128,8 @@ export default function PortfolioSearch() {
             max-h-80 overflow-y-auto 
             flex flex-col gap-1 p-2 rounded-2xl 
             bg-white/85 backdrop-blur-2xl border border-white/80 
-            shadow-[0_12px_30px_rgba(0,0,0,0.12)] 
-            z-50 animate-in fade-in slide-in-from-top-2 duration-200 
+            shadow-[0_12px_30px_rgba(0,0,0,0.08)] 
+            z-50 animate-in fade-in slide-in-from-top-2 duration-300 
             [&::-webkit-scrollbar]:hidden
           "
           style={{ scrollbarWidth: 'none' }}
