@@ -66,15 +66,142 @@ body {
   background: transparent;
 }
 
+/* 文章内部的 <hr /> 自动渲染灵动星星划线 */
+.prose hr {
+  position: relative;
+  border: none;
+  height: 24px;
+  margin: 3rem 0;
+  overflow: visible;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(112, 176, 204, 0.2) 20%,
+    rgba(112, 176, 204, 0.4) 50%,
+    rgba(112, 176, 204, 0.2) 80%,
+    transparent 100%
+  );
+  background-size: 100% 1px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 主星 ✦ */
+.prose hr::before {
+  content: '✦';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  font-size: 14px;
+  color: #70b0cc;
+  filter: drop-shadow(0 0 6px rgba(112, 176, 204, 0.8));
+  animation: 
+    starGlideX 4s linear infinite -0.3s,
+    starHopY 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate -0.3s,
+    starRollZ 2s linear infinite -0.3s;
+}
+
+/* 拖尾小星 ✧ */
 .prose hr::after {
-  content: '✧  ✦  ✧';
-  font-size: 13px;
-  letter-spacing: 6px;
-  color: rgba(112, 176, 204, 0.6);
-  background: rgba(255, 255, 255, 0.6);
-  padding: 3px 16px;
-  border-radius: 20px;
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  content: '✧';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  font-size: 10px;
+  color: rgba(112, 176, 204, 0.5);
+  animation: 
+    starGlideX 4s linear infinite 0s,
+    starHopY 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate 0s,
+    starRollZ 2s linear infinite 0s;
+}
+
+/* ==============================================
+   ✦ 灵动跳跳星分割线动画 ✦
+   ============================================== */
+.star-hr-container {
+  position: relative;
+  width: 100%;
+  height: 32px;
+  margin: 3.5rem 0;
+  display: flex;
+  align-items: center;
+}
+
+/* 底部的细线 */
+.star-hr-line {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(112, 176, 204, 0.15) 15%,
+    rgba(112, 176, 204, 0.35) 50%,
+    rgba(112, 176, 204, 0.15) 85%,
+    transparent 100%
+  );
+}
+
+/* 动效包裹层 */
+.star-trail-wrapper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 动画三轴嵌套组合 */
+.star-anim-x {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  animation: starGlideX 4s linear infinite;
+}
+
+.star-anim-y {
+  animation: starHopY 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate;
+}
+
+.star-anim-z {
+  animation: starRollZ 2s linear infinite;
+}
+
+/* 延迟控制实现“拖尾” */
+.star-lead .star-anim-x,
+.star-lead .star-anim-y,
+.star-lead .star-anim-z {
+  animation-delay: -0.3s;
+  z-index: 3;
+}
+
+.star-tail1 .star-anim-x,
+.star-tail1 .star-anim-y,
+.star-tail1 .star-anim-z {
+  animation-delay: -0.15s;
+  z-index: 2;
+}
+
+.star-tail2 .star-anim-x,
+.star-tail2 .star-anim-y,
+.star-tail2 .star-anim-z {
+  animation-delay: 0s;
+  z-index: 1;
+}
+
+/* 关键帧动画 */
+@keyframes starGlideX {
+  0%   { transform: translateX(-20px); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(calc(100vw - 40px)); opacity: 0; }
+}
+
+@keyframes starHopY {
+  0%   { transform: translateY(-50%) translateY(0px); }
+  100% { transform: translateY(-50%) translateY(-14px); }
+}
+
+@keyframes starRollZ {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
