@@ -26,16 +26,55 @@ interface TocItem {
   level: 2 | 3;
 }
 
-function injectHeadingIds(html: string): { html: string; toc: TocItem[] } {
+/* ✦ 核心函数：注入 Heading ID，同时自动将 <hr> 替换为纯正“破风拖尾星星”HTML 结构 ✦ */
+function processArticleContent(html: string): { html: string; toc: TocItem[] } {
   const toc: TocItem[] = [];
   let idx = 0;
-  const withIds = html.replace(/<(h2|h3)([^>]*)>([\s\S]*?)<\/\1>/g, (_match, tag: string, attrs: string, inner: string) => {
+
+  // 1. 注入 Heading IDs 生成目录
+  let processedHtml = html.replace(/<(h2|h3)([^>]*)>([\s\S]*?)<\/\1>/g, (_match, tag: string, attrs: string, inner: string) => {
     const id = `heading-${idx++}`;
     const text = inner.replace(/<[^>]+>/g, '').trim();
     if (text) toc.push({ id, text, level: tag === 'h2' ? 2 : 3 });
     return `<${tag}${attrs} id="${id}">${inner}</${tag}>`;
   });
-  return { html: withIds, toc };
+
+  // 2. HTML 级别的 <hr> 精准替换（支持 <hr>, <hr/>, <hr />）
+  const starDividerHTML = `
+    <div class="relative w-full my-10 py-2 overflow-hidden select-none pointer-events-none">
+      <svg class="hidden">
+        <defs>
+          <g id="pure-star">
+            <path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 19.446l-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/>
+          </g>
+        </defs>
+      </svg>
+      <div class="relative w-full h-10 max-w-4xl mx-auto">
+        <!-- 尾巴 2 (最小) -->
+        <div class="star-anim-s1-tail2">
+          <div class="star-t1-x"><div class="star-t1-y"><div class="star-t1-z">
+            <svg class="w-5 h-5 fill-[#dbe8ff] opacity-30 scale-50 blur-[0.5px]" viewBox="0 0 24 24"><use href="#pure-star"/></svg>
+          </div></div></div>
+        </div>
+        <!-- 尾巴 1 (中等) -->
+        <div class="star-anim-s1-tail1">
+          <div class="star-t1-x"><div class="star-t1-y"><div class="star-t1-z">
+            <svg class="w-5 h-5 fill-[#b4d0ff] opacity-60 scale-75" viewBox="0 0 24 24"><use href="#pure-star"/></svg>
+          </div></div></div>
+        </div>
+        <!-- 领头羊 (最大) -->
+        <div class="star-anim-s1-lead">
+          <div class="star-t1-x"><div class="star-t1-y"><div class="star-t1-z">
+            <svg class="w-5 h-5 fill-[#7fb2ff] opacity-100 scale-110 drop-shadow-[0_0_6px_rgba(255,255,255,1)]" viewBox="0 0 24 24"><use href="#pure-star"/></svg>
+          </div></div></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  processedHtml = processedHtml.replace(/<hr\s*\/?>/gi, starDividerHTML);
+
+  return { html: processedHtml, toc };
 }
 
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -72,7 +111,8 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
   const prev = idx > 0 ? siblings![idx - 1] : null;
   const next = siblings && idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
 
-  const { html: contentHtml, toc } = injectHeadingIds(item.content ?? '');
+  /* 使用增强版的内容处理函数，直接注入 ID 和破风星星分割线 */
+  const { html: contentHtml, toc } = processArticleContent(item.content ?? '');
 
   return (
     <div className="relative min-h-screen">
@@ -83,7 +123,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
       />
 
       <PortfolioNav homeHref="/portfolio" />
-  <FloatingWidget tocItems={toc} />
+      <FloatingWidget tocItems={toc} />
 
       {/* 封面横幅 */}
       {item.cover_url && (
@@ -101,7 +141,6 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
       {/* 主体区域 */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-[30vh] sm:pt-[36vh] pb-8 sm:pb-16 flex flex-col lg:flex-row items-start gap-6 lg:gap-12">
-        
         {/* 侧边栏 */}
         <aside className="order-2 lg:order-1 w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-24">
           <div className="flex flex-col gap-5">
@@ -119,7 +158,6 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
 
         {/* 正文区域 */}
         <main className="order-1 lg:order-2 flex-1 min-w-0 w-full">
-          {/* 背景样式已调整为与个人介绍、目录完全一致的 bg-white/60 和 backdrop-blur-md */}
           <div className="bg-white/60 backdrop-blur-md isolate transform-gpu rounded-2xl shadow-sm p-5 sm:p-8">
             <div className="flex items-baseline justify-between gap-3 mb-3">
               <div className="flex items-center gap-2 min-w-0">
@@ -146,6 +184,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
               ))}
             </div>
 
+            {/* 渲染注入了破风星星 HTML 的文章内容 */}
             <div
               className="prose prose-neutral max-w-none prose-img:rounded-xl"
               dangerouslySetInnerHTML={{ __html: contentHtml }}
