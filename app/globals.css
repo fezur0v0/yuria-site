@@ -32,8 +32,9 @@ body {
 .prose img[data-align="left"] { display: block; margin-left: 0; margin-right: auto; }
 
 /* ==============================================
-   ✦ 经典破风拖尾动画 (公开详情页显示) ✦
+   ✦ 经典破风拖尾动画 (精致优化版 - 正确类名映射) ✦
 ============================================== */
+
 .star-divider {
   width: 100%;
   margin: 2.5rem 0;
@@ -47,54 +48,119 @@ body {
 .star-divider-stage {
   position: relative;
   width: 100%;
-  height: 40px;
+  height: 44px; /* 略微加大高度，方便跳跃展示 */
+  overflow: hidden;
 }
 
-/* 2. SVG 基础样式 */
+/* 优雅的星光底轨：让星星仿佛沿着一条微光轨道划过 */
+.star-divider-stage::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg, 
+    transparent 0%, 
+    rgba(138, 180, 248, 0.25) 20%, 
+    rgba(138, 180, 248, 0.25) 80%, 
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* 通用完美对称的星星 SVG 样式 */
 .sd-star {
   width: 20px;
   height: 20px;
-  fill: #8ab4f8;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
   display: block;
 }
 
-/* 3. 三轴动画映射 (严格使用 Demo 原始参数) */
-.sd-x { animation: glideX 3s linear infinite; position: absolute; left: 0; bottom: 0; }
-.sd-y { animation: hopY 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; }
-.sd-z { animation: rollZ 1s linear infinite; }
+/* 核心：sd-x 绝对定位 + 换用高阶贝塞尔曲线让滑行更流畅 */
+.sd-x { 
+  animation: glideX 3.6s cubic-bezier(0.35, 0, 0.25, 1) infinite; 
+  position: absolute; 
+  bottom: 0; 
+  will-change: transform, opacity;
+}
 
-/* 4. 拖尾梯队与延迟 (严格对齐 Demo 拖尾逻辑) */
+/* Y轴上下连贯蹦跳，加了一点极其微弱的变形，更有肉感灵动度 */
+.sd-y { 
+  animation: hopY 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate; 
+  will-change: transform;
+}
+
+/* Z轴顺滑旋转 */
+.sd-z { 
+  animation: rollZ 1.2s linear infinite; 
+  will-change: transform;
+}
 
 /* 尾巴 2 (最小，最后面) */
 .sd-tail2 .sd-x, .sd-tail2 .sd-y, .sd-tail2 .sd-z { animation-delay: 0s; }
-.sd-tail2 .sd-star { fill: #dbe8ff; opacity: 0.3; transform: scale(0.5); filter: blur(1px); }
+.sd-tail2 .sd-star { 
+  fill: #dbe8ff; 
+  opacity: 0.25; 
+  transform: scale(0.45); 
+  filter: blur(1px) drop-shadow(0 0 2px rgba(219, 232, 255, 0.5)); 
+}
 
 /* 尾巴 1 (中等，在中间) */
 .sd-tail1 .sd-x, .sd-tail1 .sd-y, .sd-tail1 .sd-z { animation-delay: -0.15s; }
-.sd-tail1 .sd-star { fill: #b4d0ff; opacity: 0.6; transform: scale(0.75); }
+.sd-tail1 .sd-star { 
+  fill: #b4d0ff; 
+  opacity: 0.55; 
+  transform: scale(0.7); 
+  filter: drop-shadow(0 0 3px rgba(180, 208, 255, 0.8)); 
+}
 
-/* 领头羊 (最大，最前面) */
+/* 领头羊 (最大，最前面，强发光) */
 .sd-lead .sd-x, .sd-lead .sd-y, .sd-lead .sd-z { animation-delay: -0.3s; z-index: 10; }
-.sd-lead .sd-star { fill: #7fb2ff; opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(255,255,255,1)); }
+.sd-lead .sd-star { 
+  fill: #7fb2ff; 
+  opacity: 1; 
+  transform: scale(1.1); 
+  filter: drop-shadow(0 0 6px rgba(127, 178, 255, 0.9)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); 
+}
 
-/* 5. 关键帧定义 (完全复刻 Demo 的流畅轨迹) */
+/* 关键帧：带两端极佳渐隐 + 中途灵动缩放的 X 轴平移 */
 @keyframes glideX {
-  0%   { transform: translateX(-30px); opacity: 0; }
-  15%  { opacity: 1; }
-  75%  { opacity: 1; }
-  100% { transform: translateX(330px); opacity: 0; }
+  0% { 
+    left: 0%; 
+    opacity: 0; 
+    transform: translateX(-100%) scale(0.7); 
+  }
+  18% { 
+    opacity: 1; 
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    /* 在卡片正中间时，轻微呼吸变大一点点 */
+    transform: translateX(0%) scale(1.05);
+  }
+  82% { 
+    opacity: 1; 
+    transform: translateX(50%) scale(1);
+  }
+  100% { 
+    left: 100%; 
+    opacity: 0; 
+    transform: translateX(0%) scale(0.7); 
+  }
 }
 
 @keyframes hopY {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-22px); }
+  0%   { transform: translateY(0) scaleY(0.95); }
+  100% { transform: translateY(-22px) scaleY(1.05); }
 }
 
 @keyframes rollZ {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
 /* ==============================================
    ✦ 编辑器 (Tiptap) 专属：只显示淡虚线,隐藏星星动画 ✦
 ============================================== */
