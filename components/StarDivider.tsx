@@ -1,58 +1,32 @@
-import React from 'react';
+import HorizontalRule from '@tiptap/extension-horizontal-rule';
 
-export default function StarDivider() {
-  return (
-    <div className="star-trail-box">
-      {/* 1. 隐藏的标准五角星 SVG 路径 */}
-      <svg style={{ display: 'none' }}>
-        <defs>
-          <g id="pure-star">
-            <path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 19.446l-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z" />
-          </g>
-        </defs>
-      </svg>
+const STAR_PATH =
+  'M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 19.446l-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z';
 
-      {/* 2. 经典破风拖尾动画舞台 */}
-      <div className="anim-container">
-        {/* 尾巴 2 (最小，最后面) */}
-        <div className="s1-tail2">
-          <div className="t1-x">
-            <div className="t1-y">
-              <div className="t1-z">
-                <svg className="star-svg" viewBox="0 0 24 24">
-                  <use href="#pure-star" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 尾巴 1 (中等，在中间) */}
-        <div className="s1-tail1">
-          <div className="t1-x">
-            <div className="t1-y">
-              <div className="t1-z">
-                <svg className="star-svg" viewBox="0 0 24 24">
-                  <use href="#pure-star" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 领头羊 (最大，最前面) */}
-        <div className="s1-lead">
-          <div className="t1-x">
-            <div className="t1-y">
-              <div className="t1-z">
-                <svg className="star-svg" viewBox="0 0 24 24">
-                  <use href="#pure-star" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+function starChain(tailClass: string) {
+  return [
+    'div',
+    { class: `sd-x ${tailClass}` },
+    [
+      'div',
+      { class: 'sd-y' },
+      [
+        'div',
+        { class: 'sd-z' },
+        ['svg', { class: 'sd-star', viewBox: '0 0 24 24' }, ['path', { d: STAR_PATH }]],
+      ],
+    ],
+  ];
 }
+
+const StarDivider = HorizontalRule.extend({
+  renderHTML() {
+    return [
+      'div',
+      { class: 'star-divider', 'data-type': 'star-divider' },
+      ['div', { class: 'star-divider-stage' }, starChain('sd-tail2'), starChain('sd-tail1'), starChain('sd-lead')],
+    ];
+  },
+});
+
+export default StarDivider;
