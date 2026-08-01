@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
+import { FiSearch } from 'react-icons/fi';
 
 interface Item {
   id: string;
@@ -8,27 +11,6 @@ interface Item {
   content: string | null;
 }
 
-// 模拟图标，替代外部 icon 依赖以保障编译兼容
-function SearchIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-
-// 剔除标题标签与 HTML 格式
 function stripHtml(html: string) {
   if (!html) return '';
   return html
@@ -37,7 +19,6 @@ function stripHtml(html: string) {
     .trim();
 }
 
-// 搜索匹配高亮
 function highlight(text: string, query: string) {
   if (!query) return text;
   const idx = text.toLowerCase().indexOf(query.toLowerCase());
@@ -51,41 +32,21 @@ function highlight(text: string, query: string) {
   );
 }
 
-// 默认预设数据，确保本地与线上渲染不崩溃
-const DEFAULT_ITEMS: Item[] = [
-  { id: '1', title: '关于设计系统的思考与实践', content: '<h2>引言</h2><p>设计系统是连接产品、设计与工程的桥梁...</p>' },
-  { id: '2', title: '日系极简风格网页 UI 研讨', content: '<h2>风格探讨</h2><p>追求质感与留白，结合清透磨砂玻璃视觉...</p>' },
-  { id: '3', title: '摄影集：夏日海浪与晨光记录', content: '<h2>影集</h2><p>若能与你共乘海浪之上，记录极光与晨曦...</p>' },
-];
-
-export function PortfolioSearch() {
+export default function PortfolioSearch() {
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState('');
-  const [items, setItems] = useState<Item[]>(DEFAULT_ITEMS);
+  const [items, setItems] = useState<Item[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // 尝试安全加载 supabase 客户端数据
   useEffect(() => {
-    try {
-      // 动态判断防编译报错
-      const supabaseModule = require('@/utils/supabase/client');
-      if (supabaseModule && supabaseModule.createClient) {
-        const supabase = supabaseModule.createClient();
-        supabase
-          .from('portfolio_items')
-          .select('id, title, content')
-          .then(({ data }: { data: Item[] | null }) => {
-            if (data && data.length > 0) setItems(data);
-          })
-          .catch(() => {});
-      }
-    } catch (e) {
-      // 在无 Next.js 上下文预览时回退使用示例数据
-    }
+    const supabase = createClient();
+    supabase
+      .from('portfolio_items')
+      .select('id, title, content')
+      .then(({ data }) => setItems(data ?? []));
   }, []);
 
-  // 点击外部关闭搜索框
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -117,37 +78,32 @@ export function PortfolioSearch() {
     <div
       ref={containerRef}
       onMouseEnter={handleOpen}
-      className="relative flex items-center justify-center p-4"
+      className="relative flex items-center justify-center"
     >
-      {/* 搜索框胶囊容器：收起时采用柔和延长的 cubic-bezier 曲线，自然舒缓 */}
+      {/* 搜索框胶囊容器：丝滑贝塞尔曲线，固定白系色彩，消除灰色过渡 */}
       <div
         onClick={handleOpen}
-        className={`flex items-center rounded-full border cursor-pointer select-none ${
+        className={`flex items-center rounded-full border transition-all duration-500 cursor-pointer ${
           expanded
-            ? 'w-56 px-3.5 py-1.5 bg-white/35 border-white/60 backdrop-blur-md shadow-[0_4px_20px_rgba(255,255,255,0.15)] duration-300'
-            : 'w-9 h-9 p-0 bg-white/0 border-transparent justify-center duration-500'
+            ? 'w-56 px-3.5 py-1.5 bg-white/35 border-white/60 backdrop-blur-md shadow-[0_4px_20px_rgba(255,255,255,0.15)]'
+            : 'w-9 h-9 p-0 bg-white/0 border-transparent justify-center'
         }`}
         style={{
-          transitionProperty: 'width, padding, background-color, border-color, box-shadow',
-          transitionTimingFunction: expanded
-            ? 'cubic-bezier(0.16, 1, 0.3, 1)'
-            : 'cubic-bezier(0.32, 0.72, 0, 1)',
+          transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
-        {/* 左侧白色图标：保持居左并轻微平移 */}
-        <SearchIcon
+        {/* 图标：固定白色 */}
+        <FiSearch
           size={16}
-          className={`shrink-0 text-white transition-all duration-300 ${
-            expanded ? 'mr-2 opacity-90 scale-100' : 'opacity-100 scale-95'
+          className={`shrink-0 text-white transition-opacity duration-300 ${
+            expanded ? 'mr-2 opacity-90' : 'opacity-100'
           }`}
         />
 
-        {/* 输入框包裹层：收起时快速淡出（opacity 200ms），防止文字收缩变形 */}
+        {/* 输入框：受控宽与透明度，实现顺滑淡入淡出 */}
         <div
-          className={`overflow-hidden flex-1 flex items-center transition-all ${
-            expanded
-              ? 'w-full opacity-100 duration-300 ease-out'
-              : 'w-0 opacity-0 duration-200 ease-in pointer-events-none'
+          className={`overflow-hidden flex-1 flex items-center transition-all duration-300 ${
+            expanded ? 'w-full opacity-100' : 'w-0 opacity-0'
           }`}
         >
           <input
@@ -192,14 +148,14 @@ export function PortfolioSearch() {
                   : contentText.slice(0, 40);
 
               return (
-                <a
+                <Link
                   key={item.id}
                   href={`/portfolio/${item.id}`}
                   onClick={() => {
                     setExpanded(false);
                     setQuery('');
                   }}
-                  className="group block p-3 sm:p-2.5 rounded-xl hover:bg-black/5 active:scale-[0.98] transition-all duration-200 no-underline"
+                  className="group block p-3 sm:p-2.5 rounded-xl hover:bg-black/5 active:scale-[0.98] transition-all duration-200"
                 >
                   <p className="text-xs font-semibold text-black/80 group-hover:text-black mb-0.5 line-clamp-1 transition-colors">
                     {highlight(item.title, q)}
@@ -209,20 +165,12 @@ export function PortfolioSearch() {
                       {highlight(snippet, q)}
                     </p>
                   )}
-                </a>
+                </Link>
               );
             })
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-export default function App() {
-  return (
-    <div className="min-h-screen bg-slate-900 flex items-start justify-center pt-10">
-      <PortfolioSearch />
     </div>
   );
 }
