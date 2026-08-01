@@ -77,30 +77,39 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
     return acc;
   }, []);
 
+  // 通用悬浮球样式类名
+  const buttonStyle =
+    "w-11 h-11 rounded-full bg-[rgba(25,25,25,0.45)] backdrop-blur-[12px] border border-[rgba(255,255,255,0.12)] shadow-[0_8px_20px_rgba(0,0,0,0.15)] flex items-center justify-center text-[rgba(255,255,255,0.85)] hover:scale-105 hover:bg-white/80 hover:text-black/80 hover:border-white/50 active:scale-95 transition-all duration-300";
+
   return (
     <>
       <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
-        {tocItems.length > 0 && (
-          <button
-            onClick={handleOpen}
-            className="lg:hidden w-11 h-11 rounded-full bg-slate-900/45 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/20 flex items-center justify-center text-white hover:scale-105 hover:bg-slate-900/80 hover:border-white/40 active:scale-95 transition-all duration-300"
-            title="目录"
-          >
-            <PiListBullets size={20} />
-          </button>
-        )}
+        {/* 1. 回到顶部按钮（已调整至最上方） */}
         {showBackToTop && (
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-11 h-11 rounded-full bg-slate-900/45 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/20 flex items-center justify-center text-white hover:scale-105 hover:bg-slate-900/80 hover:border-white/40 active:scale-95 transition-all duration-300"
+            className={buttonStyle}
             title="回到顶部"
           >
             <PiArrowCircleUp size={20} />
           </button>
         )}
+
+        {/* 2. 目录按钮（移动端显示） */}
+        {tocItems.length > 0 && (
+          <button
+            onClick={handleOpen}
+            className={`lg:hidden ${buttonStyle}`}
+            title="目录"
+          >
+            <PiListBullets size={20} />
+          </button>
+        )}
+
+        {/* 3. 设置按钮 */}
         <Link
           href="/admin/portfolio"
-          className="w-11 h-11 rounded-full bg-slate-900/45 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/20 flex items-center justify-center text-white hover:scale-105 hover:bg-slate-900/80 hover:border-white/40 active:scale-95 transition-all duration-300"
+          className={buttonStyle}
           title="设置"
         >
           <PiGearSix size={20} />
