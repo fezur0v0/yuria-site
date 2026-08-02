@@ -43,7 +43,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     });
   }, []);
 
-  // 新建/编辑作品是全屏编辑器页面，不套用后台外壳
   const isEditorPage = /^\/admin\/portfolio\/(new|.+\/edit)$/.test(pathname);
 
   if (loading) {
@@ -61,18 +60,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* 桌面侧边栏 */}
       <aside className="hidden lg:flex lg:flex-col w-60 flex-shrink-0 border-r border-black/[0.06] bg-white px-5 py-8">
         <button
-          onClick={() => router.push('/')}
-          className="flex items-center gap-1.5 text-xs text-black/40 hover:text-black/70 transition-colors mb-10 -ml-1"
-        >
-          <MdOutlineArrowBackIos size={12} />
-          返回首页
-        </button>
-        <div
+          onClick={() => router.back()}
           style={{ fontFamily: 'Noto Serif SC,serif' }}
-          className="text-lg font-light tracking-widest text-black/80 mb-8 px-1"
+          className="text-left text-lg font-light tracking-widest text-black/80 mb-8 px-1 hover:text-black/50 transition-colors"
         >
           管理面板
-        </div>
+        </button>
         <nav className="flex flex-col gap-1">
           {NAV.map((item) => {
             const active = pathname === item.href;
@@ -93,46 +86,51 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
       </aside>
 
-      {/* 移动端顶部：返回 + 横向滚动的胶囊导航 */}
+      {/* 移动端顶部：只剩标题，可点击返回 */}
       <div className="lg:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/[0.06]">
-        <div className="flex items-center justify-between px-4 h-14">
+        <div className="flex items-center justify-center px-4 h-12">
           <button
-            onClick={() => router.push('/')}
-            className="w-9 h-9 -ml-2 flex items-center justify-center rounded-full text-black/50 active:bg-black/5"
-          >
-            <MdOutlineArrowBackIos size={17} />
-          </button>
-          <span
+            onClick={() => router.back()}
             style={{ fontFamily: 'Noto Serif SC,serif' }}
             className="text-sm font-light tracking-widest text-black/70"
           >
             管理面板
-          </span>
-          <div className="w-9" />
-        </div>
-        <div className="flex gap-2 px-4 pb-3 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-          {NAV.map((item) => {
-            const active = pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs whitespace-nowrap transition-colors flex-shrink-0 ${
-                  active ? 'bg-black text-white' : 'bg-black/[0.04] text-black/50'
-                }`}
-              >
-                <Icon size={14} />
-                {item.label}
-              </Link>
-            );
-          })}
+          </button>
         </div>
       </div>
 
-      <main className="flex-1 min-w-0 px-5 py-8 lg:px-10 lg:py-10 max-w-3xl mx-auto w-full">
+      <main className="flex-1 min-w-0 px-5 py-8 pb-28 lg:px-10 lg:py-10 lg:pb-10 max-w-3xl mx-auto w-full">
         {children}
       </main>
+
+      {/* 移动端底部导航栏 */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-black/[0.06] flex justify-around items-center px-2 pt-2"
+        style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}
+      >
+        <button
+          onClick={() => router.back()}
+          className="flex flex-col items-center gap-1 px-3 py-1 text-black/40"
+        >
+          <MdOutlineArrowBackIos size={18} />
+          <span className="text-[9px] tracking-wide">返回</span>
+        </button>
+        {NAV.map((item) => {
+          const active = pathname === item.href;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-col items-center gap-1 px-3 py-1 transition-colors ${
+                active ? 'text-black' : 'text-black/40'
+              }`}
+            >
+              <Icon size={18} />
+              <span className="text-[9px] tracking-wide">{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }
