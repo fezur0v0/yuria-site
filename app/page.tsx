@@ -96,11 +96,12 @@ export default function Home() {
     setTracks(data || [])
   }
 
-  // 首页作品集
+  // 首页作品集 - 只读展示中的
 async function fetchPortfolio() {
   const { data } = await supabase
     .from('portfolio_items')
     .select('*')
+    .eq('is_visible', true)
     .order('sort_order', { ascending: true, nullsFirst: false })
     .limit(4)
   setPortfolioItems(data || [])
