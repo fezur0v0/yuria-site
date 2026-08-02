@@ -96,15 +96,15 @@ export default function Home() {
     setTracks(data || [])
   }
 
-  // 首页作品集：直接查真实表 portfolio_items，取最新几篇
-  async function fetchPortfolio() {
-    const { data } = await supabase
-      .from('portfolio_items')
-      .select('*')
-      .order('date', { ascending: false })
-      .limit(4)
-    setPortfolioItems(data || [])
-  }
+  // 首页作品集
+async function fetchPortfolio() {
+  const { data } = await supabase
+    .from('portfolio_items')
+    .select('*')
+    .order('sort_order', { ascending: true, nullsFirst: false })
+    .limit(4)
+  setPortfolioItems(data || [])
+}
 
   // 图集模块还没做，暂时保留占位表
   async function fetchGallery() {
