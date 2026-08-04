@@ -41,7 +41,6 @@ export default function GalleryPage() {
         <h1 className="font-serif text-3xl sm:text-4xl text-[#1a1a1a] tracking-wide mb-2">
           GALLERY
         </h1>
-        <p className="text-sm text-black/40 mb-12">相册 · {albums.length}</p>
 
         {loading ? (
           <p className="text-black/30 text-sm">加载中...</p>
