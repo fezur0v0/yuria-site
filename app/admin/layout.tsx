@@ -60,7 +60,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* 桌面侧边栏 */}
       <aside className="hidden lg:flex lg:flex-col w-60 flex-shrink-0 border-r border-black/[0.06] bg-white px-5 py-8">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/')}
           style={{ fontFamily: 'Noto Serif SC,serif' }}
           className="text-left text-lg font-light tracking-widest text-black/80 mb-8 px-1 hover:text-black/50 transition-colors"
         >
@@ -90,7 +90,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="lg:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/[0.06]">
         <div className="flex items-center justify-center px-4 h-12">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/')}
             style={{ fontFamily: 'Noto Serif SC,serif' }}
             className="text-sm font-light tracking-widest text-black/70"
           >
@@ -108,7 +108,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}
       >
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/')}
           className="flex flex-col items-center gap-1 px-3 py-1 text-black/40"
         >
           <MdOutlineArrowBackIos size={18} />
