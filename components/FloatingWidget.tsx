@@ -10,7 +10,13 @@ interface TocItem {
   level: 2 | 3;
 }
 
-export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[] }) {
+export default function FloatingWidget({
+  tocItems = [],
+  settingsHref = '/admin/portfolio',
+}: {
+  tocItems?: TocItem[];
+  settingsHref?: string;
+}) {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [tocOpen, setTocOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -106,12 +112,8 @@ export default function FloatingWidget({ tocItems = [] }: { tocItems?: TocItem[]
           </button>
         )}
 
-        {/* 3. 设置按钮 */}
-        <Link
-          href="/admin/portfolio"
-          className={buttonStyle}
-          title="设置"
-        >
+        {/* 3. 设置按钮 —— 唯一改动的地方 */}
+        <Link href={settingsHref} className={buttonStyle} title="设置">
           <PiGearSix size={20} />
         </Link>
       </div>
