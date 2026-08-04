@@ -58,7 +58,7 @@ export default function GalleryPage() {
         )}
       </div>
 
-      <FloatingWidget />
+      <FloatingWidget settingsHref="/admin/gallery" />
     </div>
   );
 }
