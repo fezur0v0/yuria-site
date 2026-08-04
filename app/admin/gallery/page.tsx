@@ -128,13 +128,9 @@ export default function AdminGalleryPage() {
                   )}
                   <div className="flex-1 min-w-0 text-sm text-black/80 truncate">{album.title}</div>
 
-                  <button onClick={() => toggleFeaturedHome(album)} className="text-black/20 hover:text-black/60 p-1 transition-colors" title="首页精选">
-  {album.is_featured_home ? (
-    <MdOutlineStar size={17} className="text-white drop-shadow-[0_0_6px_rgba(0,0,0,0.25)]" />
-  ) : (
-    <MdOutlineStarOutline size={17} />
-  )}
-               </button>
+                  <button onClick={() => toggleFeaturedHome(album)} className="text-black/25 hover:text-[#A7C7E7] p-1 transition-colors" title="首页精选">
+  {album.is_featured_home ? <MdOutlineStar size={17} className="text-[#A7C7E7]" /> : <MdOutlineStarOutline size={17} />}
+</button>
                   
                   <Link href={`/gallery/${album.id}`} className="text-black/25 hover:text-black/60 p-1" title="编辑相册内的图片">
                     <MdOutlineEdit size={16} />
