@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { SortableList } from '@/components/admin/SortableList';
-import { MdOutlineDelete, MdOutlineVisibility, MdOutlineVisibilityOff, MdOutlineEdit, MdOutlineStar, MdOutlineStarOutline } from 'react-icons/md';
+import { MdOutlineDelete, MdOutlineVisibility, MdOutlineVisibilityOff, MdOutlineEdit, MdOutlineStar, MdOutlineStarOutline, MdOutlineTune } from 'react-icons/md';
 
 const supabase = createClient();
 
