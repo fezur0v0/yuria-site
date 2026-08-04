@@ -75,24 +75,30 @@ export default function AlbumDetailPage() {
   }, [goPrev, goNext, editMode]);
 
   // 上传新图片
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const path = `gallery/${albumId}/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage.from('theater-images').upload(path, file);
-    if (!uploadError) {
-      const { data: urlData } = supabase.storage.from('theater-images').getPublicUrl(path);
-      await supabase.from('gallery_images').insert({
-        album_id: albumId,
-        image_url: urlData.publicUrl,
-        sort_order: images.length,
-      });
-      fetchData();
-    }
+const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  setUploading(true);
+  const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+  const path = `gallery/${albumId}/${Date.now()}-${safeName}`;
+  const { error: uploadError } = await supabase.storage.from('theater-images').upload(path, file);
+  if (uploadError) {
+    alert('上传失败：' + uploadError.message);
     setUploading(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+    return;
+  }
+  const { data: urlData } = supabase.storage.from('theater-images').getPublicUrl(path);
+  const { error: insertError } = await supabase.from('gallery_images').insert({
+    album_id: albumId,
+    image_url: urlData.publicUrl,
+    sort_order: images.length,
+  });
+  if (insertError) alert('保存失败：' + insertError.message);
+  fetchData();
+  setUploading(false);
+  if (fileInputRef.current) fileInputRef.current.value = '';
+};
+  
 
   // 保存备注
   const saveCaption = async () => {
@@ -174,10 +180,17 @@ export default function AlbumDetailPage() {
         )}
         {isOwner && editMode && (
           <>
-            <label className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md text-white/70 hover:bg-white/20 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="添加图片">
-              <MdOutlineAdd size={18} />
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
-            </label>
+            
+          <button
+  type="button"
+  onClick={() => fileInputRef.current?.click()}
+  className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md text-white/70 hover:bg-white/20 hover:text-white flex items-center justify-center transition-all"
+  title="添加图片"
+>
+  <MdOutlineAdd size={18} />
+</button>
+            
+<input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
             {selected.size > 0 && (
               <button
                 onClick={deleteSelected}
