@@ -774,7 +774,7 @@ overflow: hidden;
             {galleryItems.map((item, i) => (
   <Link
     key={item.id}
-    href={\/gallery/${item.id}`}`
+    href={`/gallery/${item.id}`}
     className="sr g-card"
     data-d={`${110 + i * 28}`}
     onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)')}
