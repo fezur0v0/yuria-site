@@ -107,15 +107,16 @@ async function fetchPortfolio() {
   setPortfolioItems(data || [])
 }
 
-  // 图集模块还没做，暂时保留占位表
-  async function fetchGallery() {
-    const { data } = await supabase
-      .from('homepage_gallery')
-      .select('*')
-      .eq('is_visible', true)
-      .order('sort_order')
-    setGalleryItems(data || [])
-  }
+  // 图集模块
+async function fetchGallery() {
+  const { data } = await supabase
+    .from('gallery_albums')
+    .select('*')
+    .eq('is_featured_home', true)
+    .eq('is_visible', true)
+    .order('sort_order')
+  setGalleryItems(data || [])
+}
 
   function togglePlay() {
     if (!audioRef.current) return
@@ -702,9 +703,9 @@ overflow: hidden;
                       ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
                     }}
                   >
-                    {item.cover_url ? (
+                    {item.cover_image_url ? (
                       <img
-                        src={item.cover_url}
+                        src={item.cover_image_url}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         alt={item.title}
                       />
@@ -773,7 +774,7 @@ overflow: hidden;
             {galleryItems.map((item, i) => (
   <Link
     key={item.id}
-    href="/gallery"
+    href={\/gallery/${item.id}`}`
     className="sr g-card"
     data-d={`${110 + i * 28}`}
     onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)')}
@@ -790,8 +791,8 @@ overflow: hidden;
       onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.14)'}
       onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'}
     >
-      {item.cover_url
-        ? <img src={item.cover_url} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt={item.title} />
+      {item.cover_image_url
+        ? <img src={item.cover_image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt={item.title} />
         : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(150deg,#e0e0de,#c8c8c6)' }} />
       }
     </div>
