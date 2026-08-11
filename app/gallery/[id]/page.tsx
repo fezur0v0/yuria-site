@@ -186,22 +186,20 @@ function ImmersiveViewer({
   onSaveCaption: (id: string, text: string) => void;
 }) {
   const [index, setIndex] = useState(startIndex);
-  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null); // 桌面放大镜
-  const [mobileZoomed, setMobileZoomed] = useState(false);
-  const [mobileOrigin, setMobileOrigin] = useState({ x: 50, y: 50 });
+  const [zoom, setZoom] = useState(1); // 1 = 100%
   const [editingCaption, setEditingCaption] = useState(false);
   const [draft, setDraft] = useState('');
   const touchStartX = useRef(0);
-  const imgWrapRef = useRef<HTMLDivElement>(null);
 
   const active = images[index];
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 3;
+  const ZOOM_STEP = 0.5;
 
-  const goPrev = useCallback(() => setIndex((i) => (i - 1 + images.length) % images.length), [images.length]);
-  const goNext = useCallback(() => setIndex((i) => (i + 1) % images.length), [images.length]);
+  const goPrev = useCallback(() => { setIndex((i) => (i - 1 + images.length) % images.length); setZoom(1); }, [images.length]);
+  const goNext = useCallback(() => { setIndex((i) => (i + 1) % images.length); setZoom(1); }, [images.length]);
 
-  useEffect(() => {
-    setHoverPos(null); setMobileZoomed(false); setEditingCaption(false);
-  }, [index]);
+  useEffect(() => { setEditingCaption(false); }, [index]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -213,40 +211,17 @@ function ImmersiveViewer({
     return () => window.removeEventListener('keydown', handleKey);
   }, [goPrev, goNext, onClose]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = imgWrapRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setHoverPos({ x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) });
-  };
-
-  const handleImageTap = (e: React.MouseEvent) => {
-    if (window.innerWidth >= 640) return; // 桌面用 hover，不用点击
-    const rect = imgWrapRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    if (mobileZoomed) {
-      setMobileZoomed(false);
-    } else {
-      setMobileOrigin({ x, y });
-      setMobileZoomed(true);
-    }
-  };
+  const zoomIn = () => setZoom((z) => Math.min(MAX_ZOOM, +(z + ZOOM_STEP).toFixed(2)));
+  const zoomOut = () => setZoom((z) => Math.max(MIN_ZOOM, +(z - ZOOM_STEP).toFixed(2)));
+  const zoomReset = () => setZoom(1);
 
   const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (mobileZoomed) return;
+    if (zoom > 1) return; // 放大状态下不滑动切图，避免误触
     const delta = e.changedTouches[0].clientX - touchStartX.current;
     if (delta > 60) goPrev();
     else if (delta < -60) goNext();
   };
-
-  // 右下角小预览方块：显示当前放大区域在整张图里的位置
-  const rectSize = 100 / ZOOM;
-  const rectLeft = hoverPos ? Math.max(0, Math.min(100 - rectSize, hoverPos.x - rectSize / 2)) : 0;
-  const rectTop = hoverPos ? Math.max(0, Math.min(100 - rectSize, hoverPos.y - rectSize / 2)) : 0;
 
   return (
     <div className="fixed inset-0 z-[60] bg-black" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
@@ -259,10 +234,9 @@ function ImmersiveViewer({
       <button onClick={onClose} className="fixed top-6 right-6 z-50 w-9 h-9 rounded-full bg-white/10 backdrop-blur-md text-white/70 hover:bg-white/20 hover:text-white flex items-center justify-center">
         <MdOutlineClose size={18} />
       </button>
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 text-white/40 text-xs">{index + 1} / {images.length}</div>
 
-      {/* 桌面端左右箭头，放在屏幕两侧，做大一点 */}
-      {images.length > 1 && (
+      {/* 桌面端左右箭头，放大状态下隐藏，避免跟拖看图冲突 */}
+      {images.length > 1 && zoom === 1 && (
         <>
           <button onClick={goPrev} className="hidden sm:flex fixed left-6 top-1/2 -translate-y-1/2 z-50 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md text-white/70 hover:bg-white/20 hover:text-white items-center justify-center">
             <MdChevronLeft size={32} />
@@ -274,50 +248,19 @@ function ImmersiveViewer({
       )}
 
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-4">
-        <div
-          ref={imgWrapRef}
-          className="relative max-w-[92vw] sm:max-w-[80vw] max-h-[78vh] overflow-hidden cursor-zoom-in"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHoverPos(null)}
-          onClick={handleImageTap}
-        >
+        <div className="max-w-[92vw] sm:max-w-[80vw] max-h-[70vh] overflow-auto flex items-center justify-center">
           <img
             src={active.image_url}
             alt={active.caption ?? ''}
-            className="max-w-full max-h-[78vh] object-contain transition-transform duration-150 select-none"
-            style={{
-              transform: hoverPos
-                ? `scale(${ZOOM})`
-                : mobileZoomed
-                ? `scale(${ZOOM})`
-                : 'scale(1)',
-              transformOrigin: hoverPos
-                ? `${hoverPos.x}% ${hoverPos.y}%`
-                : `${mobileOrigin.x}% ${mobileOrigin.y}%`,
-            }}
+            className="max-w-full max-h-[70vh] object-contain transition-transform duration-200 select-none"
+            style={{ transform: `scale(${zoom})` }}
             draggable={false}
           />
         </div>
 
-        {/* 右下角小预览方块，只在桌面 hover 时出现 */}
-        {hoverPos && (
-          <div className="hidden sm:block fixed bottom-6 right-6 z-50 w-28 h-28 rounded-md overflow-hidden border border-white/20 shadow-lg">
-            <div className="relative w-full h-full">
-              <img src={active.image_url} alt="" className="w-full h-full object-contain" />
-              <div
-                className="absolute border-2 border-white/90"
-                style={{
-                  left: `${rectLeft}%`, top: `${rectTop}%`,
-                  width: `${rectSize}%`, height: `${rectSize}%`,
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* 备注区：只在没放大时显示，避免跟放大镜打架 */}
-        {!hoverPos && !mobileZoomed && (
-          <div className="mt-6 min-h-[2rem] text-center max-w-md px-6">
+        {/* 备注区 */}
+        {zoom === 1 && (
+          <div className="mt-4 min-h-[2rem] text-center max-w-md px-6">
             {editingCaption ? (
               <div className="flex items-center gap-2 justify-center">
                 <input
@@ -341,6 +284,21 @@ function ImmersiveViewer({
             )}
           </div>
         )}
+      </div>
+
+      {/* 底部工具栏：翻页 + 缩放，仿你截图那种 */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-black/50 backdrop-blur-md rounded-full px-5 py-2.5 text-white/70 text-sm">
+        <button onClick={goPrev} disabled={zoom > 1} className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed">‹</button>
+        <span className="text-xs text-white/50">{index + 1}/{images.length}</span>
+        <button onClick={goNext} disabled={zoom > 1} className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed">›</button>
+
+        <span className="w-px h-4 bg-white/20 mx-1" />
+
+        <button onClick={zoomOut} disabled={zoom <= MIN_ZOOM} className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed" title="缩小">−</button>
+        <button onClick={zoomReset} className="text-xs text-white/50 hover:text-white w-10 text-center" title="还原">
+          {Math.round(zoom * 100)}%
+        </button>
+        <button onClick={zoomIn} disabled={zoom >= MAX_ZOOM} className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed" title="放大">+</button>
       </div>
     </div>
   );
