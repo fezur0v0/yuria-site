@@ -703,9 +703,9 @@ overflow: hidden;
                       ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
                     }}
                   >
-                    {item.cover_image_url ? (
+                    {item.cover_url ? (
                       <img
-                        src={item.cover_image_url}
+                        src={item.cover_url}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         alt={item.title}
                       />
