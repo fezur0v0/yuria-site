@@ -1,12 +1,11 @@
-
 'use client';
-
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import PortfolioNav from '@/components/PortfolioNav';
 import FloatingWidget from '@/components/FloatingWidget';
 import AlbumStackCard from '@/components/gallery/AlbumStackCard';
+import PortfolioHero from '@/components/PortfolioHero';
 
 interface Album {
   id: string;
@@ -14,6 +13,7 @@ interface Album {
   cover_image_url: string | null;
   description: string | null;
   sort_order: number;
+  gallery_images: { image_url: string; sort_order: number }[];
 }
 
 export default function GalleryPage() {
@@ -24,7 +24,7 @@ export default function GalleryPage() {
     const supabase = createClient();
     supabase
       .from('gallery_albums')
-      .select('id, title, cover_image_url, description, sort_order')
+      .select('id, title, cover_image_url, description, sort_order, gallery_images(image_url, sort_order)')
       .eq('is_visible', true)
       .order('sort_order', { ascending: true })
       .then(({ data }) => {
@@ -34,14 +34,10 @@ export default function GalleryPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#fafaf8]">
+    <div className="min-h-screen bg-[#D7E9F5]">
       <PortfolioNav homeHref="/" />
-
-      <div className="pt-32 sm:pt-40 px-6 sm:px-12 pb-24 max-w-6xl mx-auto">
-        <h1 className="font-serif text-3xl sm:text-4xl text-[#1a1a1a] tracking-wide mb-2">
-          GALLERY
-        </h1>
-
+      <PortfolioHero title="图集" lines={['光影与碎片的记录']} theme="light" />
+      <div className="px-6 sm:px-12 pb-24 max-w-6xl mx-auto">
         {loading ? (
           <p className="text-black/30 text-sm">加载中...</p>
         ) : albums.length === 0 ? (
@@ -56,7 +52,6 @@ export default function GalleryPage() {
           </div>
         )}
       </div>
-
       <FloatingWidget settingsHref="/admin/gallery" />
     </div>
   );
