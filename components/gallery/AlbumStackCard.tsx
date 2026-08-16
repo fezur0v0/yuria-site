@@ -1,4 +1,4 @@
-// components/gallery/AlbumStackCard.tsx
+
 'use client';
 
 interface Album {
