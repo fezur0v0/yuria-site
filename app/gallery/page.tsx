@@ -34,7 +34,7 @@ export default function GalleryPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#D7E9F5]">
+    <div className="min-h-screen bg-[#f5f2ec]">
       <PortfolioNav homeHref="/" />
       <PortfolioHero title="图集" lines={['光影与碎片的记录']} theme="light" />
       <div className="px-6 sm:px-12 pb-24 max-w-6xl mx-auto">
