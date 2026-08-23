@@ -90,7 +90,7 @@ export default function AlbumDetailPage() {
   if (loading) return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white/40 text-sm">加载中...</div>;
 
   return (
-  <div className="min-h-screen bg-[#fafaf8] relative">
+  <div className="min-h-screen bg-[#f5f2ec] relative">
       <div className="fixed top-6 left-6 z-50"><BackButton href="/gallery" /></div>
 
       {isOwner && (
