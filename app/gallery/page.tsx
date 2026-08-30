@@ -35,7 +35,7 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f2ec]">
-      <PortfolioNav homeHref="/" />
+     <PortfolioNav homeHref="/" theme="light" />
     <GalleryHero />
       <div className="px-6 sm:px-12 pb-24 max-w-6xl mx-auto">
         {loading ? (
