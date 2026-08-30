@@ -12,13 +12,18 @@ interface Profile {
   bio: string | null;
 }
 
-export default function PortfolioNav({ homeHref = '/' }: { homeHref?: string }) {
+export default function PortfolioNav({ homeHref = '/', theme = 'default' }: { homeHref?: string; theme?: 'default' | 'light' }) {
   const [visible, setVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const lastScrollY = useRef(0);
-
+  const isLight = theme === 'light';
+  const logoColor = isLight ? 'text-[#1a1a1a]' : 'text-white';
+  const linkColor = isLight ? 'text-[#1a1a1a]/70 hover:text-[#1a1a1a]' : 'text-white/80 hover:text-white';
+  const iconColor = isLight ? 'text-[#1a1a1a]' : 'text-white';
+  const scrolledBg = isLight ? 'bg-white/50 backdrop-blur-md' : 'bg-black/30 backdrop-blur-md';
+  
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
@@ -61,25 +66,25 @@ export default function PortfolioNav({ homeHref = '/' }: { homeHref?: string }) 
     visible ? 'translate-y-0' : '-translate-y-full'
   }`}
 >
-  <div className={`transition-colors duration-300 ${scrolled ? 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
+  <div className={`transition-colors duration-300 ${scrolled ? scrolledBg : 'bg-transparent'}`}>
     <div className="px-8 h-16 flex items-center justify-between">
-          <Link href={homeHref} className="text-white font-serif text-lg tracking-wide">
+                   <Link href={homeHref} className={`${logoColor} font-serif text-lg tracking-wide`}>
             yuria
           </Link>
 
           <div className="hidden sm:flex items-center gap-6">
             <PortfolioSearch />
-           <Link href="/guestbook" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition-colors">
+                   <Link href="/guestbook" className={`flex items-center gap-1.5 text-sm ${linkColor} transition-colors`}>
               <FiMessageSquare size={15} /> 留言板
             </Link>
-            <Link href="/links" className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition-colors">
+            <Link href="/links" className={`flex items-center gap-1.5 text-sm ${linkColor} transition-colors`}>
               <FiLink2 size={15} /> 链接
             </Link>
           </div>
 
           <div className="flex sm:hidden items-center gap-4">
             <PortfolioSearch />
-            <button onClick={() => setDrawerOpen(true)} className="text-white">
+                       <button onClick={() => setDrawerOpen(true)} className={iconColor}>
               <FiMoreHorizontal size={20} />
             </button>
           </div>
