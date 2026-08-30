@@ -1,15 +1,25 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
 
-interface GalleryHeroProps {
-  title: string;
-  lines: string[];
-}
-
-export default function GalleryHero({ title, lines }: GalleryHeroProps) {
+export default function GalleryHero() {
+  const [heroTitle, setHeroTitle] = useState('');
+  const [lines, setLines] = useState<string[]>([]);
   const [lineIndex, setLineIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState('');
   const [fading, setFading] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from('site_settings')
+      .select('gallery_hero_title, gallery_hero_lines')
+      .single()
+      .then(({ data }) => {
+        setHeroTitle(data?.gallery_hero_title ?? '图集');
+        setLines(data?.gallery_hero_lines ?? []);
+      });
+  }, []);
 
   useEffect(() => {
     if (lines.length === 0) return;
@@ -35,7 +45,7 @@ export default function GalleryHero({ title, lines }: GalleryHeroProps) {
     <section className="relative h-[45vh] min-h-[320px] w-full flex items-center justify-center text-center px-6">
       <div>
         <h1 className="text-[#1a1a1a] text-4xl md:text-5xl font-serif mb-3 tracking-wide">
-          {title}
+          {heroTitle}
         </h1>
         <p className={`text-[#1a1a1a]/70 font-serif text-base md:text-lg transition-all duration-[900ms] ${fading ? 'opacity-0 blur-md' : 'opacity-100 blur-none'}`}>
           {displayedText}
