@@ -32,12 +32,19 @@ function highlight(text: string, query: string) {
   );
 }
 
-export default function PortfolioSearch() {
+export default function PortfolioSearch({ theme = 'default' }: { theme?: 'default' | 'light' }) {
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<Item[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+    const isLight = theme === 'light';
+  const pillBg = isLight
+    ? (expanded ? 'bg-black/5 border-black/10' : 'bg-transparent border-transparent')
+    : (expanded ? 'bg-white/35 border-white/60' : 'bg-white/0 border-transparent');
+  const iconColor = isLight ? 'text-[#1a1a1a]' : 'text-white';
+  const inputTextColor = isLight ? 'text-[#1a1a1a] placeholder:text-[#1a1a1a]/50' : 'text-white placeholder:text-white/70';
+  
 
   useEffect(() => {
     const supabase = createClient();
@@ -83,10 +90,10 @@ export default function PortfolioSearch() {
       {/* 搜索框胶囊容器：收起时使用 500ms + cubic-bezier(0.25, 1, 0.5, 1) 柔和缓出 */}
       <div
         onClick={handleOpen}
-        className={`flex items-center rounded-full border cursor-pointer ${
+              className={`flex items-center rounded-full border cursor-pointer ${
           expanded
-            ? 'w-56 px-3.5 py-1.5 bg-white/35 border-white/60 backdrop-blur-md shadow-[0_4px_20px_rgba(255,255,255,0.15)] duration-300'
-            : 'w-9 h-9 p-0 bg-white/0 border-transparent justify-center duration-500'
+            ? `w-56 px-3.5 py-1.5 ${pillBg} backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] duration-300`
+            : `w-9 h-9 p-0 ${pillBg} justify-center duration-500`
         }`}
         style={{
           transitionProperty: 'width, padding, background-color, border-color, box-shadow',
@@ -95,10 +102,10 @@ export default function PortfolioSearch() {
             : 'cubic-bezier(0.25, 1, 0.5, 1)',
         }}
       >
-        {/* 图标：固定白色，缩放微微缓动 */}
-        <FiSearch
+        {/* 图标 */}
+           <FiSearch
           size={16}
-          className={`shrink-0 text-white transition-all duration-300 ${
+          className={`shrink-0 ${iconColor} transition-all duration-300 ${
             expanded ? 'mr-2 opacity-90 scale-100' : 'opacity-100 scale-95'
           }`}
         />
@@ -116,7 +123,7 @@ export default function PortfolioSearch() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索"
-            className="w-full bg-transparent text-white placeholder:text-white/70 text-sm outline-none border-none p-0 focus:ring-0"
+                       className={`w-full bg-transparent text-sm outline-none border-none p-0 focus:ring-0 ${inputTextColor}`}
           />
         </div>
       </div>
