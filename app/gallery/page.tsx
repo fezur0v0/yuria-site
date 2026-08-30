@@ -5,7 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import PortfolioNav from '@/components/PortfolioNav';
 import FloatingWidget from '@/components/FloatingWidget';
 import AlbumStackCard from '@/components/gallery/AlbumStackCard';
-import PortfolioHero from '@/components/PortfolioHero';
+import GalleryHero from '@/components/gallery/GalleryHero';
 
 interface Album {
   id: string;
@@ -36,7 +36,7 @@ export default function GalleryPage() {
   return (
     <div className="min-h-screen bg-[#f5f2ec]">
       <PortfolioNav homeHref="/" />
-      <PortfolioHero title="图集" lines={['光影与碎片的记录']} theme="light" />
+     <GalleryHero title="图集" lines={['光影与碎片的记录']} />
       <div className="px-6 sm:px-12 pb-24 max-w-6xl mx-auto">
         {loading ? (
           <p className="text-black/30 text-sm">加载中...</p>
