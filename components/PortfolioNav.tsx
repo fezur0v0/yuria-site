@@ -73,7 +73,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default' }: { ho
           </Link>
 
           <div className="hidden sm:flex items-center gap-6">
-            <PortfolioSearch />
+           <PortfolioSearch theme={theme} />
                    <Link href="/guestbook" className={`flex items-center gap-1.5 text-sm ${linkColor} transition-colors`}>
               <FiMessageSquare size={15} /> 留言板
             </Link>
@@ -83,7 +83,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default' }: { ho
           </div>
 
           <div className="flex sm:hidden items-center gap-4">
-            <PortfolioSearch />
+       <PortfolioSearch theme={theme} />
                        <button onClick={() => setDrawerOpen(true)} className={iconColor}>
               <FiMoreHorizontal size={20} />
             </button>
