@@ -248,7 +248,10 @@ function ImmersiveViewer({
       )}
 
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-4">
-        <div className="max-w-[92vw] sm:max-w-[80vw] max-h-[70vh] overflow-auto flex items-center justify-center">
+               <div
+          className="max-w-[92vw] sm:max-w-[80vw] max-h-[70vh] overflow-auto flex items-center justify-center [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: 'none' }}
+        >
           <img
             src={active.image_url}
             alt={active.caption ?? ''}
