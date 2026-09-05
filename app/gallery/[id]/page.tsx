@@ -8,13 +8,11 @@ import { useIsOwner } from '@/components/gallery/useIsOwner';
 import { getScatterStyle } from '@/components/gallery/scatterUtils';
 import {
   MdOutlineEdit, MdOutlineAdd, MdOutlineDelete, MdOutlineCheck,
-  MdOutlineClose, MdChevronLeft, MdChevronRight,
+  MdOutlineClose, MdChevronLeft, MdChevronRight, MdOutlineZoomIn, MdOutlineZoomOut,
 } from 'react-icons/md';
 
 interface Album { id: string; title: string; description: string | null; }
 interface GalleryImage { id: string; image_url: string; caption: string | null; sort_order: number; }
-
-const ZOOM = 2.2;
 
 export default function AlbumDetailPage() {
   const params = useParams();
@@ -189,49 +187,106 @@ function ImmersiveViewer({
   const [zoom, setZoom] = useState(1); // 1 = 100%
   const [editingCaption, setEditingCaption] = useState(false);
   const [draft, setDraft] = useState('');
-  const touchStartX = useRef(0);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const gesture = useRef<{ id: number; x: number; y: number; panX: number; panY: number } | null>(null);
 
   const active = images[index];
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 3;
-  const ZOOM_STEP = 0.5;
+  const ZOOM_STEP = 0.25;
+
+  const clampPan = useCallback((x: number, y: number, scale: number) => {
+    const viewport = viewportRef.current;
+    const image = imageRef.current;
+    if (!viewport || !image || scale <= 1) return { x: 0, y: 0 };
+    const maxX = Math.max(0, (image.offsetWidth * scale - viewport.clientWidth) / 2);
+    const maxY = Math.max(0, (image.offsetHeight * scale - viewport.clientHeight) / 2);
+    return { x: Math.max(-maxX, Math.min(maxX, x)), y: Math.max(-maxY, Math.min(maxY, y)) };
+  }, []);
 
   const goPrev = useCallback(() => { setIndex((i) => (i - 1 + images.length) % images.length); setZoom(1); }, [images.length]);
   const goNext = useCallback(() => { setIndex((i) => (i + 1) % images.length); setZoom(1); }, [images.length]);
 
-  useEffect(() => { setEditingCaption(false); }, [index]);
+  useEffect(() => {
+    setEditingCaption(false);
+    setPan({ x: 0, y: 0 });
+    gesture.current = null;
+    setDragging(false);
+  }, [index]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, []);
+
+  useEffect(() => {
+    const resize = () => setPan(p => clampPan(p.x, p.y, zoom));
+    const observer = new ResizeObserver(resize);
+    if (viewportRef.current) observer.observe(viewportRef.current);
+    if (imageRef.current) observer.observe(imageRef.current);
+    return () => observer.disconnect();
+  }, [clampPan, zoom]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') goPrev();
-      if (e.key === 'ArrowRight') goNext();
+      if (e.target instanceof HTMLElement && (e.target.isContentEditable || e.target.matches('input, textarea, select'))) return;
+      if (zoom === 1 && e.key === 'ArrowLeft') { e.preventDefault(); goPrev(); }
+      if (zoom === 1 && e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [goPrev, goNext, onClose]);
+  }, [goPrev, goNext, onClose, zoom]);
 
-  const zoomIn = () => setZoom((z) => Math.min(MAX_ZOOM, +(z + ZOOM_STEP).toFixed(2)));
-  const zoomOut = () => setZoom((z) => Math.max(MIN_ZOOM, +(z - ZOOM_STEP).toFixed(2)));
-  const zoomReset = () => setZoom(1);
+  const changeZoom = (value: number) => {
+    const next = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value));
+    gesture.current = null;
+    setDragging(false);
+    setZoom(next);
+    setPan(p => clampPan(p.x, p.y, next));
+  };
+  const zoomIn = () => changeZoom(zoom + ZOOM_STEP);
+  const zoomOut = () => changeZoom(zoom - ZOOM_STEP);
+  const zoomReset = () => changeZoom(1);
 
-  const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (zoom > 1) return; // 放大状态下不滑动切图，避免误触
-    const delta = e.changedTouches[0].clientX - touchStartX.current;
-    if (delta > 60) goPrev();
-    else if (delta < -60) goNext();
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!e.isPrimary || e.button !== 0 || gesture.current) return;
+    gesture.current = { id: e.pointerId, x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDragging(zoom > 1);
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = gesture.current;
+    if (!start || start.id !== e.pointerId || zoom === 1) return;
+    setPan(clampPan(start.panX + e.clientX - start.x, start.panY + e.clientY - start.y, zoom));
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = gesture.current;
+    if (!start || start.id !== e.pointerId) return;
+    gesture.current = null;
+    setDragging(false);
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+    if (zoom !== 1 || e.pointerType === 'mouse' || images.length < 2) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx > 0) goPrev(); else goNext();
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <div role="dialog" aria-modal="true" aria-label="沉浸式看图器" className="fixed inset-0 z-[60] overflow-hidden bg-black">
       <div
         className="absolute inset-0 scale-110 opacity-30 blur-3xl"
         style={{ backgroundImage: `url(${active.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
       />
       <div className="absolute inset-0 bg-black/40" />
 
-      <button onClick={onClose} className="fixed top-6 right-6 z-50 w-9 h-9 rounded-full bg-white/10 backdrop-blur-md text-white/70 hover:bg-white/20 hover:text-white flex items-center justify-center">
+      <button autoFocus aria-label="关闭看图器" onClick={onClose} className="fixed top-6 right-6 z-50 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md text-white/70 hover:bg-white/20 hover:text-white flex items-center justify-center">
         <MdOutlineClose size={18} />
       </button>
 
@@ -248,22 +303,32 @@ function ImmersiveViewer({
       )}
 
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-4">
-               <div
-          className="max-w-[92vw] sm:max-w-[80vw] max-h-[70vh] overflow-auto flex items-center justify-center [&::-webkit-scrollbar]:hidden"
-          style={{ scrollbarWidth: 'none' }}
+        <div
+          ref={viewportRef}
+          className="w-[92vw] sm:w-[80vw] h-[70dvh] overflow-hidden flex items-center justify-center"
+          style={{ touchAction: 'none', cursor: zoom > 1 ? (dragging ? 'grabbing' : 'grab') : 'zoom-in' }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={() => { gesture.current = null; setDragging(false); }}
+          onLostPointerCapture={() => { gesture.current = null; setDragging(false); }}
+          onDoubleClick={() => changeZoom(zoom > 1 ? 1 : 2)}
         >
           <img
+            ref={imageRef}
             src={active.image_url}
             alt={active.caption ?? ''}
-            className="max-w-full max-h-[70vh] object-contain transition-transform duration-200 select-none"
-            style={{ transform: `scale(${zoom})` }}
+            className="max-w-full max-h-full object-contain select-none motion-reduce:!transition-none"
+            style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`, transition: dragging ? 'none' : 'transform 180ms ease-out' }}
+            onLoad={() => setPan(p => clampPan(p.x, p.y, zoom))}
             draggable={false}
           />
         </div>
 
         {/* 备注区 */}
+        <div className="mt-4 h-8 text-center max-w-md px-6">
         {zoom === 1 && (
-          <div className="mt-4 min-h-[2rem] text-center max-w-md px-6">
+          <div>
             {editingCaption ? (
               <div className="flex items-center gap-2 justify-center">
                 <input
@@ -287,22 +352,28 @@ function ImmersiveViewer({
             )}
           </div>
         )}
+        </div>
       </div>
 
-      {/* 底部工具栏：翻页 + 缩放，仿你截图那种 */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-black/50 backdrop-blur-md rounded-full px-5 py-2.5 text-white/70 text-sm">
-        <button onClick={goPrev} disabled={zoom > 1} className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed">‹</button>
-        <span className="text-xs text-white/50">{index + 1}/{images.length}</span>
-        <button onClick={goNext} disabled={zoom > 1} className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed">›</button>
-
-        <span className="w-px h-4 bg-white/20 mx-1" />
-
-        <button onClick={zoomOut} disabled={zoom <= MIN_ZOOM} className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed" title="缩小">−</button>
-        <button onClick={zoomReset} className="text-xs text-white/50 hover:text-white w-10 text-center" title="还原">
-          {Math.round(zoom * 100)}%
-        </button>
-        <button onClick={zoomIn} disabled={zoom >= MAX_ZOOM} className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed" title="放大">+</button>
+      <div className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 text-white/80 text-sm">
+        <div className="flex h-12 items-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md px-1">
+          {zoom === 1 ? (
+            <>
+              <button aria-label="上一张" onClick={goPrev} disabled={images.length < 2} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30"><MdChevronLeft size={22} /></button>
+              <span className="min-w-10 text-center text-xs tabular-nums">{index + 1}/{images.length}</span>
+              <button aria-label="下一张" onClick={goNext} disabled={images.length < 2} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30"><MdChevronRight size={22} /></button>
+            </>
+          ) : <span className="px-4 text-xs whitespace-nowrap text-white/60">拖动查看</span>}
+        </div>
+        <div className="flex h-12 items-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md px-1">
+          <button onClick={zoomOut} disabled={zoom <= MIN_ZOOM} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30" aria-label="缩小" title="缩小"><MdOutlineZoomOut size={21} /></button>
+          <button onClick={zoomReset} className="h-11 w-12 text-xs tabular-nums hover:text-white" aria-label="还原到适应屏幕" title="还原到适应屏幕">
+            {Math.round(zoom * 100)}%
+          </button>
+          <button onClick={zoomIn} disabled={zoom >= MAX_ZOOM} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30" aria-label="放大" title="放大"><MdOutlineZoomIn size={21} /></button>
+        </div>
       </div>
     </div>
   );
 }
+
