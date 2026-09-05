@@ -192,6 +192,9 @@ function ImmersiveViewer({
   const viewportRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const gesture = useRef<{ id: number; x: number; y: number; panX: number; panY: number } | null>(null);
+  const panRef = useRef({ x: 0, y: 0 });
+  const pendingPan = useRef<{ x: number; y: number } | null>(null);
+  const panFrame = useRef<number | null>(null);
 
   const active = images[index];
   const MIN_ZOOM = 1;
@@ -207,15 +210,44 @@ function ImmersiveViewer({
     return { x: Math.max(-maxX, Math.min(maxX, x)), y: Math.max(-maxY, Math.min(maxY, y)) };
   }, []);
 
+  const softenPan = useCallback((x: number, y: number, scale: number) => {
+    const clamped = clampPan(x, y, scale);
+    const softenAxis = (value: number, edge: number) => {
+      const overflow = value - edge;
+      if (overflow === 0) return edge;
+      return edge + Math.sign(overflow) * Math.min(42, Math.abs(overflow) * 0.22);
+    };
+    return { x: softenAxis(x, clamped.x), y: softenAxis(y, clamped.y) };
+  }, [clampPan]);
+
+  const applyPan = useCallback((next: { x: number; y: number }) => {
+    if (panFrame.current !== null) cancelAnimationFrame(panFrame.current);
+    panFrame.current = null;
+    pendingPan.current = null;
+    panRef.current = next;
+    setPan(next);
+  }, []);
+
+  const queuePan = useCallback((next: { x: number; y: number }) => {
+    panRef.current = next;
+    pendingPan.current = next;
+    if (panFrame.current !== null) return;
+    panFrame.current = requestAnimationFrame(() => {
+      panFrame.current = null;
+      if (pendingPan.current) setPan(pendingPan.current);
+      pendingPan.current = null;
+    });
+  }, []);
+
   const goPrev = useCallback(() => { setIndex((i) => (i - 1 + images.length) % images.length); setZoom(1); }, [images.length]);
   const goNext = useCallback(() => { setIndex((i) => (i + 1) % images.length); setZoom(1); }, [images.length]);
 
   useEffect(() => {
     setEditingCaption(false);
-    setPan({ x: 0, y: 0 });
+    applyPan({ x: 0, y: 0 });
     gesture.current = null;
     setDragging(false);
-  }, [index]);
+  }, [index, applyPan]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -224,12 +256,16 @@ function ImmersiveViewer({
   }, []);
 
   useEffect(() => {
-    const resize = () => setPan(p => clampPan(p.x, p.y, zoom));
+    const resize = () => applyPan(clampPan(panRef.current.x, panRef.current.y, zoom));
     const observer = new ResizeObserver(resize);
     if (viewportRef.current) observer.observe(viewportRef.current);
     if (imageRef.current) observer.observe(imageRef.current);
     return () => observer.disconnect();
-  }, [clampPan, zoom]);
+  }, [applyPan, clampPan, zoom]);
+
+  useEffect(() => () => {
+    if (panFrame.current !== null) cancelAnimationFrame(panFrame.current);
+  }, []);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -247,7 +283,7 @@ function ImmersiveViewer({
     gesture.current = null;
     setDragging(false);
     setZoom(next);
-    setPan(p => clampPan(p.x, p.y, next));
+    applyPan(clampPan(panRef.current.x, panRef.current.y, next));
   };
   const zoomIn = () => changeZoom(zoom + ZOOM_STEP);
   const zoomOut = () => changeZoom(zoom - ZOOM_STEP);
@@ -255,20 +291,21 @@ function ImmersiveViewer({
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!e.isPrimary || e.button !== 0 || gesture.current) return;
-    gesture.current = { id: e.pointerId, x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+    gesture.current = { id: e.pointerId, x: e.clientX, y: e.clientY, panX: panRef.current.x, panY: panRef.current.y };
     e.currentTarget.setPointerCapture(e.pointerId);
     setDragging(zoom > 1);
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const start = gesture.current;
     if (!start || start.id !== e.pointerId || zoom === 1) return;
-    setPan(clampPan(start.panX + e.clientX - start.x, start.panY + e.clientY - start.y, zoom));
+    queuePan(softenPan(start.panX + e.clientX - start.x, start.panY + e.clientY - start.y, zoom));
   };
   const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     const start = gesture.current;
     if (!start || start.id !== e.pointerId) return;
     gesture.current = null;
     setDragging(false);
+    applyPan(clampPan(panRef.current.x, panRef.current.y, zoom));
     if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
     if (zoom !== 1 || e.pointerType === 'mouse' || images.length < 2) return;
     const dx = e.clientX - start.x;
@@ -276,6 +313,12 @@ function ImmersiveViewer({
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
       if (dx > 0) goPrev(); else goNext();
     }
+  };
+
+  const cancelPointer = () => {
+    gesture.current = null;
+    setDragging(false);
+    applyPan(clampPan(panRef.current.x, panRef.current.y, zoom));
   };
 
   return (
@@ -310,8 +353,8 @@ function ImmersiveViewer({
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
-          onPointerCancel={() => { gesture.current = null; setDragging(false); }}
-          onLostPointerCapture={() => { gesture.current = null; setDragging(false); }}
+          onPointerCancel={cancelPointer}
+          onLostPointerCapture={cancelPointer}
           onDoubleClick={() => changeZoom(zoom > 1 ? 1 : 2)}
         >
           <img
@@ -319,8 +362,8 @@ function ImmersiveViewer({
             src={active.image_url}
             alt={active.caption ?? ''}
             className="max-w-full max-h-full object-contain select-none motion-reduce:!transition-none"
-            style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`, transition: dragging ? 'none' : 'transform 180ms ease-out' }}
-            onLoad={() => setPan(p => clampPan(p.x, p.y, zoom))}
+            style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`, transition: dragging ? 'none' : 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)' }}
+            onLoad={() => applyPan(clampPan(panRef.current.x, panRef.current.y, zoom))}
             draggable={false}
           />
         </div>
@@ -359,11 +402,11 @@ function ImmersiveViewer({
         <div className="flex h-12 items-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md px-1">
           {zoom === 1 ? (
             <>
-              <button aria-label="上一张" onClick={goPrev} disabled={images.length < 2} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30"><MdChevronLeft size={22} /></button>
-              <span className="min-w-10 text-center text-xs tabular-nums">{index + 1}/{images.length}</span>
-              <button aria-label="下一张" onClick={goNext} disabled={images.length < 2} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30"><MdChevronRight size={22} /></button>
+              <button aria-label="上一张" onClick={goPrev} disabled={images.length < 2} className="sm:hidden w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30"><MdChevronLeft size={22} /></button>
+              <span className="min-w-10 px-2 text-center text-xs tabular-nums">{index + 1}/{images.length}</span>
+              <button aria-label="下一张" onClick={goNext} disabled={images.length < 2} className="sm:hidden w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30"><MdChevronRight size={22} /></button>
             </>
-          ) : <span className="px-4 text-xs whitespace-nowrap text-white/60">拖动查看</span>}
+          ) : <span className="px-4 text-xs whitespace-nowrap text-white/60 tabular-nums">{index + 1}/{images.length} · 拖动查看</span>}
         </div>
         <div className="flex h-12 items-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md px-1">
           <button onClick={zoomOut} disabled={zoom <= MIN_ZOOM} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30" aria-label="缩小" title="缩小"><MdOutlineZoomOut size={21} /></button>
