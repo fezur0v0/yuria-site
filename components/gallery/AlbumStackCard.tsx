@@ -15,7 +15,7 @@ export default function AlbumStackCard({ album, active = false }: { album: Galle
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const source = album.cover_image_url;
   return (
-    <div className={styles.print}>
+    <div className={styles.print} data-active={active}>
       <div className={styles.photo}>
         {source && source !== failedUrl ? (
           <Image src={source} alt="" fill unoptimized

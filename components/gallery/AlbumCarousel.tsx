@@ -8,6 +8,8 @@ import { useReducedMotion } from './useReducedMotion';
 import styles from './gallery-home.module.css';
 
 const storageKey = 'yuria:gallery:active-album';
+const casualTilts = [-1.1, 0.7, -0.45, 1.15, -0.75];
+const casualOffsets = [-2, 3, 0, -3, 2];
 const modulo = (value: number, length: number) => ((value % length) + length) % length;
 function offset(index: number, active: number, length: number) {
   let value = modulo(index - active, length);
@@ -121,6 +123,8 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
             '--scale': Math.max(0.65, 1 - depth * 0.12),
             '--turn': reduced ? '0deg' : `${distance * -13}deg`,
             '--drop': `${Math.min(depth, 2) * 10}px`,
+            '--tilt': reduced ? '0deg' : `${casualTilts[index % casualTilts.length]}deg`,
+            '--wander': reduced ? '0px' : `${casualOffsets[index % casualOffsets.length]}px`,
             zIndex: 10 - Math.abs(slot),
             opacity: visible ? 1 : 0,
             transition: dragging || crossedSeam || reduced ? 'none' : undefined,
