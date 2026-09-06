@@ -34,8 +34,27 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
   const [previousActive, setPreviousActive] = useState(active);
   const frame = useRef<number | null>(null);
   const pendingDrag = useRef(0);
+  const tiltFrame = useRef<number | null>(null);
+  const tiltedLink = useRef<HTMLAnchorElement | null>(null);
+  const tiltRect = useRef<DOMRect | null>(null);
+  const pendingTilt = useRef({ rotateX: 0, rotateY: 0, shadowX: 0, shadowY: 0 });
   const focusOnChange = useRef(false);
   const count = albums.length;
+
+  const resetTilt = useCallback(() => {
+    if (tiltFrame.current !== null) cancelAnimationFrame(tiltFrame.current);
+    tiltFrame.current = null;
+    const element = tiltedLink.current;
+    if (element) {
+      element.style.setProperty('--hover-rotate-x', '0deg');
+      element.style.setProperty('--hover-rotate-y', '0deg');
+      element.style.setProperty('--hover-shadow-x', '0px');
+      element.style.setProperty('--hover-shadow-y', '0px');
+      delete element.dataset.tilting;
+    }
+    tiltedLink.current = null;
+    tiltRect.current = null;
+  }, []);
 
   const select = useCallback((index: number, focus = false) => {
     const next = modulo(index, count);
@@ -52,7 +71,43 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
       focusOnChange.current = false;
     }
   }, [active]);
-  useEffect(() => () => { if (frame.current !== null) cancelAnimationFrame(frame.current); }, []);
+  useEffect(() => { resetTilt(); }, [active, reduced, resetTilt]);
+  useEffect(() => () => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    if (tiltFrame.current !== null) cancelAnimationFrame(tiltFrame.current);
+  }, []);
+
+  function beginTilt(event: PointerEvent<HTMLAnchorElement>, index: number) {
+    if (reduced || dragging || index !== active || event.pointerType === 'touch') return;
+    if (tiltedLink.current !== event.currentTarget) resetTilt();
+    tiltedLink.current = event.currentTarget;
+    tiltRect.current = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.dataset.tilting = 'true';
+  }
+  function updateTilt(event: PointerEvent<HTMLAnchorElement>, index: number) {
+    if (reduced || dragging || index !== active || event.pointerType === 'touch') return;
+    if (tiltedLink.current !== event.currentTarget || !tiltRect.current) beginTilt(event, index);
+    const rect = tiltRect.current;
+    if (!rect) return;
+    const x = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width - 0.5) * 2));
+    const y = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height - 0.5) * 2));
+    pendingTilt.current = {
+      rotateX: y * -2.5,
+      rotateY: x * 3.5,
+      shadowX: x * -4,
+      shadowY: y * -2,
+    };
+    if (tiltFrame.current !== null) return;
+    const element = event.currentTarget;
+    tiltFrame.current = requestAnimationFrame(() => {
+      const value = pendingTilt.current;
+      element.style.setProperty('--hover-rotate-x', `${value.rotateX}deg`);
+      element.style.setProperty('--hover-rotate-y', `${value.rotateY}deg`);
+      element.style.setProperty('--hover-shadow-x', `${value.shadowX}px`);
+      element.style.setProperty('--hover-shadow-y', `${value.shadowY}px`);
+      tiltFrame.current = null;
+    });
+  }
 
   function resetDrag() {
     if (frame.current !== null) cancelAnimationFrame(frame.current);
@@ -75,6 +130,7 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
       if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { current.vertical = true; return; }
       if (Math.abs(dx) < 8) return;
       current.moved = true;
+      resetTilt();
       event.currentTarget.setPointerCapture(event.pointerId);
       setDragging(true);
     }
@@ -116,15 +172,18 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
           const distance = slot + drag;
           const depth = Math.abs(distance);
           const visible = Math.abs(slot) <= 2;
+          const turn = Math.sign(distance) * -(Math.min(depth, 1) * 12 + Math.max(0, Math.min(depth - 1, 1)) * 2);
           // A card crossing the circular seam resets behind the stage instead of flying across the front.
           const crossedSeam = Math.abs(slot - offset(index, previousActive, count)) > 1;
           const style = {
             '--position': distance,
             '--scale': Math.max(0.65, 1 - depth * 0.12),
-            '--turn': reduced ? '0deg' : `${distance * -13}deg`,
+            '--turn': reduced ? '0deg' : `${turn}deg`,
             '--drop': `${Math.min(depth, 2) * 10}px`,
             '--tilt': reduced ? '0deg' : `${casualTilts[index % casualTilts.length]}deg`,
             '--wander': reduced ? '0px' : `${casualOffsets[index % casualOffsets.length]}px`,
+            '--drag-lean': reduced || index !== active ? '0deg' : `${drag * 3.5}deg`,
+            '--drag-shadow-x': reduced || index !== active ? '0px' : `${drag * -3}px`,
             zIndex: 10 - Math.abs(slot),
             opacity: visible ? 1 : 0,
             transition: dragging || crossedSeam || reduced ? 'none' : undefined,
@@ -138,7 +197,12 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
               onClick={(event) => {
                 if (index !== active) { event.preventDefault(); select(index); }
                 else { try { sessionStorage.setItem(storageKey, album.id); } catch { /* Optional. */ } }
-              }} draggable={false}>
+              }}
+              onPointerEnter={(event) => beginTilt(event, index)}
+              onPointerMove={(event) => updateTilt(event, index)}
+              onPointerLeave={() => { if (!dragging) resetTilt(); }}
+              onBlur={resetTilt}
+              draggable={false}>
               <AlbumStackCard album={album} active={index === active} />
             </Link>
           );
