@@ -1,57 +1,53 @@
 'use client';
+
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import PortfolioNav from '@/components/PortfolioNav';
 import FloatingWidget from '@/components/FloatingWidget';
-import AlbumStackCard from '@/components/gallery/AlbumStackCard';
 import GalleryHero from '@/components/gallery/GalleryHero';
-
-interface Album {
-  id: string;
-  title: string;
-  cover_image_url: string | null;
-  description: string | null;
-  sort_order: number;
-  gallery_images: { image_url: string; sort_order: number }[];
-}
+import AlbumCarousel from '@/components/gallery/AlbumCarousel';
+import type { GalleryAlbum } from '@/components/gallery/AlbumStackCard';
+import styles from '@/components/gallery/gallery-home.module.css';
 
 export default function GalleryPage() {
-  const [albums, setAlbums] = useState<Album[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const [result, setResult] = useState<{ albums: GalleryAlbum[]; failed: boolean } | null>(null);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from('gallery_albums')
-      .select('id, title, cover_image_url, description, sort_order, gallery_images(image_url, sort_order)')
-      .eq('is_visible', true)
-      .order('sort_order', { ascending: true })
-      .then(({ data }) => {
-        setAlbums(data ?? []);
-        setLoading(false);
-      });
-  }, []);
-
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    let disposed = false;
+    async function load() {
+      try {
+        const { data, error } = await createClient().from('gallery_albums')
+          .select('id, title, cover_image_url, sort_order').eq('is_visible', true)
+          .order('sort_order', { ascending: true }).order('id', { ascending: true })
+          .abortSignal(controller.signal);
+        if (!disposed) setResult({ albums: data ?? [], failed: !!error });
+      } catch {
+        if (!disposed) setResult({ albums: [], failed: true });
+      } finally { clearTimeout(timeout); }
+    }
+    void load();
+    return () => { disposed = true; clearTimeout(timeout); controller.abort(); };
+  }, [attempt]);
   return (
-    <div className="min-h-screen bg-[#f5f2ec]">
-     <PortfolioNav homeHref="/" theme="light" />
-    <GalleryHero />
-      <div className="px-6 sm:px-12 pb-24 max-w-6xl mx-auto">
-        {loading ? (
-          <p className="text-black/30 text-sm">加载中...</p>
-        ) : albums.length === 0 ? (
-          <p className="text-black/30 text-sm">还没有相册</p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-16">
-            {albums.map((album) => (
-              <Link key={album.id} href={`/gallery/${album.id}`}>
-                <AlbumStackCard album={album} />
-              </Link>
-            ))}
+    <div className={styles.page}>
+      <PortfolioNav homeHref="/" theme="light" />
+      <main className={styles.main}>
+        <GalleryHero />
+        {result === null ? (
+          <div className={styles.loading} role="status" aria-label="正在加载相册">
+            <div className={styles.skeleton} aria-hidden="true" />
           </div>
-        )}
-      </div>
+        ) : result.failed ? (
+          <div className={styles.message} role="alert">
+            <p>相册暂时无法加载</p>
+            <button className={styles.retry} onClick={() => { setResult(null); setAttempt((value) => value + 1); }}>重试</button>
+          </div>
+        ) : result.albums.length === 0 ? (
+          <div className={styles.message}><p>还没有相册</p></div>
+        ) : <AlbumCarousel albums={result.albums} />}
+      </main>
       <FloatingWidget settingsHref="/admin/gallery" />
     </div>
   );
