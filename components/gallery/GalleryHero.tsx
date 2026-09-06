@@ -44,11 +44,10 @@ export default function GalleryHero() {
 
 function Typewriter({ lines }: { lines: string[] }) {
   const reduced = useReducedMotion();
-  const [paused, setPaused] = useState(false);
   const [state, setState] = useState({ index: 0, count: 0, fading: false });
   const characters = Array.from(lines[state.index] ?? '');
   useEffect(() => {
-    if (reduced || paused || !lines.length) return;
+    if (reduced || !lines.length) return;
     const length = Array.from(lines[state.index] ?? '').length;
     let timer: ReturnType<typeof setTimeout>;
     if (state.count < length) {
@@ -59,7 +58,7 @@ function Typewriter({ lines }: { lines: string[] }) {
         : { ...value, fading: true }), state.fading ? 350 : 2600);
     } else return;
     return () => clearTimeout(timer);
-  }, [lines, state, reduced, paused]);
+  }, [lines, state, reduced]);
   if (!lines.length) return <div className={styles.subtitleSpace} />;
   return (
     <div className={styles.subtitleWrap}>
@@ -68,17 +67,10 @@ function Typewriter({ lines }: { lines: string[] }) {
         {lines.map((line, index) => <span key={index} className={styles.measureLine} aria-hidden="true">{line}<span className={styles.cursorSpace} /></span>)}
         <span className={styles.typedLine} style={{ opacity: !reduced && state.fading ? 0 : 1 }} aria-hidden="true">
           {reduced ? lines[0] : characters.slice(0, state.count).join('')}
-          {!reduced && <span className={styles.cursor} data-still={paused || (lines.length === 1 && state.count >= characters.length)} />}
+          {!reduced && <span className={styles.cursor} data-still={lines.length === 1 && state.count >= characters.length} />}
         </span>
         <span className={styles.srOnly}>{lines.join('。')}</span>
       </div>
-      {!reduced && lines.length > 1 && (
-        <button className={styles.pause} aria-label={paused ? '继续副标题轮播' : '暂停副标题轮播'} aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-            {paused ? <path d="M3 1 11 6 3 11Z" /> : <path d="M2 1h3v10H2zM7 1h3v10H7z" />}
-          </svg>
-        </button>
-      )}
     </div>
   );
 }

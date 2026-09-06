@@ -8,10 +8,10 @@
   background: var(--gallery-bg);
   color: var(--gallery-ink);
 }
-.main { padding: 64px 0 max(96px, env(safe-area-inset-bottom)); overflow: clip; }
-.hero { padding: clamp(40px, 7vh, 76px) 24px 30px; text-align: center; }
+.main { padding: 0 0 max(96px, env(safe-area-inset-bottom)); overflow: clip; }
+.hero { width: 100%; height: 45vh; min-height: 320px; padding: 0 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .heading { font-family: Georgia, 'Noto Serif SC', 'Songti SC', SimSun, serif; font-size: clamp(28px, 3vw, 38px); font-weight: 400; letter-spacing: .12em; line-height: 1.5; overflow-wrap: anywhere; margin: 0 auto 14px; max-width: 720px; }
-.subtitleWrap { position: relative; width: fit-content; max-width: min(100%, 600px); margin: auto; padding: 0 22px; }
+.subtitleWrap { position: relative; width: fit-content; max-width: min(100%, 600px); margin: 0 auto; }
 .subtitle { display: grid; min-height: 2.8em; font-size: 14px; line-height: 1.9; letter-spacing: .08em; color: var(--gallery-muted); overflow-wrap: anywhere; }
 .measureLine, .typedLine { grid-area: 1 / 1; }
 .measureLine { visibility: hidden; }
@@ -20,7 +20,6 @@
 .cursor { background: currentColor; animation: blink 1.1s step-end infinite; }
 .cursor[data-still='true'] { animation: none; opacity: .3; }
 .subtitleSpace { height: 40px; }
-.pause { position: absolute; top: -8px; right: -16px; width: 44px; height: 44px; color: var(--gallery-muted); display: grid; place-items: center; cursor: pointer; }
 .carousel { position: relative; max-width: 1320px; margin: 0 auto; padding-bottom: 12px; }
 .stage { position: relative; height: calc(var(--card-width) + 128px); perspective: 1100px; touch-action: pan-y pinch-zoom; user-select: none; cursor: grab; }
 .stage[data-dragging='true'] { cursor: grabbing; }
@@ -51,7 +50,7 @@
 @media (max-width: 1023px) and (min-width: 640px) { .page { --card-width: clamp(240px, 34vw, 310px); } }
 @media (max-width: 639px) {
   .page { --card-width: clamp(190px, 64vw, 280px); }
-  .hero { padding: 32px 24px 20px; }
+  .hero { padding: 0 24px; }
   .heading { font-size: 28px; }
   .subtitle { font-size: 13px; }
   .stage { height: calc(var(--card-width) + 114px); }
