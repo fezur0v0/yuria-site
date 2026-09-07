@@ -20,6 +20,11 @@ const casualTilts = [-1.1, 0.7, -0.45, 1.15, -0.75];
 const casualOffsets = [-2, 3, 0, -3, 2];
 const tapeVariants: TapeVariant[] = ['center', 'none', 'offset'];
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const normalizeWheelDelta = (event: WheelEvent, pageSize: number) => {
+  const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? pageSize : 1;
+  const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+  return delta * unit;
+};
 
 type Gesture = {
   id: number;
@@ -35,6 +40,7 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
   const [dragging, setDragging] = useState(false);
   const [feedbackIndex, setFeedbackIndex] = useState<number | null>(null);
   const reduced = useReducedMotion();
+  const carousel = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const activeRef = useRef(0);
   const links = useRef(new Map<number, HTMLAnchorElement>());
@@ -179,14 +185,17 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
 
   useEffect(() => {
     const container = stage.current;
-    if (!container) return;
+    const wheelRegion = carousel.current;
+    if (!container || !wheelRegion) return;
 
     const handleWheel = (event: WheelEvent) => {
-      if (window.matchMedia(mobileQuery).matches || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+      if (window.matchMedia(mobileQuery).matches) return;
       const maximum = container.scrollWidth - container.clientWidth;
       if (maximum <= 0) return;
-      const next = clamp(container.scrollLeft + event.deltaY, 0, maximum);
-      if (next === container.scrollLeft) return;
+      const delta = normalizeWheelDelta(event, container.clientWidth);
+      if (delta === 0) return;
+      const next = clamp(container.scrollLeft + delta, 0, maximum);
+      if (Math.abs(next - container.scrollLeft) < 0.5) return;
       event.preventDefault();
       container.scrollLeft = next;
     };
@@ -195,7 +204,7 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
       if (window.matchMedia(mobileQuery).matches) scheduleVisualUpdate();
     };
 
-    container.addEventListener('wheel', handleWheel, { passive: false });
+    wheelRegion.addEventListener('wheel', handleWheel, { passive: false });
     container.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('scroll', handleWindowScroll, { passive: true });
     window.addEventListener('resize', scheduleVisualUpdate, { passive: true });
@@ -212,7 +221,7 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
 
     return () => {
       clearTimeout(restoreTimer);
-      container.removeEventListener('wheel', handleWheel);
+      wheelRegion.removeEventListener('wheel', handleWheel);
       container.removeEventListener('scroll', handleScroll);
       window.removeEventListener('scroll', handleWindowScroll);
       window.removeEventListener('resize', scheduleVisualUpdate);
@@ -314,7 +323,7 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
   }
 
   return (
-    <section className={styles.carousel} aria-label="选择相册" onKeyDown={handleKeyboard}>
+    <section ref={carousel} className={styles.carousel} aria-label="选择相册" onKeyDown={handleKeyboard}>
       <div
         className={styles.stage}
         ref={stage}
@@ -361,20 +370,22 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
       </div>
 
       {count > 1 ? (
-        <nav className={styles.rail} aria-label="相册快速导航">
-          {albums.map((album, index) => (
-            <button
-              key={album.id}
-              type="button"
-              className={styles.railButton}
-              aria-label={`滚动到相册：${album.title}`}
-              aria-current={index === active ? 'true' : undefined}
-              onClick={() => scrollToAlbum(index, true)}
-            >
-              <span className={styles.tick} aria-hidden="true" />
-            </button>
-          ))}
-        </nav>
+        <div className={styles.railDock}>
+          <nav className={styles.rail} aria-label="相册快速导航">
+            {albums.map((album, index) => (
+              <button
+                key={album.id}
+                type="button"
+                className={styles.railButton}
+                aria-label={`滚动到相册：${album.title}`}
+                aria-current={index === active ? 'true' : undefined}
+                onClick={() => scrollToAlbum(index, true)}
+              >
+                <span className={styles.tick} aria-hidden="true" />
+              </button>
+            ))}
+          </nav>
+        </div>
       ) : null}
       <p className={styles.srOnly} aria-live="polite" aria-atomic="true">当前相册：{albums[active].title}</p>
     </section>
