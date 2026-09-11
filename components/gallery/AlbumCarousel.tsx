@@ -44,6 +44,7 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
   const stage = useRef<HTMLDivElement>(null);
   const activeRef = useRef(0);
   const links = useRef(new Map<number, HTMLAnchorElement>());
+  const ticks = useRef(new Map<number, HTMLSpanElement>());
   const gesture = useRef<Gesture | null>(null);
   const suppressClickUntil = useRef(0);
   const visualFrame = useRef<number | null>(null);
@@ -60,6 +61,15 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
   const remember = useCallback((index: number) => {
     try { sessionStorage.setItem(storageKey, albums[index].id); } catch { /* Storage is optional. */ }
   }, [albums]);
+
+  const renderTickProgress = useCallback((progress: number) => {
+    ticks.current.forEach((tick, index) => {
+      const strength = reduced
+        ? (index === Math.round(progress) ? 1 : 0)
+        : clamp(1 - Math.abs(index - progress), 0, 1);
+      tick.style.setProperty('--tick-strength', strength.toFixed(3));
+    });
+  }, [reduced]);
 
   const resetTilt = useCallback(() => {
     if (tiltFrame.current !== null) cancelAnimationFrame(tiltFrame.current);
@@ -106,6 +116,8 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
     const containerRect = container.getBoundingClientRect();
     const viewportCenter = window.innerHeight / 2;
     const readingAnchor = containerRect.left + containerRect.width * 0.22;
+    const maximumScroll = Math.max(0, container.scrollWidth - container.clientWidth);
+    const albumCenters: number[] = [];
     let nextActive = 0;
     let closest = Number.POSITIVE_INFINITY;
 
@@ -113,6 +125,7 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
       const rect = element.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
+      albumCenters[index] = centerY;
       const visible = mobile
         ? rect.bottom > 0 && rect.top < window.innerHeight
         : rect.right > containerRect.left && rect.left < containerRect.right;
@@ -140,14 +153,39 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
     });
 
     if (closest !== Number.POSITIVE_INFINITY) {
+      if (!mobile && maximumScroll <= 0.5) nextActive = activeRef.current;
       if (activeRef.current !== nextActive) {
         activeRef.current = nextActive;
         setActive(nextActive);
         remember(nextActive);
       }
     }
+
+    let visualProgress = activeRef.current;
+    if (!reduced && count > 1) {
+      if (mobile && albumCenters.length === count) {
+        if (viewportCenter <= albumCenters[0]) {
+          visualProgress = 0;
+        } else if (viewportCenter >= albumCenters[count - 1]) {
+          visualProgress = count - 1;
+        } else {
+          for (let index = 0; index < count - 1; index += 1) {
+            const start = albumCenters[index];
+            const end = albumCenters[index + 1];
+            if (viewportCenter >= start && viewportCenter <= end) {
+              visualProgress = index + (viewportCenter - start) / Math.max(1, end - start);
+              break;
+            }
+          }
+        }
+      } else if (!mobile && maximumScroll > 0.5) {
+        visualProgress = (container.scrollLeft / maximumScroll) * (count - 1);
+      }
+    }
+
+    renderTickProgress(visualProgress);
     scheduleSettleFeedback();
-  }, [reduced, remember, scheduleSettleFeedback]);
+  }, [count, reduced, remember, renderTickProgress, scheduleSettleFeedback]);
 
   const scheduleVisualUpdate = useCallback(() => {
     if (visualFrame.current !== null) return;
@@ -179,9 +217,10 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
       const targetRect = target.getBoundingClientRect();
       const targetLeft = container.scrollLeft + targetRect.left - containerRect.left - padding;
       container.scrollTo({ left: clamp(targetLeft, 0, maximum), behavior });
+      if (maximum <= 0.5) renderTickProgress(index);
     }
     if (feedback) scheduleSettleFeedback();
-  }, [reduced, remember, scheduleSettleFeedback]);
+  }, [reduced, remember, renderTickProgress, scheduleSettleFeedback]);
 
   useEffect(() => {
     const container = stage.current;
@@ -381,7 +420,11 @@ export default function AlbumCarousel({ albums }: { albums: GalleryAlbum[] }) {
                 aria-current={index === active ? 'true' : undefined}
                 onClick={() => scrollToAlbum(index, true)}
               >
-                <span className={styles.tick} aria-hidden="true" />
+                <span
+                  ref={(element) => { if (element) ticks.current.set(index, element); else ticks.current.delete(index); }}
+                  className={styles.tick}
+                  aria-hidden="true"
+                />
               </button>
             ))}
           </nav>

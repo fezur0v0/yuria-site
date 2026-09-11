@@ -83,12 +83,13 @@
 }
 
 .stage {
+  box-sizing: border-box;
   display: flex;
   gap: 36px;
-  width: min(calc(100% - 80px), 1440px);
-  max-width: 1440px;
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
-  padding: 22px 28px 30px;
+  padding: 22px clamp(32px, 4vw, 72px) 30px;
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-inline: contain;
@@ -251,27 +252,31 @@
 .railButton {
   display: grid;
   place-items: center;
-  width: 44px;
+  width: 32px;
   height: 44px;
   border-radius: 999px;
   cursor: pointer;
 }
 
 .tick {
+  --tick-strength: 0;
   display: block;
-  width: 1px;
-  height: 10px;
-  background: rgb(41 41 39 / 28%);
-  transition: width 230ms cubic-bezier(.22, 1, .36, 1), height 230ms ease, background 230ms ease;
+  width: 3px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--gallery-ink);
+  opacity: calc(.26 + var(--tick-strength) * .74);
+  transform: scaleY(calc(.31 + var(--tick-strength) * .69));
+  transform-origin: center;
+  transition: transform 180ms cubic-bezier(.22, 1, .36, 1), opacity 160ms ease;
+  will-change: transform, opacity;
 }
 
 .railButton[aria-current='true'] .tick {
-  width: 2px;
-  height: 30px;
-  background: var(--gallery-ink);
+  --tick-strength: 1;
 }
 
-.railButton:hover .tick { background: rgb(41 41 39 / 62%); }
+.railButton:hover .tick { opacity: calc(.58 + var(--tick-strength) * .42); }
 .railButton:active { opacity: .65; }
 .page a:focus-visible,
 .page button:focus-visible { outline: 2px solid var(--gallery-ink); outline-offset: 4px; }
@@ -397,9 +402,15 @@
   }
 
   .rail::-webkit-scrollbar { display: none; }
-  .railButton { flex: 0 0 44px; }
-  .tick { width: 10px; height: 1px; }
-  .railButton[aria-current='true'] .tick { width: 30px; height: 2px; }
+  .railButton { flex: 0 0 32px; width: 44px; height: 32px; }
+  .tick {
+    justify-self: end;
+    width: 26px;
+    height: 3px;
+    margin-right: 7px;
+    transform: scaleX(calc(.31 + var(--tick-strength) * .69));
+    transform-origin: right center;
+  }
 }
 
 @media (max-height: 500px) and (min-width: 640px) {
@@ -426,4 +437,5 @@
   .slide { transform: none; }
   .slide:hover .print { transform: none; }
   .cover { transform: scale(1.02); }
+  .tick { transition: none; }
 }
