@@ -31,14 +31,31 @@
 }
 
 .heading {
+  position: relative;
+  width: fit-content;
   max-width: 720px;
   margin: 0 auto 14px;
   overflow-wrap: anywhere;
-  font-family: Georgia, 'Noto Serif SC', 'Songti SC', SimSun, serif;
-  font-size: clamp(36px, 3.8vw, 48px);
+  font-family: var(--font-gallery-hand), KaiTi, STKaiti, cursive;
+  font-size: clamp(44px, 4.2vw, 58px);
   font-weight: 400;
-  line-height: 1.35;
-  letter-spacing: .12em;
+  line-height: 1.28;
+  letter-spacing: .02em;
+}
+
+.heading::after {
+  content: '';
+  position: absolute;
+  right: 8%;
+  bottom: .02em;
+  left: 10%;
+  height: 3px;
+  border-radius: 52% 48% 46% 54%;
+  background: linear-gradient(90deg, transparent, rgb(51 49 45 / 84%) 7%, rgb(51 49 45 / 72%) 92%, transparent);
+  opacity: .24;
+  transform: rotate(-1.2deg) skewX(-8deg);
+  transform-origin: center;
+  pointer-events: none;
 }
 
 .subtitleWrap {
@@ -53,9 +70,10 @@
   min-height: 3.4em;
   overflow-wrap: anywhere;
   color: var(--gallery-muted);
+  font-family: var(--font-gallery-hand), KaiTi, STKaiti, cursive;
   font-size: clamp(16px, 1.4vw, 18px);
   line-height: 1.7;
-  letter-spacing: .08em;
+  letter-spacing: .02em;
 }
 
 .measureLine,
@@ -340,7 +358,7 @@
   }
 
   .hero { padding: 64px 24px 0; }
-  .heading { font-size: 36px; }
+  .heading { font-size: clamp(42px, 13vw, 50px); }
   .subtitle { font-size: 16px; }
 
   .carousel {
@@ -417,7 +435,7 @@
   .page { --card-width: clamp(160px, min(29vw, calc(100dvh - 188px)), 235px); }
   .main { min-height: 100dvh; padding: 64px 0 0; flex-direction: row; align-items: center; }
   .hero { width: 42%; height: auto; flex: 0 0 42%; padding: 0 20px; }
-  .heading { font-size: 36px; }
+  .heading { font-size: 42px; }
   .subtitle { min-height: 3.4em; font-size: 16px; }
   .carousel { flex: 1 1 auto; min-width: 0; }
   .stage { width: calc(100% - 16px); padding-block: 18px 20px; }

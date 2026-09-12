@@ -1,0 +1,190 @@
+.backDock {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  z-index: 50;
+}
+
+.toolbar {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  right: max(18px, env(safe-area-inset-right));
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.toolButton {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #dcd5c8;
+  border-radius: 9px 11px 8px 10px / 10px 8px 11px 9px;
+  background-color: #fffdf8;
+  background-image:
+    radial-gradient(circle at 18% 28%, rgb(91 76 51 / 4%) 0 .6px, transparent .8px),
+    linear-gradient(112deg, transparent 22%, rgb(132 111 73 / 3%) 55%, transparent 78%);
+  background-size: 5px 5px, 100% 100%;
+  color: #45423d;
+  box-shadow:
+    0 1px 1px rgb(57 50 39 / 8%),
+    0 6px 15px rgb(57 50 39 / 10%);
+  transform: rotate(var(--paper-rotate, 0deg));
+  transition:
+    transform 220ms cubic-bezier(.22, 1, .36, 1),
+    box-shadow 220ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease;
+  cursor: pointer;
+}
+
+.toolButton:hover:not(:disabled) {
+  border-color: #c9c0b1;
+  box-shadow:
+    0 1px 1px rgb(57 50 39 / 8%),
+    0 9px 20px rgb(57 50 39 / 14%);
+  transform: translateY(-2px) rotate(0deg);
+}
+
+.toolButton:active:not(:disabled) {
+  box-shadow: 0 2px 7px rgb(57 50 39 / 10%);
+  transform: translateY(1px) scale(.96) rotate(0deg);
+}
+
+.toolButton:focus-visible,
+.photoCard:focus-visible {
+  outline: 2px solid #45423d;
+  outline-offset: 4px;
+}
+
+.toolButton:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.editButton { --paper-rotate: 1.5deg; }
+.addButton { --paper-rotate: -1.5deg; animation: tool-reveal 240ms 80ms both cubic-bezier(.22, 1, .36, 1); }
+
+.deleteButton {
+  --paper-rotate: 1.5deg;
+  border-color: #d4b6af;
+  background-color: #fff8f4;
+  color: #965f58;
+  animation: tool-reveal 240ms 40ms both cubic-bezier(.22, 1, .36, 1);
+}
+
+.doneButton {
+  --paper-rotate: -.8deg;
+  border-color: #44413b;
+  background-color: #44413b;
+  background-image:
+    radial-gradient(circle at 26% 34%, rgb(255 249 237 / 8%) 0 .6px, transparent .8px),
+    linear-gradient(108deg, transparent, rgb(255 249 237 / 4%), transparent);
+  color: #fffaf0;
+  box-shadow:
+    0 1px 1px rgb(38 34 28 / 14%),
+    0 7px 17px rgb(38 34 28 / 17%);
+  animation: tool-reveal 220ms both cubic-bezier(.22, 1, .36, 1);
+}
+
+.doneButton:hover:not(:disabled) {
+  border-color: #302e2a;
+  background-color: #3b3934;
+}
+
+.busySpinner {
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid rgb(69 66 61 / 24%);
+  border-top-color: currentColor;
+  border-radius: 999px;
+  animation: busy-turn .8s linear infinite;
+}
+
+.photoCard {
+  appearance: none;
+  border: 0;
+  color: inherit;
+  text-align: left;
+}
+
+.photoCard[data-selected='true'] {
+  outline: 1px solid rgb(81 76 68 / 46%);
+  outline-offset: 4px;
+  box-shadow:
+    0 2px 4px rgb(56 48 37 / 9%),
+    0 10px 24px rgb(56 48 37 / 20%);
+}
+
+.photoFrame { position: relative; }
+
+.selectionShade {
+  position: absolute;
+  inset: 0;
+  background: rgb(45 42 37 / 0%);
+  pointer-events: none;
+  transition: background-color 180ms ease;
+}
+
+.photoCard[data-selected='true'] .selectionShade {
+  background: rgb(45 42 37 / 13%);
+}
+
+.selectionSticker {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  display: grid;
+  width: 31px;
+  height: 29px;
+  place-items: center;
+  border: 1px solid #d8d0c2;
+  border-radius: 6px 8px 7px 5px;
+  background: #fffdf8;
+  color: #4a4741;
+  box-shadow: 0 4px 10px rgb(54 47 37 / 17%);
+  transform: rotate(5deg);
+  animation: sticker-in 220ms cubic-bezier(.22, 1, .36, 1);
+  pointer-events: none;
+}
+
+@keyframes tool-reveal {
+  from { opacity: 0; transform: translateX(10px) scale(.92) rotate(0deg); }
+  to { opacity: 1; transform: translateX(0) scale(1) rotate(var(--paper-rotate, 0deg)); }
+}
+
+@keyframes sticker-in {
+  from { opacity: 0; transform: translateY(4px) scale(.78) rotate(2deg); }
+  to { opacity: 1; transform: translateY(0) scale(1) rotate(5deg); }
+}
+
+@keyframes busy-turn { to { transform: rotate(360deg); } }
+
+@media (max-width: 639px) {
+  .backDock {
+    top: max(12px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+  }
+
+  .toolbar {
+    top: max(14px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolButton,
+  .selectionShade,
+  .selectionSticker {
+    animation: none;
+    transition: none;
+  }
+
+  .busySpinner { animation: none; }
+}

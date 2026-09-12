@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import BackButton from '@/components/gallery/BackButton';
 import { useIsOwner } from '@/components/gallery/useIsOwner';
 import { getScatterStyle } from '@/components/gallery/scatterUtils';
+import detailStyles from '@/components/gallery/gallery-detail.module.css';
 import {
   MdOutlineEdit, MdOutlineAdd, MdOutlineDelete, MdOutlineCheck,
   MdOutlineClose, MdChevronLeft, MdChevronRight, MdOutlineZoomIn, MdOutlineZoomOut,
@@ -85,31 +86,58 @@ export default function AlbumDetailPage() {
     fetchData();
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white/40 text-sm">加载中...</div>;
+  if (loading) return <div className="min-h-screen bg-[#f5f2ec] flex items-center justify-center text-[#777168] text-sm">加载中...</div>;
 
   return (
   <div className="min-h-screen bg-[#f5f2ec] relative">
-      <div className="fixed top-6 left-6 z-50"><BackButton href="/gallery" /></div>
+      <div className={detailStyles.backDock}><BackButton href="/gallery" /></div>
 
       {isOwner && (
-        <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
+        <div className={detailStyles.toolbar} data-editing={editMode}>
           {!editMode ? (
-            <button onClick={() => setEditMode(true)} className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md text-white/70 hover:bg-white/20 hover:text-white flex items-center justify-center" title="编辑">
-              <MdOutlineEdit size={16} />
+            <button
+              type="button"
+              onClick={() => setEditMode(true)}
+              className={`${detailStyles.toolButton} ${detailStyles.editButton}`}
+              title="编辑相册"
+              aria-label="进入编辑模式"
+              aria-expanded={false}
+            >
+              <MdOutlineEdit size={18} aria-hidden="true" />
             </button>
           ) : (
             <>
-              <button onClick={() => fileInputRef.current?.click()} className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md text-white/70 hover:bg-white/20 hover:text-white flex items-center justify-center" title="添加图片">
-                <MdOutlineAdd size={18} />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={`${detailStyles.toolButton} ${detailStyles.addButton}`}
+                title={uploading ? '图片上传中' : '添加图片'}
+                aria-label={uploading ? '图片上传中' : '添加图片'}
+                aria-busy={uploading}
+                disabled={uploading}
+              >
+                {uploading ? <span className={detailStyles.busySpinner} aria-hidden="true" /> : <MdOutlineAdd size={20} aria-hidden="true" />}
               </button>
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
               {selected.size > 0 && (
-                <button onClick={deleteSelected} className="w-9 h-9 rounded-full bg-red-500/20 backdrop-blur-md text-red-300 hover:bg-red-500/30 flex items-center justify-center" title={`删除 ${selected.size} 张`}>
-                  <MdOutlineDelete size={16} />
+                <button
+                  type="button"
+                  onClick={deleteSelected}
+                  className={`${detailStyles.toolButton} ${detailStyles.deleteButton}`}
+                  title={`删除已选中的 ${selected.size} 张图片`}
+                  aria-label={`删除已选中的 ${selected.size} 张图片`}
+                >
+                  <MdOutlineDelete size={18} aria-hidden="true" />
                 </button>
               )}
-              <button onClick={() => { setEditMode(false); setSelected(new Set()); }} className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md text-white/70 hover:bg-white/20 hover:text-white flex items-center justify-center" title="退出编辑">
-                <MdOutlineClose size={16} />
+              <button
+                type="button"
+                onClick={() => { setEditMode(false); setSelected(new Set()); }}
+                className={`${detailStyles.toolButton} ${detailStyles.doneButton}`}
+                title="完成编辑"
+                aria-label="完成编辑"
+              >
+                <MdOutlineCheck size={19} aria-hidden="true" />
               </button>
             </>
           )}
@@ -117,17 +145,18 @@ export default function AlbumDetailPage() {
       )}
 
       <div className="pt-28 sm:pt-32 px-6 sm:px-16 pb-20 max-w-5xl mx-auto">
-        <h1 className="text-center font-serif text-xl sm:text-2xl text-white/70 tracking-wide mb-14">{album?.title}</h1>
+        <h1 className="text-center font-serif text-xl sm:text-2xl text-[#3f3c36] tracking-wide mb-14">{album?.title}</h1>
 
         {images.length === 0 ? (
-          <p className="text-center text-white/30 text-sm">这个相册还没有图片</p>
+          <p className="text-center text-[#817b72] text-sm">这个相册还没有图片</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10 place-items-center">
             {images.map((img, i) => {
               const { rotate, translateY } = getScatterStyle(img.id);
               const isSelected = selected.has(img.id);
               return (
-                <div
+                <button
+                  type="button"
                   key={img.id}
                   draggable={editMode}
                   onDragStart={() => { dragIndexRef.current = i; }}
@@ -136,29 +165,34 @@ export default function AlbumDetailPage() {
                   onClick={() => {
                     if (editMode) {
                       const next = new Set(selected);
-                      isSelected ? next.delete(img.id) : next.add(img.id);
+                      if (isSelected) next.delete(img.id);
+                      else next.add(img.id);
                       setSelected(next);
                     } else {
                       setOpenIndex(i);
                     }
                   }}
-                  className="relative bg-white p-2 pb-3 rounded-sm shadow-[0_8px_20px_rgba(0,0,0,0.4)] cursor-pointer transition-transform duration-300 hover:z-10 hover:scale-105 hover:rotate-0"
+                  className={`${detailStyles.photoCard} relative bg-white p-2 pb-3 rounded-sm shadow-[0_8px_20px_rgba(0,0,0,0.24)] cursor-pointer transition-transform duration-300 hover:z-10 hover:scale-105 hover:rotate-0`}
                   style={{ transform: `rotate(${rotate}deg) translateY(${translateY}px)` }}
+                  data-selected={editMode && isSelected}
+                  aria-label={editMode ? `${isSelected ? '取消选择' : '选择'}第 ${i + 1} 张图片` : `打开第 ${i + 1} 张图片`}
+                  aria-pressed={editMode ? isSelected : undefined}
                 >
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 overflow-hidden">
+                  <div className={`${detailStyles.photoFrame} w-32 h-32 sm:w-40 sm:h-40 overflow-hidden`}>
                     <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                    {editMode && <span className={detailStyles.selectionShade} aria-hidden="true" />}
                   </div>
-                  {editMode && (
-                    <div className={`absolute inset-0 flex items-center justify-center transition-colors ${isSelected ? 'bg-red-500/40' : 'bg-black/0'}`}>
-                      {isSelected && <MdOutlineCheck size={22} className="text-white" />}
-                    </div>
+                  {editMode && isSelected && (
+                    <span className={detailStyles.selectionSticker} aria-hidden="true">
+                      <MdOutlineCheck size={18} />
+                    </span>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
         )}
-        {uploading && <p className="text-center mt-4 text-white/40 text-xs">上传中...</p>}
+        {uploading && <p className="text-center mt-4 text-[#777168] text-xs" role="status" aria-live="polite">图片上传中...</p>}
       </div>
 
       {openIndex !== null && (
