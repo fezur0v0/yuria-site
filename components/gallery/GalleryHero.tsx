@@ -1,19 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import localFont from 'next/font/local';
+import { Noto_Serif_SC } from 'next/font/google';
 import { createClient } from '@/utils/supabase/client';
 import { useReducedMotion } from './useReducedMotion';
 import styles from './gallery-home.module.css';
 
-const galleryHand = localFont({
-  src: './fonts/fontqu-smile.woff2',
+const gallerySerif = Noto_Serif_SC({
+  subsets: ['latin'],
   weight: '400',
   style: 'normal',
   display: 'swap',
   preload: false,
-  fallback: ['KaiTi', 'STKaiti', 'cursive'],
-  variable: '--font-gallery-hand',
+  fallback: ['Songti SC', 'STSong', 'SimSun', 'serif'],
+  variable: '--font-gallery-serif',
 });
 
 export default function GalleryHero() {
@@ -45,7 +45,7 @@ export default function GalleryHero() {
     return () => { disposed = true; clearTimeout(timeout); controller.abort(); };
   }, [attempt]);
   return (
-    <header className={`${styles.hero} ${galleryHand.variable}`}>
+    <header className={`${styles.hero} ${gallerySerif.variable}`}>
       <h1 className={styles.heading}>{content.title || '\u00a0'}</h1>
       <Typewriter key={JSON.stringify(content.lines)} lines={content.lines} />
       {failed && <button className={styles.retry} onClick={() => setAttempt((value) => value + 1)}>标题文案加载不完整，重试</button>}
