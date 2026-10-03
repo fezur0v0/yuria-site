@@ -7,7 +7,7 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useCallback, type ReactNode, type ChangeEvent } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { uploadPublicMedia } from '@/utils/r2/client';
 import {
   GrBold,
   GrItalic,
@@ -43,8 +43,6 @@ interface PortfolioEditorProps {
 }
 
 export default function PortfolioEditor({ content, onChange }: PortfolioEditorProps) {
-  const supabase = createClient();
-
   const editor = useEditor({
   extensions: [
       StarterKit,
@@ -71,16 +69,13 @@ export default function PortfolioEditor({ content, onChange }: PortfolioEditorPr
 
   const insertImage = useCallback(async (file: File) => {
     if (!editor) return;
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-    const { error } = await supabase.storage.from('theater-images').upload(fileName, file);
-    if (error) {
-      alert('图片上传失败: ' + error.message);
-      return;
+    try {
+      const publicUrl = await uploadPublicMedia(file, 'portfolio/content');
+      editor.chain().focus().setImage({ src: publicUrl }).run();
+    } catch (error) {
+      alert('图片上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
     }
-    const { data } = supabase.storage.from('theater-images').getPublicUrl(fileName);
-    editor.chain().focus().setImage({ src: data.publicUrl }).run();
-  }, [editor, supabase]);
+  }, [editor]);
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

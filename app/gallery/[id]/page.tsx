@@ -10,7 +10,10 @@ import detailStyles from '@/components/gallery/gallery-detail.module.css';
 import {
   MdOutlineEdit, MdOutlineAdd, MdOutlineDelete, MdOutlineCheck,
   MdOutlineClose, MdChevronLeft, MdChevronRight, MdOutlineZoomIn, MdOutlineZoomOut,
+  MdOutlinePlayCircle,
 } from 'react-icons/md';
+import { uploadPublicMedia, deletePublicMedia } from '@/utils/r2/client';
+import { isVideoUrl } from '@/utils/media';
 
 interface Album { id: string; title: string; description: string | null; }
 interface GalleryImage { id: string; image_url: string; caption: string | null; sort_order: number; }
@@ -49,25 +52,41 @@ export default function AlbumDetailPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-    const path = `gallery/${albumId}/${Date.now()}-${safeName}`;
-    const { error: uploadError } = await supabase.storage.from('theater-images').upload(path, file);
-    if (uploadError) { alert('上传失败：' + uploadError.message); setUploading(false); return; }
-    const { data: urlData } = supabase.storage.from('theater-images').getPublicUrl(path);
-    const { error: insertError } = await supabase.from('gallery_images').insert({
-      album_id: albumId, image_url: urlData.publicUrl, sort_order: images.length,
-    });
-    if (insertError) alert('保存失败：' + insertError.message);
-    fetchData();
-    setUploading(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    let publicUrl: string | null = null;
+
+    try {
+      publicUrl = await uploadPublicMedia(file, `gallery/${albumId}`);
+      const { error: insertError } = await supabase.from('gallery_images').insert({
+        album_id: albumId, image_url: publicUrl, sort_order: images.length,
+      });
+      if (insertError) {
+        await deletePublicMedia(publicUrl).catch(() => undefined);
+        throw insertError;
+      }
+      fetchData();
+    } catch (error) {
+      alert('上传失败：' + (error instanceof Error ? error.message : '未知错误'));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const deleteSelected = async () => {
     if (selected.size === 0) return;
-    await supabase.from('gallery_images').delete().in('id', Array.from(selected));
-    setSelected(new Set());
-    fetchData();
+    const selectedImages = images.filter((image) => selected.has(image.id));
+    try {
+      const { error } = await supabase.from('gallery_images').delete().in('id', Array.from(selected));
+      if (error) throw error;
+      const cleanup = await Promise.allSettled(selectedImages.map((image) => deletePublicMedia(image.image_url)));
+      if (cleanup.some((result) => result.status === 'rejected')) {
+        alert('相册记录已删除，但有文件未能从 R2 清理。');
+      }
+      setSelected(new Set());
+      fetchData();
+    } catch (error) {
+      alert('删除失败：' + (error instanceof Error ? error.message : '未知错误'));
+    }
   };
 
   const handleDrop = async (dropIndex: number) => {
@@ -111,14 +130,14 @@ export default function AlbumDetailPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className={`${detailStyles.toolButton} ${detailStyles.addButton}`}
-                title={uploading ? '图片上传中' : '添加图片'}
-                aria-label={uploading ? '图片上传中' : '添加图片'}
+                title={uploading ? '文件上传中' : '添加图片或视频'}
+                aria-label={uploading ? '文件上传中' : '添加图片或视频'}
                 aria-busy={uploading}
                 disabled={uploading}
               >
                 {uploading ? <span className={detailStyles.busySpinner} aria-hidden="true" /> : <MdOutlineAdd size={20} aria-hidden="true" />}
               </button>
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+              <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleUpload} />
               {selected.size > 0 && (
                 <button
                   type="button"
@@ -154,6 +173,7 @@ export default function AlbumDetailPage() {
             {images.map((img, i) => {
               const { rotate, translateY } = getScatterStyle(img.id);
               const isSelected = selected.has(img.id);
+              const isVideo = isVideoUrl(img.image_url);
               return (
                 <button
                   type="button"
@@ -175,11 +195,20 @@ export default function AlbumDetailPage() {
                   className={`${detailStyles.photoCard} relative bg-white p-2 pb-3 rounded-sm shadow-[0_8px_20px_rgba(0,0,0,0.24)] cursor-pointer transition-transform duration-300 hover:z-10 hover:scale-105 hover:rotate-0`}
                   style={{ transform: `rotate(${rotate}deg) translateY(${translateY}px)` }}
                   data-selected={editMode && isSelected}
-                  aria-label={editMode ? `${isSelected ? '取消选择' : '选择'}第 ${i + 1} 张图片` : `打开第 ${i + 1} 张图片`}
+                  aria-label={editMode ? `${isSelected ? '取消选择' : '选择'}第 ${i + 1} 个文件` : `打开第 ${i + 1} 个文件`}
                   aria-pressed={editMode ? isSelected : undefined}
                 >
-                  <div className={`${detailStyles.photoFrame} w-32 h-32 sm:w-40 sm:h-40 overflow-hidden`}>
-                    <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                  <div className={`${detailStyles.photoFrame} relative w-32 h-32 sm:w-40 sm:h-40 overflow-hidden`}>
+                    {isVideo ? (
+                      <>
+                        <video src={img.image_url} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                        <span className="absolute inset-0 flex items-center justify-center text-white drop-shadow-lg" aria-hidden="true">
+                          <MdOutlinePlayCircle size={38} />
+                        </span>
+                      </>
+                    ) : (
+                      <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                    )}
                     {editMode && <span className={detailStyles.selectionShade} aria-hidden="true" />}
                   </div>
                   {editMode && isSelected && (
@@ -192,7 +221,7 @@ export default function AlbumDetailPage() {
             })}
           </div>
         )}
-        {uploading && <p className="text-center mt-4 text-[#777168] text-xs" role="status" aria-live="polite">图片上传中...</p>}
+        {uploading && <p className="text-center mt-4 text-[#777168] text-xs" role="status" aria-live="polite">文件上传中...</p>}
       </div>
 
       {openIndex !== null && (
@@ -231,6 +260,7 @@ function ImmersiveViewer({
   const panFrame = useRef<number | null>(null);
 
   const active = images[index];
+  const activeIsVideo = isVideoUrl(active.image_url);
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 3;
   const ZOOM_STEP = 0.25;
@@ -273,15 +303,22 @@ function ImmersiveViewer({
     });
   }, []);
 
-  const goPrev = useCallback(() => { setIndex((i) => (i - 1 + images.length) % images.length); setZoom(1); }, [images.length]);
-  const goNext = useCallback(() => { setIndex((i) => (i + 1) % images.length); setZoom(1); }, [images.length]);
-
-  useEffect(() => {
+  const resetForNavigation = useCallback(() => {
     setEditingCaption(false);
     applyPan({ x: 0, y: 0 });
     gesture.current = null;
     setDragging(false);
-  }, [index, applyPan]);
+    setZoom(1);
+  }, [applyPan]);
+
+  const goPrev = useCallback(() => {
+    resetForNavigation();
+    setIndex((i) => (i - 1 + images.length) % images.length);
+  }, [images.length, resetForNavigation]);
+  const goNext = useCallback(() => {
+    resetForNavigation();
+    setIndex((i) => (i + 1) % images.length);
+  }, [images.length, resetForNavigation]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -356,10 +393,10 @@ function ImmersiveViewer({
   };
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="沉浸式看图器" className="fixed inset-0 z-[60] overflow-hidden bg-black">
+    <div role="dialog" aria-modal="true" aria-label="沉浸式媒体查看器" className="fixed inset-0 z-[60] overflow-hidden bg-black">
       <div
         className="absolute inset-0 scale-110 opacity-30 blur-3xl"
-        style={{ backgroundImage: `url(${active.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        style={{ backgroundImage: activeIsVideo ? undefined : `url(${active.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
       />
       <div className="absolute inset-0 bg-black/40" />
 
@@ -383,23 +420,34 @@ function ImmersiveViewer({
         <div
           ref={viewportRef}
           className="w-[92vw] sm:w-[80vw] h-[70dvh] overflow-hidden flex items-center justify-center"
-          style={{ touchAction: 'none', cursor: zoom > 1 ? (dragging ? 'grabbing' : 'grab') : 'zoom-in' }}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={cancelPointer}
-          onLostPointerCapture={cancelPointer}
-          onDoubleClick={() => changeZoom(zoom > 1 ? 1 : 2)}
+          style={{ touchAction: activeIsVideo ? 'auto' : 'none', cursor: activeIsVideo ? 'default' : zoom > 1 ? (dragging ? 'grabbing' : 'grab') : 'zoom-in' }}
+          onPointerDown={activeIsVideo ? undefined : onPointerDown}
+          onPointerMove={activeIsVideo ? undefined : onPointerMove}
+          onPointerUp={activeIsVideo ? undefined : onPointerUp}
+          onPointerCancel={activeIsVideo ? undefined : cancelPointer}
+          onLostPointerCapture={activeIsVideo ? undefined : cancelPointer}
+          onDoubleClick={activeIsVideo ? undefined : () => changeZoom(zoom > 1 ? 1 : 2)}
         >
-          <img
-            ref={imageRef}
-            src={active.image_url}
-            alt={active.caption ?? ''}
-            className="max-w-full max-h-full object-contain select-none motion-reduce:!transition-none"
-            style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`, transition: dragging ? 'none' : 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)' }}
-            onLoad={() => applyPan(clampPan(panRef.current.x, panRef.current.y, zoom))}
-            draggable={false}
-          />
+          {activeIsVideo ? (
+            <video
+              key={active.id}
+              src={active.image_url}
+              controls
+              autoPlay
+              playsInline
+              className="max-w-full max-h-full object-contain"
+            />
+          ) : (
+            <img
+              ref={imageRef}
+              src={active.image_url}
+              alt={active.caption ?? ''}
+              className="max-w-full max-h-full object-contain select-none motion-reduce:!transition-none"
+              style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`, transition: dragging ? 'none' : 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)' }}
+              onLoad={() => applyPan(clampPan(panRef.current.x, panRef.current.y, zoom))}
+              draggable={false}
+            />
+          )}
         </div>
 
         {/* 备注区 */}
@@ -442,13 +490,13 @@ function ImmersiveViewer({
             </>
           ) : <span className="px-4 text-xs whitespace-nowrap text-white/60 tabular-nums">{index + 1}/{images.length} · 拖动查看</span>}
         </div>
-        <div className="flex h-12 items-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md px-1">
+        {!activeIsVideo && <div className="flex h-12 items-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md px-1">
           <button onClick={zoomOut} disabled={zoom <= MIN_ZOOM} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30" aria-label="缩小" title="缩小"><MdOutlineZoomOut size={21} /></button>
           <button onClick={zoomReset} className="h-11 w-12 text-xs tabular-nums hover:text-white" aria-label="还原到适应屏幕" title="还原到适应屏幕">
             {Math.round(zoom * 100)}%
           </button>
           <button onClick={zoomIn} disabled={zoom >= MAX_ZOOM} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-30" aria-label="放大" title="放大"><MdOutlineZoomIn size={21} /></button>
-        </div>
+        </div>}
       </div>
     </div>
   );
