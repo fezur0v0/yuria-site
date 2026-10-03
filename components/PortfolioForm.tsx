@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import PortfolioEditor from '@/components/PortfolioEditor';
+import { uploadPublicMedia } from '@/utils/r2/client';
 import { FiImage, FiCamera } from 'react-icons/fi';
 import { GrFormPrevious, GrSave, GrTrash } from 'react-icons/gr';
 
@@ -49,15 +50,11 @@ export default function PortfolioForm({ initialData }: PortfolioFormProps) {
   const [saving, setSaving] = useState(false);
 
   const handleCoverUpload = async (file: File) => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `cover-${Date.now()}.${fileExt}`;
-    const { error } = await supabase.storage.from('theater-images').upload(fileName, file);
-    if (error) {
-      alert('封面上传失败: ' + error.message);
-      return;
+    try {
+      setCoverUrl(await uploadPublicMedia(file, 'portfolio/covers'));
+    } catch (error) {
+      alert('封面上传失败: ' + (error instanceof Error ? error.message : '未知错误'));
     }
-    const { data } = supabase.storage.from('theater-images').getPublicUrl(fileName);
-    setCoverUrl(data.publicUrl);
   };
 
   const handleSubmit = async () => {
