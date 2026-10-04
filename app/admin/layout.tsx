@@ -25,25 +25,49 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
+  const isAuthPage = pathname === '/admin/login' || pathname === '/admin/unauthorized';
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
-        router.push('/admin/login');
-        return;
+    if (isAuthPage) return;
+
+    let cancelled = false;
+
+    async function checkAccess() {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (cancelled) return;
+
+        if (error || !data.user) {
+          router.replace('/admin/login');
+          return;
+        }
+
+        const githubIdentity = data.user.identities?.find(
+          (identity) => identity.provider === 'github'
+        );
+        const identityData = githubIdentity?.identity_data as Record<string, unknown> | undefined;
+        const githubId = String(
+          identityData?.provider_id ?? identityData?.sub ?? identityData?.id ?? ''
+        );
+
+        if (githubId !== ALLOWED_GITHUB_ID) {
+          router.replace('/admin/unauthorized');
+          return;
+        }
+
+        setLoading(false);
+      } catch {
+        if (!cancelled) router.replace('/admin/login');
       }
-      const githubId = String(
-        data.user.user_metadata?.provider_id || data.user.user_metadata?.sub || ''
-      );
-      if (githubId !== ALLOWED_GITHUB_ID) {
-        router.push('/admin/unauthorized');
-        return;
-      }
-      setLoading(false);
-    });
-  }, []);
+    }
+
+    void checkAccess();
+    return () => { cancelled = true; };
+  }, [isAuthPage, router]);
 
   const isEditorPage = /^\/admin\/portfolio\/(new|.+\/edit)$/.test(pathname);
+
+  if (isAuthPage) return <>{children}</>;
 
   if (loading) {
     return (
