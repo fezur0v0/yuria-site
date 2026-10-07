@@ -17,10 +17,18 @@ export default function LinksPage() {
 
       <main className={styles.main}>
         <header className={styles.header}>
-          <h1 className={styles.heading} aria-label="友人帐">
-            <span aria-hidden="true">友</span>
-            <span aria-hidden="true">人</span>
-            <span aria-hidden="true">帐</span>
+          <h1 className={styles.heading}>
+            <span className={styles.srOnly}>友人帐</span>
+            <Image
+              src="/images/links/friend-links-title.webp"
+              alt=""
+              width={960}
+              height={422}
+              sizes="(max-width: 640px) 58vw, 24rem"
+              className={styles.titleImage}
+              preload
+              aria-hidden="true"
+            />
           </h1>
         </header>
 
