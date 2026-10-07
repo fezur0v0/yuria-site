@@ -133,45 +133,45 @@
 .clip {
   position: absolute;
   z-index: 3;
-  top: -1.45rem;
+  top: -1rem;
   left: 50%;
-  width: 2.55rem;
-  height: 2.4rem;
-  border: .36rem solid #5fbce9;
-  border-radius: .28rem .28rem .12rem .12rem;
+  width: 2.6rem;
+  height: 1.25rem;
+  border-radius: .18rem .18rem .1rem .1rem;
   background: #35aee8;
   box-shadow: 0 2px 4px rgba(15, 72, 105, .25);
+  clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
   transform: translateX(-50%);
 }
 
 .clip::before {
   position: absolute;
-  top: -1.25rem;
-  left: 50%;
-  width: 1.15rem;
-  height: 1.3rem;
+  top: -.92rem;
+  left: .42rem;
+  width: .62rem;
+  height: 1rem;
   content: '';
-  border: .2rem solid #72c8ef;
+  border: .17rem solid #86d5f5;
   border-bottom: 0;
-  border-radius: .8rem .8rem 0 0;
-  transform: translateX(-50%);
+  border-radius: .5rem .5rem 0 0;
 }
 
 .clip::after {
   position: absolute;
-  right: .22rem;
-  bottom: -.48rem;
-  left: .22rem;
-  height: .5rem;
+  top: -.92rem;
+  right: .42rem;
+  width: .62rem;
+  height: 1rem;
   content: '';
-  background: #1b91cf;
-  clip-path: polygon(0 0, 100% 0, 84% 100%, 16% 100%);
+  border: .17rem solid #86d5f5;
+  border-bottom: 0;
+  border-radius: .5rem .5rem 0 0;
 }
 
 .tape {
   position: absolute;
   z-index: 3;
-  bottom: .65rem;
+  bottom: -.75rem;
   left: -1.15rem;
   width: 5.8rem;
   height: 2.2rem;
