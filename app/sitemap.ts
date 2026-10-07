@@ -56,6 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/` },
     { url: `${SITE_URL}/portfolio` },
     { url: `${SITE_URL}/gallery` },
+    { url: `${SITE_URL}/links` },
     ...portfolio,
     ...gallery,
   ];
