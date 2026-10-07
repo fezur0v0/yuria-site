@@ -19,7 +19,7 @@ export default function LinksPage() {
 
       <main className={styles.main}>
         <header className={styles.header}>
-          <h3>友人帐</h3>
+          <h1>友人帐</h1>
         </header>
 
         <ul className={styles.grid} aria-label="朋友们的网站">
