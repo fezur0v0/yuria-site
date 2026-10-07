@@ -6,8 +6,8 @@ import { FRIEND_LINKS, friendLinkHost } from './friends';
 import styles from './links.module.css';
 
 export const metadata: Metadata = {
-  title: '友人帐 · Yuria',
-  description: '这里放着一些我喜欢的人，和他们自己的小站。',
+  title: '友人帐',
+  description: '遇你如亘古荒野忽青',
   alternates: { canonical: '/links' },
 };
 
@@ -19,7 +19,7 @@ export default function LinksPage() {
 
       <main className={styles.main}>
         <header className={styles.header}>
-          <h1>友人帐</h1>
+          <h3>友人帐</h3>
         </header>
 
         <ul className={styles.grid} aria-label="朋友们的网站">
