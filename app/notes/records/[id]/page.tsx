@@ -83,7 +83,6 @@ export default function RecordDetail() {
   const [showTableBuilder, setShowTableBuilder] = useState(false)
 
   useEffect(() => {
-    if (sessionStorage.getItem('notes_auth') !== 'true') { router.replace('/notes'); return }
     fetchRecord()
     fetchCharacters()
     fetchCardOptions()

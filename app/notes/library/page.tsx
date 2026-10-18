@@ -95,9 +95,6 @@ export default function Library() {
   const [editSaving, setEditSaving] = useState(false)
 
   useEffect(() => {
-    if (sessionStorage.getItem('notes_auth') !== 'true') {
-      router.replace('/notes'); return
-    }
     fetchCards()
     fetchAllTags()
   }, [page, search, selectedTags])

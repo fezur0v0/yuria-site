@@ -3,8 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-
-const ADMIN_EMAIL = 'fezur0v0@gmail.com'
+import { isOwnerUser } from '@/utils/auth/owner'
   const supabase = createClient()
 
 // 从正文 HTML 生成摘要：先去掉 h2/h3 整段，再去标签取纯文本
@@ -51,7 +50,7 @@ export default function Home() {
     supabase.auth.getUser().then(({ data }) => {
       const u = data.user
       setUser(u)
-      setIsAdmin(u?.email === ADMIN_EMAIL)
+      setIsAdmin(isOwnerUser(u))
     })
     fetchConfig()
     fetchTracks()
@@ -60,7 +59,7 @@ export default function Home() {
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       const u = session?.user ?? null
       setUser(u)
-      setIsAdmin(u?.email === ADMIN_EMAIL)
+      setIsAdmin(isOwnerUser(u))
     })
     return () => listener.subscription.unsubscribe()
   }, [])

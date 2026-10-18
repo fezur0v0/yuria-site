@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import { isOwnerUser } from '@/utils/auth/owner';
 import {
   MdOutlineArrowBackIos,
   MdOutlineTune,
@@ -11,7 +12,6 @@ import {
   MdOutlinePhotoLibrary,
 } from 'react-icons/md';
 
-const ALLOWED_GITHUB_ID = '261478435';
 const supabase = createClient();
 
 const NAV = [
@@ -42,15 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           return;
         }
 
-        const githubIdentity = data.user.identities?.find(
-          (identity) => identity.provider === 'github'
-        );
-        const identityData = githubIdentity?.identity_data as Record<string, unknown> | undefined;
-        const githubId = String(
-          identityData?.provider_id ?? identityData?.sub ?? identityData?.id ?? ''
-        );
-
-        if (githubId !== ALLOWED_GITHUB_ID) {
+        if (!isOwnerUser(data.user)) {
           router.replace('/admin/unauthorized');
           return;
         }

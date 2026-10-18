@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-
-const ALLOWED_GITHUB_ID = '261478435';
+import { isOwnerUser } from '@/utils/auth/owner';
 
 export function useIsOwner() {
   const [isOwner, setIsOwner] = useState(false);
@@ -12,10 +11,7 @@ export function useIsOwner() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
-      const githubId = String(
-        data.user?.user_metadata?.provider_id || data.user?.user_metadata?.sub || ''
-      );
-      setIsOwner(githubId === ALLOWED_GITHUB_ID);
+      setIsOwner(isOwnerUser(data.user));
       setChecked(true);
     });
   }, []);

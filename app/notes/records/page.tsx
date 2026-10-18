@@ -88,15 +88,11 @@ export default function Records() {
   const [showTableBuilder, setShowTableBuilder] = useState(false)
 
   useEffect(() => {
-    if (sessionStorage.getItem('notes_auth') !== 'true') {
-      router.replace('/notes'); return
-    }
     fetchCharacters()
     fetchCardOptions()
   }, [])
 
   useEffect(() => {
-    if (sessionStorage.getItem('notes_auth') !== 'true') return
     fetchRecords()
   }, [page, search, activeChar])
 

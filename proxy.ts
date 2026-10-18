@@ -1,12 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-
-const ADMIN_EMAIL = 'fezur0v0@gmail.com'
+import { isOwnerUser } from '@/utils/auth/owner'
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({
-    request,
-  })
+  let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,16 +13,9 @@ export async function proxy(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        // 修复：为 cookiesToSet 添加类型
         setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-
-          response = NextResponse.next({
-            request,
-          })
-
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           )
@@ -34,24 +24,29 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // 获取当前用户
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
+  const isAdminAuthPage =
+    pathname === '/admin/login' || pathname === '/admin/unauthorized'
+  const isProtectedRoute =
+    (pathname.startsWith('/admin') && !isAdminAuthPage) ||
+    pathname.startsWith('/notes')
 
-  // ─────────────────────
-  // admin 权限保护
-  // ─────────────────────
-if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-    // 未登录
+  if (isProtectedRoute) {
     if (!user) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
+      const loginUrl = new URL('/admin/login', request.url)
+      loginUrl.searchParams.set(
+        'next',
+        `${pathname}${request.nextUrl.search}`
+      )
+      return NextResponse.redirect(loginUrl)
     }
-    // 不是管理员邮箱
-    if (user.email !== ADMIN_EMAIL) {
-      return NextResponse.redirect(new URL('/', request.url))
+
+    if (!isOwnerUser(user)) {
+      return NextResponse.redirect(new URL('/admin/unauthorized', request.url))
     }
   }
 
@@ -60,12 +55,6 @@ if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
 
 export const config = {
   matcher: [
-    /*
-     * 排除：
-     * - _next
-     * - favicon
-     * - 图片
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
