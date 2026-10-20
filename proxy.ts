@@ -31,22 +31,29 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const isAdminAuthPage =
     pathname === '/admin/login' || pathname === '/admin/unauthorized'
+  const isNotesContentRoute = pathname.startsWith('/notes/')
   const isProtectedRoute =
     (pathname.startsWith('/admin') && !isAdminAuthPage) ||
-    pathname.startsWith('/notes')
+    isNotesContentRoute
+
+  function redirectWithSession(url: URL) {
+    const redirect = NextResponse.redirect(url)
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
+    return redirect
+  }
 
   if (isProtectedRoute) {
     if (!user) {
-      const loginUrl = new URL('/admin/login', request.url)
+      const loginUrl = new URL(isNotesContentRoute ? '/notes' : '/admin/login', request.url)
       loginUrl.searchParams.set(
         'next',
         `${pathname}${request.nextUrl.search}`
       )
-      return NextResponse.redirect(loginUrl)
+      return redirectWithSession(loginUrl)
     }
 
     if (!isOwnerUser(user)) {
-      return NextResponse.redirect(new URL('/admin/unauthorized', request.url))
+      return redirectWithSession(new URL('/admin/unauthorized', request.url))
     }
   }
 
