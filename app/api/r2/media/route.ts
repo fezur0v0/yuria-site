@@ -1,6 +1,7 @@
 import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { isOwnerRequest } from '@/utils/auth/isOwner';
+import { isSameOriginRequest } from '@/utils/security/origin';
 import { createR2Client, getR2Config } from '@/utils/r2/server';
 
 export const runtime = 'nodejs';
@@ -21,6 +22,10 @@ function safeFileName(fileName: string) {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginRequest(request)) {
+    return Response.json({ error: '请求来源无效' }, { status: 403 });
+  }
+
   if (!await isOwnerRequest()) {
     return Response.json({ error: '没有上传权限' }, { status: 403 });
   }
@@ -61,6 +66,10 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!isSameOriginRequest(request)) {
+    return Response.json({ error: '请求来源无效' }, { status: 403 });
+  }
+
   if (!await isOwnerRequest()) {
     return Response.json({ error: '没有删除权限' }, { status: 403 });
   }

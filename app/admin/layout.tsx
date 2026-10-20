@@ -1,9 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
-import { isOwnerUser } from '@/utils/auth/owner';
 import {
   MdOutlineArrowBackIos,
   MdOutlineTune,
@@ -11,8 +8,6 @@ import {
   MdOutlineCollectionsBookmark,
   MdOutlinePhotoLibrary,
 } from 'react-icons/md';
-
-const supabase = createClient();
 
 const NAV = [
   { href: '/admin', label: '基本设置', icon: MdOutlineTune },
@@ -24,50 +19,11 @@ const NAV = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
   const isAuthPage = pathname === '/admin/login' || pathname === '/admin/unauthorized';
-
-  useEffect(() => {
-    if (isAuthPage) return;
-
-    let cancelled = false;
-
-    async function checkAccess() {
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (cancelled) return;
-
-        if (error || !data.user) {
-          router.replace('/admin/login');
-          return;
-        }
-
-        if (!isOwnerUser(data.user)) {
-          router.replace('/admin/unauthorized');
-          return;
-        }
-
-        setLoading(false);
-      } catch {
-        if (!cancelled) router.replace('/admin/login');
-      }
-    }
-
-    void checkAccess();
-    return () => { cancelled = true; };
-  }, [isAuthPage, router]);
 
   const isEditorPage = /^\/admin\/portfolio\/(new|.+\/edit)$/.test(pathname);
 
   if (isAuthPage) return <>{children}</>;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-black/30">
-        加载中...
-      </div>
-    );
-  }
 
   if (isEditorPage) return <>{children}</>;
 

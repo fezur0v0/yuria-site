@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { isOwnerUser } from '@/utils/auth/owner'
   const supabase = createClient()
 
 // 从正文 HTML 生成摘要：先去掉 h2/h3 整段，再去标签取纯文本
@@ -17,7 +16,6 @@ function getExcerpt(html: string, maxLen = 80) {
 
 export default function Home() {
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [config, setConfig] = useState({ cover_url: '', signature: '我的小小世界' })
   const [tracks, setTracks] = useState<any[]>([])
@@ -47,21 +45,34 @@ export default function Home() {
 }, [portfolioItems, galleryItems])
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      const u = data.user
-      setUser(u)
-      setIsAdmin(isOwnerUser(u))
-    })
+    let cancelled = false
+
+    async function refreshOwnerStatus() {
+      try {
+        const response = await fetch('/api/auth/owner', { cache: 'no-store' })
+        const data = response.ok
+          ? await response.json() as { isOwner?: boolean }
+          : null
+        if (!cancelled) setIsAdmin(data?.isOwner === true)
+      } catch {
+        if (!cancelled) setIsAdmin(false)
+      }
+    }
+
+    void refreshOwnerStatus()
     fetchConfig()
     fetchTracks()
     fetchPortfolio()
     fetchGallery()
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
-      const u = session?.user ?? null
-      setUser(u)
-      setIsAdmin(isOwnerUser(u))
+
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      void refreshOwnerStatus()
     })
-    return () => listener.subscription.unsubscribe()
+
+    return () => {
+      cancelled = true
+      listener.subscription.unsubscribe()
+    }
   }, [])
 
   useEffect(() => {
