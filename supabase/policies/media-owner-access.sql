@@ -17,4 +17,7 @@ with check (
 );
 
 -- Apply only after the authenticated media route and legacy URL adapter are deployed.
+-- Audit public portfolio/gallery references first: older public media also used this bucket.
+-- Copy those public assets separately, then run maintenance/restore-public-legacy-media.sql
+-- after the public copies are deployed. Never expose the entire bucket to restore a cover.
 update storage.buckets set public = false where id = 'theater-images';
