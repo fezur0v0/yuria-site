@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:auth": "node --experimental-strip-types --test tests/notes-media.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1146.0",
@@ -26,7 +27,7 @@
     "@tiptap/starter-kit": "^2.11.5",
     "@tiptap/suggestion": "^2.11.5",
     "bcryptjs": "^3.0.3",
-    "next": "16.2.6",
+    "next": "16.4.2",
     "node-vibrant": "^4.0.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -44,7 +45,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
