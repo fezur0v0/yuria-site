@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import AccountEntry from '@/components/account/AccountEntry'
   const supabase = createClient()
 
 // 从正文 HTML 生成摘要：先去掉 h2/h3 整段，再去标签取纯文本
@@ -16,7 +17,6 @@ function getExcerpt(html: string, maxLen = 80) {
 
 export default function Home() {
   const router = useRouter()
-  const [isAdmin, setIsAdmin] = useState(false)
   const [config, setConfig] = useState({ cover_url: '', signature: '我的小小世界' })
   const [tracks, setTracks] = useState<any[]>([])
   const [trackIdx, setTrackIdx] = useState(0)
@@ -45,34 +45,11 @@ export default function Home() {
 }, [portfolioItems, galleryItems])
 
   useEffect(() => {
-    let cancelled = false
-
-    async function refreshOwnerStatus() {
-      try {
-        const response = await fetch('/api/auth/owner', { cache: 'no-store' })
-        const data = response.ok
-          ? await response.json() as { isOwner?: boolean }
-          : null
-        if (!cancelled) setIsAdmin(data?.isOwner === true)
-      } catch {
-        if (!cancelled) setIsAdmin(false)
-      }
-    }
-
-    void refreshOwnerStatus()
     fetchConfig()
     fetchTracks()
     fetchPortfolio()
     fetchGallery()
 
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      void refreshOwnerStatus()
-    })
-
-    return () => {
-      cancelled = true
-      listener.subscription.unsubscribe()
-    }
   }, [])
 
   useEffect(() => {
@@ -386,22 +363,7 @@ overflow: hidden;
               marginTop: '8px',
             }}
           >
-            <Link href="/admin" className="sb-link">
-              <div className="sb-bar" />
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              >
-                <circle cx="12" cy="12" r="3" />
-                <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </svg>
-              <span style={{ fontSize: '12px' }}>管理设置</span>
-            </Link>
+            <AccountEntry placement="sidebar" />
           </div>
         </aside>
 
@@ -902,15 +864,7 @@ overflow: hidden;
           </svg>
           <span>小剧场</span>
         </Link>
-        {isAdmin && (
-          <Link href="/admin" className="mobile-nav-item">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-            </svg>
-            <span>管理设置</span>
-          </Link>
-        )}
+        <AccountEntry placement="mobile" />
       </nav>
     </>
   )

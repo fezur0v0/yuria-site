@@ -5,6 +5,7 @@ import Link from 'next/link';
 import PortfolioSearch from '@/components/PortfolioSearch';
 import { createClient } from '@/utils/supabase/client';
 import { FiMoreHorizontal, FiMessageSquare, FiLink2 } from 'react-icons/fi';
+import AccountEntry from '@/components/account/AccountEntry';
 
 interface Profile {
   avatar_url: string | null;
@@ -80,6 +81,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default' }: { ho
             <Link href="/links" className={`flex items-center gap-1.5 text-sm ${linkColor} transition-colors`}>
               <FiLink2 size={15} /> 链接
             </Link>
+            <AccountEntry placement="header" light={isLight} />
           </div>
 
           <div className="flex sm:hidden items-center gap-4">
@@ -139,6 +141,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default' }: { ho
           </div>
 
           <div className="flex flex-col gap-3.5">
+            <AccountEntry placement="drawer" />
             <Link
               href="/guestbook"
               onClick={() => setDrawerOpen(false)}

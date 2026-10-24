@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { FiLogOut } from 'react-icons/fi'
 import { createClient } from '@/utils/supabase/client'
 import { startAuth } from '@/utils/auth/flow'
 
@@ -33,11 +34,16 @@ export default function AccountControls({ isOwner, hasGoogle, userId, linked }: 
     window.location.replace('/')
   }
 
-  return <div className="mt-8 flex flex-col items-start gap-4 text-sm">
-    {linked && hasGoogle &&
-      <p role="status" className="text-green-700">Google 已连接到当前账号。</p>}
-    {isOwner && !hasGoogle && <button type="button" disabled={busy} onClick={linkGoogle} className="rounded-lg border border-stone-300 px-5 py-2.5 disabled:opacity-50">绑定 Google 账号</button>}
-    {error && <p role="alert" className="text-red-700">{error}</p>}
-    <button type="button" disabled={busy} onClick={signOut} className="text-stone-500 underline underline-offset-4 disabled:opacity-50">退出登录</button>
-  </div>
+  return <>
+    {(hasGoogle || isOwner) && <div className="account-method">
+      <span className="account-method__icon account-method__icon--google">G</span>
+      <span className="account-method__name">Google</span>
+      {hasGoogle
+        ? <span className="account-method__state"><span className="account-method__dot" />已连接</span>
+        : <button type="button" disabled={busy} onClick={linkGoogle} className="account-method__action">连接账号 ↗</button>}
+    </div>}
+    {linked && hasGoogle && <p role="status" className="account-notice">Google 已连接到当前账号。</p>}
+    {error && <p role="alert" className="account-notice account-notice--error">{error}</p>}
+    <button type="button" disabled={busy} onClick={signOut} className="account-signout"><FiLogOut size={15} />退出登录</button>
+  </>
 }
