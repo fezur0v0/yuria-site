@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
+import { startAuth } from '@/utils/auth/flow'
 
 type Particle = {
   x: number
@@ -25,13 +25,13 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    setParticles(Array.from({ length: 40 }, () => ({
+    const particleFrame = requestAnimationFrame(() => setParticles(Array.from({ length: 40 }, () => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
       size: Math.random() * 2 + 0.5,
       opacity: Math.random() * 0.5 + 0.1,
       speed: Math.random() * 20 + 15,
-    })))
+    }))))
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 8000)
@@ -56,6 +56,7 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
 
     void checkOwner()
     return () => {
+      cancelAnimationFrame(particleFrame)
       cancelled = true
       clearTimeout(timeout)
       controller.abort()
@@ -94,7 +95,7 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
     timerRef.current = setTimeout(() => setPhase('auth'), 300)
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(provider: 'github' | 'google' = 'github') {
     if (submitting || !checked) return
     setSubmitting(true)
     setError('')
@@ -111,18 +112,9 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
     }
 
     try {
-      const supabase = createClient()
-      const { data, error: authError } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-          skipBrowserRedirect: true,
-        },
-      })
-      if (authError || !data.url) throw authError ?? new Error('Missing OAuth URL')
-      window.location.assign(data.url)
+      await startAuth(provider, next)
     } catch {
-      setError('暂时无法连接 GitHub，请稍后再试')
+      setError('暂时无法连接登录服务，请稍后再试')
       setSubmitting(false)
     }
   }
@@ -242,7 +234,7 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
         </>
       )}
 
-      {/* GitHub 验证 */}
+      {/* 身份验证：开场动画和时序保持原样 */}
       {phase === 'auth' && (
         <div style={{
           animation: 'fadeInUp 0.5s ease forwards',
@@ -273,7 +265,7 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
             小 剧 场
           </div>
           <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', marginBottom: '28px' }}>
-            {isOwner ? '身份已确认，欢迎回来' : '私密空间 · 使用 GitHub 验证身份'}
+            {isOwner ? '身份已确认，欢迎回来' : '私密空间 · 验证身份后进入'}
           </div>
 
           {error && (
@@ -284,7 +276,7 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
 
           <button
             type="button"
-            onClick={handleSubmit}
+            onClick={() => handleSubmit('github')}
             disabled={submitting || !checked}
             style={{
               width: '100%',
@@ -303,8 +295,12 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
             onMouseEnter={e => { if (!submitting && checked) e.currentTarget.style.background = '#fff' }}
             onMouseLeave={e => { if (!submitting && checked) e.currentTarget.style.background = 'rgba(255,255,255,0.9)' }}
           >
-            {!checked ? '确认身份中…' : submitting ? (isOwner ? '正在进入…' : '前往 GitHub…') : isOwner ? '进 入' : '使用 GitHub 登录'}
+            {!checked ? '确认身份中…' : submitting ? (isOwner ? '正在进入…' : '正在连接…') : isOwner ? '进 入' : '使用 GitHub 登录'}
           </button>
+          {!isOwner && checked && <button type="button" onClick={() => handleSubmit('google')} disabled={submitting}
+            style={{ width: '100%', marginTop: '12px', background: 'transparent', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', borderRadius: '12px', padding: '14px', fontFamily: '"Noto Serif SC", serif', cursor: submitting ? 'not-allowed' : 'pointer' }}>
+            使用 Google 登录
+          </button>}
         </div>
       )}
     </div>

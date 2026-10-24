@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:auth": "node --experimental-strip-types --test tests/notes-media.test.mjs"
+    "test:auth": "node --experimental-strip-types --test tests/notes-media.test.mjs tests/auth-destination.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1146.0",

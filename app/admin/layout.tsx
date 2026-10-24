@@ -7,6 +7,7 @@ import {
   MdOutlineLibraryMusic,
   MdOutlineCollectionsBookmark,
   MdOutlinePhotoLibrary,
+  MdOutlineAccountCircle,
 } from 'react-icons/md';
 
 const NAV = [
@@ -14,6 +15,7 @@ const NAV = [
   { href: '/admin/music', label: '音乐', icon: MdOutlineLibraryMusic },
   { href: '/admin/portfolio', label: '作品集', icon: MdOutlineCollectionsBookmark },
   { href: '/admin/gallery', label: '图集', icon: MdOutlinePhotoLibrary },
+  { href: '/account', label: '账号', icon: MdOutlineAccountCircle },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
