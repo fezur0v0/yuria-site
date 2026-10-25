@@ -1,9 +1,7 @@
 import type { Metadata,Viewport } from "next";
-import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SiteSplash from "@/components/SiteSplash";
-import MobileDock from "@/components/MobileDock";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +40,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <SiteSplash />
         {children}
-        <Suspense fallback={null}><MobileDock /></Suspense>
       </body>
     </html>
   );

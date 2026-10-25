@@ -10,8 +10,6 @@
 .account-entry--sidebar:hover{background:rgba(255,255,255,.07)}
 .account-entry--header{padding:5px 8px;border-radius:30px;color:white;font-size:12px;letter-spacing:.08em}
 .account-entry--light{color:#283038}
-.account-entry--dock{width:58px;height:58px;display:flex;align-items:center;justify-content:center;flex:none;border:1px solid rgba(255,255,255,.95);border-radius:50%;background:rgba(250,250,249,.92);box-shadow:0 9px 30px rgba(17,23,25,.15),inset 0 1px rgba(255,255,255,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:#252829}
-.account-entry--dock .account-avatar{width:38px;height:38px;box-shadow:none}
 .account-entry--drawer{width:100%;padding:13px 15px;color:#42505a;background:rgba(255,255,255,.36);border:1px solid rgba(255,255,255,.65);border-radius:16px;font-size:14px}
 .account-entry__arrow{margin-left:auto;font-size:18px;font-weight:200;opacity:.65}
 .account-entry-menu{position:absolute;z-index:90;right:0;top:calc(100% + 12px);width:226px;display:flex;flex-direction:column;padding:18px;border:1px solid rgba(255,255,255,.8);border-radius:16px;background:rgba(247,248,246,.94);backdrop-filter:blur(22px);box-shadow:0 18px 52px rgba(5,17,23,.2);color:#1e252a;text-align:left}

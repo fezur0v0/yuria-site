@@ -2,12 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { FiLogIn } from 'react-icons/fi'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
 import './account-entry.css'
 
-type Placement = 'sidebar' | 'header' | 'dock' | 'drawer'
+type Placement = 'sidebar' | 'header' | 'drawer'
 
 function avatarFor(user: User | null) {
   const value = user?.user_metadata?.avatar_url
@@ -60,18 +59,14 @@ export default function AccountEntry({ placement, light = false }: { placement: 
 
   if (!checked) {
     return <span className={`account-entry account-entry--${placement} ${light ? 'account-entry--light' : ''}`} aria-hidden="true">
-      {placement === 'dock' ? <FiLogIn size={23} /> : icon}{placement !== 'dock' && <span className="account-entry__label">账号</span>}
+      {icon}<span className="account-entry__label">账号</span>
     </span>
   }
 
   if (!user) {
     return <Link href="/admin/login?next=%2Faccount" className={`account-entry account-entry--${placement} ${light ? 'account-entry--light' : ''}`} aria-label="登录账号">
-      {placement === 'dock' ? <FiLogIn size={23} aria-hidden="true" /> : icon}{placement !== 'dock' && <span className="account-entry__label">登录</span>}
+      {icon}<span className="account-entry__label">登录</span>
     </Link>
-  }
-
-  if (placement === 'dock') {
-    return <Link href="/account" className="account-entry account-entry--dock" aria-label="我的账号" title="我的账号">{icon}</Link>
   }
 
   if (placement === 'drawer') {
