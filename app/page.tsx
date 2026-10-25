@@ -188,7 +188,6 @@ async function fetchGallery() {
           box-shadow:4px 0 48px rgba(0,0,0,.14);
         }
         .main-area{margin-left:260px;flex:1;background:#fafaf8;min-height:100vh;padding-bottom:80px}
-        .mobile-nav{display:none}
 
         .section-header {
           display: flex;
@@ -251,33 +250,6 @@ overflow: hidden;
         @media(max-width:768px){
           .sidebar{display:none}
           .main-area{margin-left:0}
-          .mobile-nav{
-            display:flex;position:fixed;bottom:0;left:0;right:0;z-index:50;
-            background:rgba(255,255,255,.95);
-            backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-            border-top:0.5px solid #ebebeb;
-            padding:10px 4px;
-            padding-bottom:max(10px,env(safe-area-inset-bottom));
-            justify-content:space-around;align-items:center;
-          }
-          .mobile-nav-item{
-            position:relative;
-            z-index:10000;
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            gap:4px;
-            color:#bbb;
-            text-decoration:none;
-            padding:0 4px;
-            border:none;
-            background:none;
-            cursor:pointer;
-            font-family:'Inter',sans-serif;
-            flex:1;
-            pointer-events:auto;
-          }
-          .mobile-nav-item span{font-size:9px;letter-spacing:.1em;color:#bbb}
           .hero-section{height:260px!important}
           .hero-name-txt{font-size:38px!important}
           .content-wrap{padding:0 20px!important}
@@ -844,28 +816,6 @@ overflow: hidden;
         </main>
       </div>
 
-      <nav className="mobile-nav">
-        {[
-          { href: '/', label: '主页', d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z' },
-          { href: '/portfolio', label: '作品集', d: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
-          { href: '/gallery', label: '图集', d: 'M4 16l4-8 4 8M2 12h12M16 6h.01M16 10a4 4 0 110-8 4 4 0 010 8z' },
-        ].map((item) => (
-          <Link key={item.href} href={item.href} className="mobile-nav-item">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d={item.d} />
-            </svg>
-            <span>{item.label}</span>
-          </Link>
-        ))}
-        <Link href="/notes" className="mobile-nav-item">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.4" strokeLinecap="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0110 0v4" />
-          </svg>
-          <span>小剧场</span>
-        </Link>
-        <AccountEntry placement="mobile" />
-      </nav>
     </>
   )
 }
