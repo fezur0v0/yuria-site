@@ -27,9 +27,9 @@ export default function GlobalMusicPlayer() {
     if (!root) return
     const fit = () => {
       const rect = root.getBoundingClientRect()
-      const right = Math.max(MARGIN, Math.min(window.innerWidth - rect.right, window.innerWidth - rect.width - MARGIN))
+      const right = Math.max(MARGIN, Math.min(document.documentElement.clientWidth - rect.right, document.documentElement.clientWidth - rect.width - MARGIN))
       const bottom = Math.max(MARGIN, Math.min(window.innerHeight - rect.bottom, window.innerHeight - rect.height - MARGIN))
-      if (Math.abs(right - (window.innerWidth - rect.right)) > 1 || Math.abs(bottom - (window.innerHeight - rect.bottom)) > 1) {
+      if (Math.abs(right - (document.documentElement.clientWidth - rect.right)) > 1 || Math.abs(bottom - (window.innerHeight - rect.bottom)) > 1) {
         setPosition({ right, bottom })
       }
       const top = window.innerHeight - bottom - rect.height
@@ -63,7 +63,7 @@ export default function GlobalMusicPlayer() {
     const root = rootRef.current
     if (!root) return
     const next = {
-      right: Math.max(MARGIN, Math.min(right, window.innerWidth - root.offsetWidth - MARGIN)),
+      right: Math.max(MARGIN, Math.min(right, document.documentElement.clientWidth - root.offsetWidth - MARGIN)),
       bottom: Math.max(MARGIN, Math.min(bottom, window.innerHeight - root.offsetHeight - MARGIN)),
     }
     setPosition(next)
@@ -76,7 +76,7 @@ export default function GlobalMusicPlayer() {
     if (event.button !== 0 || !event.isPrimary) return
     const rect = rootRef.current!.getBoundingClientRect()
     suppressClick.current = false
-    dragRef.current = { x: event.clientX, y: event.clientY, right: window.innerWidth - rect.right,
+    dragRef.current = { x: event.clientX, y: event.clientY, right: document.documentElement.clientWidth - rect.right,
       bottom: window.innerHeight - rect.bottom, pointerId: event.pointerId, moved: false }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
@@ -125,7 +125,7 @@ export default function GlobalMusicPlayer() {
         if (!delta) return
         event.preventDefault()
         const rect = rootRef.current!.getBoundingClientRect()
-        move(window.innerWidth - rect.right + delta[0], window.innerHeight - rect.bottom + delta[1])
+        move(document.documentElement.clientWidth - rect.right + delta[0], window.innerHeight - rect.bottom + delta[1])
       }}
       onClick={event => {
         if (suppressClick.current && event.detail !== 0) { suppressClick.current = false; return }
