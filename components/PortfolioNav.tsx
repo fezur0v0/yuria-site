@@ -75,9 +75,9 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
 
           <div className="hidden sm:flex items-center gap-6">
            {showSections && <div className="flex items-center gap-5">
-             <Link href="/portfolio" className={`text-sm ${linkColor}`}>作品集</Link>
-             <Link href="/gallery" className={`text-sm ${linkColor}`}>图集</Link>
-             <Link href="/notes" className={`text-sm ${linkColor}`}>小剧场</Link>
+             <Link href="/portfolio" className={`text-sm ${linkColor}`}>随笔</Link>
+             <Link href="/gallery" className={`text-sm ${linkColor}`}>图册</Link>
+             <Link href="/notes" className={`text-sm ${linkColor}`}>AIRP</Link>
            </div>}
            <PortfolioSearch theme={theme} />
                    <Link href="/guestbook" className={`flex items-center gap-1.5 text-sm ${linkColor} transition-colors`}>
@@ -148,9 +148,9 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
           <div className="flex flex-col gap-3.5">
             <AccountEntry placement="drawer" />
             {[
-              { href: '/portfolio', label: '作品集' },
-              { href: '/gallery', label: '图集' },
-              { href: '/notes', label: '小剧场' },
+              { href: '/portfolio', label: showSections ? '随笔' : '作品集' },
+              { href: '/gallery', label: showSections ? '图册' : '图集' },
+              { href: '/notes', label: showSections ? 'AIRP' : '小剧场' },
             ].map(item => <Link key={item.href} href={item.href} onClick={() => setDrawerOpen(false)}
               className="flex items-center justify-center py-3.5 rounded-2xl bg-white/30 border border-white/60 text-slate-700 text-sm backdrop-blur-xl">
               {item.label}
