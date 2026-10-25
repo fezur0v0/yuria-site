@@ -17,6 +17,8 @@ type MusicContextValue = {
   currentIndex: number
   playing: boolean
   error: string
+  loopOne: boolean
+  toggleLoop: () => void
   toggle: () => void
   next: () => void
   previous: () => void
@@ -36,6 +38,8 @@ export default function MusicProvider({ children }: { children: React.ReactNode 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState('')
+  const [loopOne, setLoopOne] = useState(false)
+  const toggleLoop = useCallback(() => setLoopOne(value => !value), [])
   const audioRef = useRef<HTMLAudioElement>(null)
   const startAfterChange = useRef(false)
   const current = tracks[currentIndex] ?? null
@@ -91,12 +95,12 @@ export default function MusicProvider({ children }: { children: React.ReactNode 
     else audio.pause()
   }, [current])
 
-  const value = useMemo(() => ({ tracks, current, currentIndex, playing, error, toggle, next, previous, select }),
-    [tracks, current, currentIndex, playing, error, toggle, next, previous, select])
+  const value = useMemo(() => ({ tracks, current, currentIndex, playing, error, loopOne, toggleLoop, toggle, next, previous, select }),
+    [tracks, current, currentIndex, playing, error, loopOne, toggleLoop, toggle, next, previous, select])
 
   return <MusicContext.Provider value={value}>
     {children}
-    <audio ref={audioRef} src={currentSrc} preload="metadata"
+    <audio ref={audioRef} src={currentSrc} preload="metadata" loop={loopOne}
       onPlay={() => { setPlaying(true); setError('') }}
       onPause={() => setPlaying(false)}
       onEnded={next}
