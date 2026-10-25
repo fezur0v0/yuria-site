@@ -24,35 +24,29 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const avatar = typeof avatarValue === 'string' && avatarValue.startsWith('https://') ? avatarValue : null
 
   return <main className="account-scene">
-    <div className="account-scene__grain" aria-hidden="true" />
     <div className="account-shell">
       <nav className="account-topbar" aria-label="页面导航">
         <Link href="/" className="account-wordmark">Yuria</Link>
-        <Link href="/" className="account-return">返回网站 <span aria-hidden="true">↗</span></Link>
       </nav>
 
-      <div className="account-heading">
-        <span className="account-eyebrow">PERSONAL ARCHIVE · 01</span>
-        <h1>账号与安全</h1>
-        <p>在这里整理属于你的登录方式。</p>
-      </div>
-
-      <article className="account-paper">
-        <header className="account-profile">
-          <div className="account-profile__avatar"><AccountAvatar name={name} avatar={avatar} size="large" /></div>
-          <div className="account-profile__text">
-            <span className="account-caption">PROFILE / 个人资料</span>
-            <h2>{name}</h2>
-            <span className="account-profile__email">{user.email ?? '暂无邮箱'}</span>
+      <article className="account-poster">
+        <section className="account-cover" aria-label="个人资料">
+          <div className="account-cover__index"><span>YURIA / MEMBERS</span><span>NO. 01</span></div>
+          <div className="account-cover__portrait">
+            <AccountAvatar name={name} avatar={avatar} size="large" />
           </div>
-          {isOwner && <span className="account-profile__owner">站长</span>}
-        </header>
+          <div className="account-cover__identity">
+            <span className="account-cover__label">PERSONAL PROFILE</span>
+            <div className="account-cover__name"><h2>{name}</h2>{isOwner && <span className="account-cover__owner">站长</span>}</div>
+            <p>{user.email ?? '暂无邮箱'}</p>
+          </div>
+        </section>
 
-        <section className="account-section" aria-labelledby="account-methods">
-          <div className="account-section__intro">
-            <span className="account-caption">02 / SIGN-IN METHODS</span>
-            <h2 id="account-methods">登录方式</h2>
-            <p>已经连接的账号，都可以用来登录这里。</p>
+        <section className="account-detail" aria-labelledby="account-methods">
+          <div className="account-detail__heading">
+            <span className="account-detail__index">01 — ACCOUNT ACCESS</span>
+            <h1 id="account-methods">登录方式<span aria-hidden="true">.</span></h1>
+            <p>使用已连接的账号登录 Yuria。</p>
           </div>
           <div className="account-methods">
             {hasGithub && <div className="account-method">
@@ -62,14 +56,9 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </div>}
             <AccountControls isOwner={isOwner} hasGoogle={hasGoogle} userId={user.id} linked={(await searchParams).linked === 'google'} />
           </div>
-        </section>
-
-        <footer className="account-footer">
-          <span className="account-caption">YOU ARE HERE · YURIA</span>
           {isOwner && <Link href="/admin" className="account-admin-link">进入管理面板 <FiArrowUpRight size={16} /></Link>}
-        </footer>
+        </section>
       </article>
-      <p className="account-footnote">Private space, quietly kept.</p>
     </div>
   </main>
 }
