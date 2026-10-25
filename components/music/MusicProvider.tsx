@@ -17,6 +17,9 @@ type MusicContextValue = {
   currentIndex: number
   playing: boolean
   error: string
+  elapsed: number
+  duration: number
+  seek: (seconds: number) => void
   loopOne: boolean
   toggleLoop: () => void
   toggle: () => void
@@ -38,6 +41,8 @@ export default function MusicProvider({ children }: { children: React.ReactNode 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState('')
+  const [elapsed, setElapsed] = useState(0)
+  const [duration, setDuration] = useState(0)
   const [loopOne, setLoopOne] = useState(false)
   const toggleLoop = useCallback(() => setLoopOne(value => !value), [])
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -95,14 +100,25 @@ export default function MusicProvider({ children }: { children: React.ReactNode 
     else audio.pause()
   }, [current])
 
-  const value = useMemo(() => ({ tracks, current, currentIndex, playing, error, loopOne, toggleLoop, toggle, next, previous, select }),
-    [tracks, current, currentIndex, playing, error, loopOne, toggleLoop, toggle, next, previous, select])
+  const seek = useCallback((seconds: number) => {
+    const audio = audioRef.current
+    if (!audio || !Number.isFinite(audio.duration) || !Number.isFinite(seconds)) return
+    audio.currentTime = Math.max(0, Math.min(seconds, audio.duration))
+    setElapsed(audio.currentTime)
+  }, [])
+
+  const value = useMemo(() => ({ tracks, current, currentIndex, playing, error, elapsed, duration, seek, loopOne, toggleLoop, toggle, next, previous, select }),
+    [tracks, current, currentIndex, playing, error, elapsed, duration, seek, loopOne, toggleLoop, toggle, next, previous, select])
 
   return <MusicContext.Provider value={value}>
     {children}
     <audio ref={audioRef} src={currentSrc} preload="metadata" loop={loopOne}
       onPlay={() => { setPlaying(true); setError('') }}
       onPause={() => setPlaying(false)}
+      onTimeUpdate={event => setElapsed(event.currentTarget.currentTime)}
+      onLoadedMetadata={event => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}
+      onDurationChange={event => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}
+      onEmptied={() => { setElapsed(0); setDuration(0) }}
       onEnded={next}
       onError={() => { if (current) { setPlaying(false); setError('这首歌暂时无法播放') } }} />
   </MusicContext.Provider>

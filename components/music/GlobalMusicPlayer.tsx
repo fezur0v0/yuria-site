@@ -1,16 +1,21 @@
 'use client'
 
-import { useEffect, useRef, useState, type PointerEvent } from 'react'
-import { FiList, FiMusic, FiPause, FiPlay, FiRepeat, FiSkipBack, FiSkipForward, FiX } from 'react-icons/fi'
+import { useEffect, useRef, useState, type PointerEvent, type CSSProperties } from 'react'
+import { FiHeadphones, FiMusic, FiRepeat, FiX } from 'react-icons/fi'
+import { IoPlayBackSharp, IoPlayForwardSharp, IoPauseSharp, IoPlaySharp } from 'react-icons/io5'
 import { useMusic } from './MusicProvider'
 import './music-player.css'
 
 type Position = { right: number; bottom: number }
 type Drag = Position & { x: number; y: number; pointerId: number; moved: boolean }
 const MARGIN = 12
+function formatTime(seconds: number) {
+  const total = Math.max(0, Math.floor(seconds))
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
+}
 
 export default function GlobalMusicPlayer() {
-  const { tracks, current, currentIndex, playing, error, loopOne, toggleLoop, toggle, next, previous, select } = useMusic()
+  const { tracks, current, currentIndex, playing, error, elapsed, duration, seek, loopOne, toggleLoop, toggle, next, previous, select } = useMusic()
   const [expanded, setExpanded] = useState(false)
   const [playlist, setPlaylist] = useState(false)
   const [position, setPosition] = useState<Position | null>(null)
@@ -18,6 +23,7 @@ export default function GlobalMusicPlayer() {
   const [listLayout, setListLayout] = useState({ below: false, height: 300 })
   const rootRef = useRef<HTMLElement>(null)
   const discRef = useRef<HTMLButtonElement>(null)
+  const listButtonRef = useRef<HTMLButtonElement>(null)
   const dragRef = useRef<Drag | null>(null)
   const suppressClick = useRef(false)
   const hasCurrent = current !== null
@@ -51,7 +57,7 @@ export default function GlobalMusicPlayer() {
     }
     const escape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
-      if (playlist) setPlaylist(false)
+      if (playlist) { setPlaylist(false); listButtonRef.current?.focus() }
       else { setExpanded(false); discRef.current?.focus() }
     }
     document.addEventListener('pointerdown', outside)
@@ -102,21 +108,35 @@ export default function GlobalMusicPlayer() {
 
   if (!current) return null
 
-  return <aside ref={rootRef} className={`music-float${expanded ? ' music-float--open' : ''}${dragging ? ' music-float--dragging' : ''}`}
+  return <aside ref={rootRef} className={`music-float${expanded ? ' music-float--open' : ''}${dragging ? ' music-float--dragging' : ''}${playing ? ' music-float--playing' : ''}`}
     style={position ? { right: position.right, bottom: position.bottom } : undefined} aria-label="音乐播放器">
-    <span id="music-drag-help" className="music-float__sr">拖动唱片可移动播放器，也可用方向键移动。点击展开或收起。</span>
-    {expanded && <div className="music-float__panel" id="music-controls">
-      <div className="music-float__info"><span>正在播放</span><strong title={current.title}>{current.title}</strong><small>{current.artist || 'Yuria Music'}</small></div>
-      <button className="music-float__close" type="button" aria-label="收起播放器" onClick={() => { setExpanded(false); setPlaylist(false); discRef.current?.focus() }}><FiX size={15} /></button>
-      <div className="music-float__controls">
-        <button type="button" className={loopOne ? 'is-active' : ''} aria-label={loopOne ? '切换为列表循环' : '切换为单曲循环'} aria-pressed={loopOne} onClick={toggleLoop}><FiRepeat size={17} />{loopOne && <sup>1</sup>}</button>
-        <button type="button" aria-label="上一首" onClick={previous}><FiSkipBack size={20} /></button>
-        <button type="button" className="music-float__play" aria-label={playing ? '暂停' : '播放'} onClick={toggle}>{playing ? <FiPause size={22} /> : <FiPlay size={22} />}</button>
-        <button type="button" aria-label="下一首" onClick={next}><FiSkipForward size={20} /></button>
-        <button type="button" className={playlist ? 'is-active' : ''} aria-label={playlist ? '收起播放列表' : '展开播放列表'} aria-expanded={playlist} aria-controls={playlist ? 'music-playlist' : undefined} onClick={() => setPlaylist(value => !value)}><FiList size={20} /></button>
+    <span id="music-drag-help" className="music-float__sr">拖动封面可移动播放器，也可用方向键移动。点击展开或收起。</span>
+    <div className="music-float__panel" aria-hidden={!expanded} inert={!expanded}>
+      <div className="music-float__body" id="music-controls">
+        <div className="music-float__header">
+          <span aria-hidden="true" />
+          <div className="music-float__info"><strong title={current.title}>{current.title}</strong><small>{current.artist || 'Yuria Music'}</small></div>
+          <span className="music-float__wave" aria-hidden="true"><i /><i /><i /><i /><i /></span>
+        </div>
+        <button className="music-float__close" type="button" aria-label="收起播放器" onClick={() => { setExpanded(false); setPlaylist(false); discRef.current?.focus() }}><FiX size={14} /></button>
+        <div className="music-float__timeline">
+          <span>{formatTime(elapsed)}</span>
+          <input type="range" min={0} max={duration || 0} step={0.1} value={Math.min(elapsed, duration || 0)} disabled={!duration}
+            aria-label="播放进度" aria-valuetext={`${formatTime(elapsed)}，总时长 ${formatTime(duration)}`}
+            style={{ '--progress': `${duration ? Math.min(100, elapsed / duration * 100) : 0}%` } as CSSProperties}
+            onChange={event => seek(Number(event.target.value))} />
+          <span>{duration ? `−${formatTime(duration - elapsed)}` : '--:--'}</span>
+        </div>
+        <div className="music-float__controls">
+          <button type="button" className={loopOne ? 'is-active' : ''} aria-label={loopOne ? '切换为列表循环' : '切换为单曲循环'} aria-pressed={loopOne} onClick={toggleLoop}><FiRepeat size={20} />{loopOne && <sup>1</sup>}</button>
+          <button type="button" aria-label="上一首" onClick={previous}><IoPlayBackSharp size={29} /></button>
+          <button type="button" className="music-float__play" aria-label={playing ? '暂停' : '播放'} onClick={toggle}>{playing ? <IoPauseSharp size={35} /> : <IoPlaySharp size={35} />}</button>
+          <button type="button" aria-label="下一首" onClick={next}><IoPlayForwardSharp size={29} /></button>
+          <button ref={listButtonRef} type="button" className={playlist ? 'is-active' : ''} aria-label={playlist ? '收起播放列表' : '展开播放列表'} aria-expanded={playlist} aria-controls="music-playlist" onClick={() => setPlaylist(value => !value)}><FiHeadphones size={22} /></button>
+        </div>
       </div>
-    </div>}
-    <button ref={discRef} type="button" className={`music-float__disc${playing ? ' is-playing' : ''}`} aria-label={expanded ? '收起音乐播放器' : `展开音乐播放器：${current.title}`}
+    </div>
+    <button ref={discRef} type="button" className="music-float__disc" aria-label={expanded ? '收起音乐播放器' : `展开音乐播放器：${current.title}`}
       aria-expanded={expanded} aria-controls={expanded ? 'music-controls' : undefined} aria-describedby="music-drag-help"
       onPointerDown={startDrag} onPointerMove={onDrag} onPointerUp={endDrag} onPointerCancel={endDrag}
       onLostPointerCapture={() => { dragRef.current = null; setDragging(false) }}
@@ -131,10 +151,9 @@ export default function GlobalMusicPlayer() {
         if (suppressClick.current && event.detail !== 0) { suppressClick.current = false; return }
         setExpanded(value => !value); setPlaylist(false)
       }}>
-      <span className="music-float__vinyl">{current.cover_url ? <img src={current.cover_url} alt="" draggable={false} /> : <FiMusic size={28} aria-hidden="true" />}<span className="music-float__spindle" /></span>
-      <span className="music-float__badge" aria-hidden="true">{playing ? <span className="music-float__equalizer"><i /><i /><i /></span> : <FiMusic size={12} />}</span>
+      {current.cover_url ? <img src={current.cover_url} alt="" draggable={false} /> : <FiMusic size={26} aria-hidden="true" />}
     </button>
-    {expanded && playlist && <div className={`music-float__list${listLayout.below ? ' music-float__list--below' : ''}`} id="music-playlist" style={{ maxHeight: listLayout.height }}>
+    <div className={`music-float__list${listLayout.below ? ' music-float__list--below' : ''}${expanded && playlist ? ' is-visible' : ''}`} id="music-playlist" style={{ maxHeight: listLayout.height }} aria-hidden={!expanded || !playlist} inert={!expanded || !playlist}>
       <div className="music-float__list-heading"><span>待播清单</span><small>{tracks.length} 首歌曲</small></div>
       {tracks.map((track, index) => <button type="button" key={track.id} onClick={() => select(index)} aria-current={index === currentIndex ? 'true' : undefined}
         className={`music-float__track${index === currentIndex ? ' is-current' : ''}`}>
@@ -142,7 +161,7 @@ export default function GlobalMusicPlayer() {
         <span className="music-float__track-name"><strong>{track.title}</strong><small>{track.artist}</small></span>
         {index === currentIndex && <FiMusic size={15} aria-hidden="true" />}
       </button>)}
-    </div>}
+    </div>
     {error && <p className="music-float__error" role="status">{error}</p>}
   </aside>
 }
