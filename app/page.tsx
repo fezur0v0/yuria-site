@@ -121,6 +121,6 @@ export default function Home() {
         <span className="home-theater__watermark" aria-hidden="true">STORY</span>
       </section>
     </main>
-    <footer className="home-footer"><span>Yuria</span><span>IMAGES · WORDS · MUSIC</span><a href="#home-title">回到顶部 ↑</a></footer>
+    <footer className="home-footer"><span>Yuria</span><span>IMAGES · WORDS · MUSIC</span><a href="#home-title" aria-label="回到顶部">back</a></footer>
   </div>
 }

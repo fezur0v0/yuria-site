@@ -83,7 +83,6 @@
   width: 178px;
   height: 178px;
   border-radius: 50%;
-  filter: grayscale(1);
   object-fit: cover;
 }
 .account-cover__identity { border-top: 1px solid rgba(255, 255, 255, .27); padding-top: 22px; min-width: 0; }
@@ -140,7 +139,9 @@
 .account-notice { margin: 14px 0 0; font-size: 12px; color: #325e48; }
 .account-notice--error { color: #a03333; }
 .account-signout {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
+  margin-left: auto;
   align-items: center;
   gap: 8px;
   margin-top: 21px;

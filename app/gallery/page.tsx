@@ -32,7 +32,7 @@ export default function GalleryPage() {
   }, [attempt]);
   return (
     <div className={styles.page}>
-      <PortfolioNav homeHref="/" theme="light" />
+      <PortfolioNav homeHref="/" theme="light" showSections />
       <main className={styles.main}>
         <GalleryHero />
         {result === null ? (

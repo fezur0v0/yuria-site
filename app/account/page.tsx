@@ -31,7 +31,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
       <article className="account-poster">
         <section className="account-cover" aria-label="个人资料">
-          <div className="account-cover__index"><span>YURIA / MEMBERS</span><span>NO. 01</span></div>
+          <div className="account-cover__index"><span>YURIA / MEMBERS</span></div>
           <div className="account-cover__portrait">
             <AccountAvatar name={name} avatar={avatar} size="large" />
           </div>
@@ -44,7 +44,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
         <section className="account-detail" aria-labelledby="account-methods">
           <div className="account-detail__heading">
-            <span className="account-detail__index">01 — ACCOUNT ACCESS</span>
+            <span className="account-detail__index">ACCOUNT ACCESS</span>
             <h1 id="account-methods">登录方式<span aria-hidden="true">.</span></h1>
             <p>使用已连接的账号登录 Yuria。</p>
           </div>

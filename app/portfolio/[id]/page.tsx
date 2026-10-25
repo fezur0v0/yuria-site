@@ -84,7 +84,7 @@ return (
       style={{ backgroundColor: `${mainColor}33` }}
     />
 
-  <PortfolioNav homeHref="/portfolio" />
+  <PortfolioNav homeHref="/portfolio" showSections />
   <FloatingWidget tocItems={toc} />
 
   {/* 封面横幅 */}

@@ -56,7 +56,7 @@ export default function PortfolioPage() {
   return (
     <div className="min-h-screen">
       <PortfolioBackground />
-      <PortfolioNav />
+      <PortfolioNav showSections />
       <PortfolioHero />
       <FloatingWidget />
 
