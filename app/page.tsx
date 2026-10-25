@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import AccountEntry from '@/components/account/AccountEntry'
+import PortfolioNav from '@/components/PortfolioNav'
   const supabase = createClient()
 
 // 从正文 HTML 生成摘要：先去掉 h2/h3 整段，再去标签取纯文本
@@ -272,6 +273,7 @@ overflow: hidden;
 
       {track && <audio ref={audioRef} onEnded={() => setTrackIdx((i) => (i + 1) % tracks.length)} />}
 
+      <PortfolioNav sidebarOffset />
       <div className="layout" style={{ position: 'relative', zIndex: 1 }}>
         <aside className="sidebar">
           <div

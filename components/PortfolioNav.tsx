@@ -13,7 +13,7 @@ interface Profile {
   bio: string | null;
 }
 
-export default function PortfolioNav({ homeHref = '/', theme = 'default' }: { homeHref?: string; theme?: 'default' | 'light' }) {
+export default function PortfolioNav({ homeHref = '/', theme = 'default', sidebarOffset = false }: { homeHref?: string; theme?: 'default' | 'light'; sidebarOffset?: boolean }) {
   const [visible, setVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -63,17 +63,17 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default' }: { ho
       `}} />
 
      <nav
-  className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${
+  className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${sidebarOffset ? 'min-[769px]:left-[260px] min-[769px]:w-[calc(100%-260px)]' : ''} ${
     visible ? 'translate-y-0' : '-translate-y-full'
   }`}
 >
   <div className={`transition-colors duration-300 ${scrolled ? scrolledBg : 'bg-transparent'}`}>
     <div className="px-8 h-16 flex items-center justify-between">
-                   <Link href={homeHref} className={`${logoColor} font-serif text-lg tracking-wide`}>
+                   <Link href={homeHref} className={`${logoColor} font-serif text-lg tracking-wide ${sidebarOffset ? 'min-[769px]:hidden' : ''}`}>
             yuria
           </Link>
 
-          <div className="hidden sm:flex items-center gap-6">
+          <div className={`hidden sm:flex items-center gap-6 ${sidebarOffset ? 'min-[769px]:ml-auto' : ''}`}>
            <PortfolioSearch theme={theme} />
                    <Link href="/guestbook" className={`flex items-center gap-1.5 text-sm ${linkColor} transition-colors`}>
               <FiMessageSquare size={15} /> 留言板
