@@ -26,13 +26,13 @@ function highlight(text: string, query: string) {
   return (
     <>
       {text.slice(0, idx)}
-      <span className="text-[#4A90E2] font-semibold">{text.slice(idx, idx + query.length)}</span>
+      <span className="text-black font-semibold">{text.slice(idx, idx + query.length)}</span>
       {text.slice(idx + query.length)}
     </>
   );
 }
 
-export default function PortfolioSearch({ theme = 'default' }: { theme?: 'default' | 'light' }) {
+export default function PortfolioSearch({ theme = 'default', textOnly = false }: { theme?: 'default' | 'light'; textOnly?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<Item[]>([]);
@@ -93,7 +93,7 @@ export default function PortfolioSearch({ theme = 'default' }: { theme?: 'defaul
               className={`flex items-center rounded-full border cursor-pointer ${
           expanded
             ? `w-56 px-3.5 py-1.5 ${pillBg} backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] duration-300`
-            : `w-9 h-9 p-0 ${pillBg} justify-center duration-500`
+            : `${textOnly ? 'w-8' : 'w-9'} h-9 p-0 ${pillBg} justify-center duration-500`
         }`}
         style={{
           transitionProperty: 'width, padding, background-color, border-color, box-shadow',
@@ -103,12 +103,10 @@ export default function PortfolioSearch({ theme = 'default' }: { theme?: 'defaul
         }}
       >
         {/* 图标 */}
-           <FiSearch
-          size={16}
-          className={`shrink-0 ${iconColor} transition-all duration-300 ${
-            expanded ? 'mr-2 opacity-90 scale-100' : 'opacity-100 scale-95'
-          }`}
-        />
+        <button type="button" aria-label="搜索随笔" aria-expanded={expanded} onClick={handleOpen}
+          className={`shrink-0 flex items-center justify-center text-sm ${iconColor} ${expanded ? 'mr-2' : ''}`}>
+          {textOnly ? '搜索' : <FiSearch size={16} aria-hidden="true" />}
+        </button>
 
         {/* 输入框：收起时文字率先淡出（200ms），避免文字被挤压变形 */}
         <div
@@ -123,6 +121,8 @@ export default function PortfolioSearch({ theme = 'default' }: { theme?: 'defaul
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索"
+            aria-label="搜索内容"
+            tabIndex={expanded ? 0 : -1}
                        className={`w-full bg-transparent text-sm outline-none border-none p-0 focus:ring-0 ${inputTextColor}`}
           />
         </div>

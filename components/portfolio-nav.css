@@ -1,0 +1,14 @@
+.site-drawer-layer{position:fixed;inset:0;z-index:60;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease,visibility .3s}
+.site-drawer-layer.is-open{opacity:1;visibility:visible;pointer-events:auto}
+.site-drawer-backdrop{position:absolute;inset:0;background:#0003;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.site-drawer{position:absolute;top:0;right:0;width:min(304px,calc(100vw - 32px));height:100%;overflow-y:auto;overscroll-behavior:contain;padding:52px 24px calc(32px + env(safe-area-inset-bottom));border-left:1px solid #ffffff70;background:linear-gradient(145deg,#ffffff55,#ffffff1f),#ebebeb66;backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);box-shadow:-16px 0 60px #0002;color:#222;transform:translateX(100%);transition:transform .4s cubic-bezier(.22,1,.36,1)}
+.site-drawer-layer.is-open .site-drawer{transform:none}
+.site-drawer-close{position:absolute;top:14px;right:24px;padding:8px 0;border:0;background:none;color:#333;font-size:11px;letter-spacing:.12em;cursor:pointer}
+.site-drawer-profile{text-align:center;margin:18px 0 30px}
+.site-drawer-profile h3{margin:20px 0 8px;font-size:25px;color:#242424}
+.site-drawer-profile p{margin:0 auto;max-width:220px;font-size:13px;line-height:1.8;letter-spacing:.06em;color:#444}
+.site-drawer-links{display:flex;flex-direction:column;gap:13px}
+.site-drawer-links a{display:flex;align-items:center;justify-content:center;min-height:50px;padding:12px 18px;border:1px solid #ffffff80;border-radius:17px;background:linear-gradient(130deg,#ffffff2e,#ffffff0d);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:inset 0 1px 0 #ffffff40,0 4px 14px #00000004;color:#222;font-size:13px;letter-spacing:.08em;text-decoration:none;transition:background .2s,transform .2s}
+.site-drawer-links a:hover{background:#ffffff45;transform:translateY(-1px)}
+.site-drawer a:focus-visible,.site-drawer button:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+@media(prefers-reduced-motion:reduce){.site-drawer-layer,.site-drawer,.site-drawer-links a{transition:none}}

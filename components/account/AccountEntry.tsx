@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { FiUser } from 'react-icons/fi'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
 import './account-entry.css'
@@ -14,16 +15,14 @@ function avatarFor(user: User | null) {
 }
 
 export function AccountAvatar({ name, avatar, size = 'small' }: { name: string; avatar: string | null; size?: 'small' | 'large' }) {
-  return <span className={`account-avatar account-avatar--${size}`} aria-hidden="true">
-    {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : name.slice(0, 1).toUpperCase()}
+  return <span className={`account-avatar account-avatar--${size}`} aria-hidden="true" title={name}>
+    {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <FiUser size={size === 'large' ? 32 : 17} />}
   </span>
 }
 
-export default function AccountEntry({ placement, light = false }: { placement: Placement; light?: boolean }) {
+export default function AccountEntry({ placement, light = false, onNavigate }: { placement: Placement; light?: boolean; onNavigate?: () => void }) {
   const [user, setUser] = useState<User | null>(null)
   const [checked, setChecked] = useState(false)
-  const [open, setOpen] = useState(false)
-  const root = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -37,54 +36,17 @@ export default function AccountEntry({ placement, light = false }: { placement: 
     return () => { active = false; listener.subscription.unsubscribe() }
   }, [])
 
-  useEffect(() => {
-    if (!open) return
-    function closeOnOutside(event: PointerEvent) {
-      if (!root.current?.contains(event.target as Node)) setOpen(false)
-    }
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('pointerdown', closeOnOutside)
-    document.addEventListener('keydown', closeOnEscape)
-    return () => {
-      document.removeEventListener('pointerdown', closeOnOutside)
-      document.removeEventListener('keydown', closeOnEscape)
-    }
-  }, [open])
-
   const name = typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : user?.email?.split('@')[0] ?? '访客'
   const avatar = avatarFor(user)
-  const icon = <AccountAvatar name={name} avatar={avatar} />
+  const className = `account-entry account-entry--${placement}${light ? ' account-entry--light' : ''}`
+  const content = placement === 'drawer'
+    ? <span className="account-polaroid"><span className="account-polaroid__photo"><AccountAvatar name={name} avatar={avatar} size="large" /></span><span className="account-polaroid__caption">{user ? name : '访客登录'}</span></span>
+    : <AccountAvatar name={name} avatar={avatar} />
 
-  if (!checked) {
-    return <span className={`account-entry account-entry--${placement} ${light ? 'account-entry--light' : ''}`} aria-hidden="true">
-      {icon}<span className="account-entry__label">账号</span>
-    </span>
-  }
+  if (!checked) return <span className={className} aria-hidden="true">{content}</span>
 
-  if (!user) {
-    return <Link href="/admin/login?next=%2Faccount" className={`account-entry account-entry--${placement} ${light ? 'account-entry--light' : ''}`} aria-label="登录账号">
-      {icon}<span className="account-entry__label">登录</span>
-    </Link>
-  }
-
-  if (placement === 'drawer') {
-    return <Link href="/account" className="account-entry account-entry--drawer">
-      {icon}<span>我的账号</span><span className="account-entry__arrow">›</span>
-    </Link>
-  }
-
-  return <div className={`account-entry-wrap account-entry-wrap--${placement}`} ref={root}>
-    <button type="button" className={`account-entry account-entry--${placement} ${light ? 'account-entry--light' : ''}`}
-      aria-label="打开账号菜单" aria-expanded={open} onClick={() => setOpen(value => !value)}>
-      {icon}<span className="account-entry__label">{placement === 'sidebar' ? name : '账号'}</span>
-      {placement === 'sidebar' && <span className="account-entry__arrow">›</span>}
-    </button>
-    {open && <div className="account-entry-menu">
-      <span className="account-entry-menu__eyebrow">MY ACCOUNT</span>
-      <span className="account-entry-menu__name">{name}</span>
-      <Link href="/account" onClick={() => setOpen(false)}>账号与安全 <span>↗</span></Link>
-    </div>}
-  </div>
+  return <Link href={user ? '/account' : '/admin/login?next=%2Faccount'} className={className}
+    aria-label={user ? '账号管理' : '访客登录'} title={user ? '账号管理' : '访客登录'} onClick={onNavigate}>
+    {content}
+  </Link>
 }
