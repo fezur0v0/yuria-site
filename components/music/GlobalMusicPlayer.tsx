@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type PointerEvent, type CSSProperties } from 'react'
-import { FiHeadphones, FiMusic, FiRepeat, FiX } from 'react-icons/fi'
+import { FiHeadphones, FiMusic, FiRepeat } from 'react-icons/fi'
 import { IoPlayBackSharp, IoPlayForwardSharp, IoPauseSharp, IoPlaySharp } from 'react-icons/io5'
 import { useMusic } from './MusicProvider'
 import './music-player.css'
@@ -118,7 +118,6 @@ export default function GlobalMusicPlayer() {
           <div className="music-float__info"><strong title={current.title}>{current.title}</strong><small>{current.artist || 'Yuria Music'}</small></div>
           <span className="music-float__wave" aria-hidden="true"><i /><i /><i /><i /><i /></span>
         </div>
-        <button className="music-float__close" type="button" aria-label="收起播放器" onClick={() => { setExpanded(false); setPlaylist(false); discRef.current?.focus() }}><FiX size={14} /></button>
         <div className="music-float__timeline">
           <span>{formatTime(elapsed)}</span>
           <input type="range" min={0} max={duration || 0} step={0.1} value={Math.min(elapsed, duration || 0)} disabled={!duration}
