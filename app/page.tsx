@@ -65,9 +65,9 @@ export default function Home() {
 
         <div className="home-hero__caption">
           <span className="home-hero__number">01 / AN OPEN JOURNAL</span>
-          <p>{config.signature}</p>
+          <p>我的小小世界。</p>
           <span className="home-hero__caption-line" />
-          <span>作品、影像与未说完的故事。</span>
+          <span>{config.signature} · 作品、影像与未说完的故事。</span>
         </div>
 
         {heroArt && <Link href={featured ? `/portfolio/${featured.id}` : albums[0] ? `/gallery/${albums[0].id}` : '/gallery'} className="home-hero__print" aria-label={featured ? `查看作品：${featured.title}` : '查看图集'}>
