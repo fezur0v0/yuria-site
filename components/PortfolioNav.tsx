@@ -79,13 +79,13 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
         <div className="px-6 sm:px-8 h-16 flex items-center justify-between gap-6">
           <Link href={homeHref} className={`${isLight ? 'text-[#1a1a1a]' : 'text-white'} font-serif text-lg tracking-wide`}>yuria</Link>
           <div className="hidden lg:flex items-center gap-6">
-            <PortfolioSearch theme={theme} textOnly />
+            <PortfolioSearch theme={theme} />
             {showSections && sections.map(item => <Link key={item.href} href={item.href} className={`text-sm ${linkColor}`}>{item.label}</Link>)}
             {extraLinks.map(item => <Link key={item.href} href={item.href} className={`text-sm ${linkColor}`}>{item.label}</Link>)}
             <AccountEntry placement="header" light={isLight} />
           </div>
           <div className={`flex lg:hidden items-center gap-6 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>
-            <PortfolioSearch theme={theme} textOnly />
+            <PortfolioSearch theme={theme} />
             <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls="site-drawer" className="text-sm py-2">菜单</button>
           </div>
         </div>

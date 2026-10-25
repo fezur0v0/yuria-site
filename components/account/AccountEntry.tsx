@@ -15,7 +15,7 @@ function avatarFor(user: User | null) {
 }
 
 export function AccountAvatar({ name, avatar, size = 'small' }: { name: string; avatar: string | null; size?: 'small' | 'large' }) {
-  return <span className={`account-avatar account-avatar--${size}`} aria-hidden="true" title={name}>
+  return <span className={`account-avatar account-avatar--${size}${avatar ? '' : ' account-avatar--placeholder'}`} aria-hidden="true" title={name}>
     {avatar ? <img src={avatar} alt="" referrerPolicy="no-referrer" /> : <FiUser size={size === 'large' ? 32 : 17} />}
   </span>
 }

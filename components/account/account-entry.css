@@ -1,4 +1,4 @@
-.account-avatar{display:inline-flex;align-items:center;justify-content:center;overflow:hidden;flex:none;border:1px solid #ffffff70;border-radius:50%;background:linear-gradient(140deg,#383838,#111);color:#fff;font-family:Georgia,serif;box-shadow:0 3px 14px #0002}
+.account-avatar{display:inline-flex;align-items:center;justify-content:center;overflow:hidden;flex:none;border:1px solid #ffffff70;border-radius:50%;background:#181818;color:#fff;font-family:Georgia,serif;box-shadow:0 3px 14px #0002}
 .account-avatar img{width:100%;height:100%;object-fit:cover}
 .account-avatar--small{width:34px;height:34px}
 .account-avatar--large{width:78px;height:78px}
@@ -6,6 +6,7 @@
 .account-entry:hover{opacity:.85}
 .account-entry:focus-visible{outline:2px solid currentColor;outline-offset:5px;border-radius:4px}
 .account-entry--header{padding:0;color:#fff}
+.account-entry--header .account-avatar--placeholder{border:0;background:transparent;box-shadow:none;color:inherit}
 .account-entry--light{color:#1a1a1a}
 .account-entry--light .account-avatar{border-color:#0002}
 .account-entry--sidebar{padding:8px;color:#fff}
