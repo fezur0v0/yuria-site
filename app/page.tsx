@@ -1,823 +1,127 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
-import AccountEntry from '@/components/account/AccountEntry'
-import PortfolioNav from '@/components/PortfolioNav'
-  const supabase = createClient()
 
-// 从正文 HTML 生成摘要：先去掉 h2/h3 整段，再去标签取纯文本
-function getExcerpt(html: string, maxLen = 80) {
-  if (!html) return ''
-  let text = html.replace(/<h[23][^>]*>[\s\S]*?<\/h[23]>/gi, '')
-  text = text.replace(/<[^>]+>/g, '')
-  text = text.replace(/&nbsp;/g, ' ').trim()
-  return text.length > maxLen ? text.slice(0, maxLen) + '…' : text
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { FiArrowDown, FiArrowRight, FiArrowUpRight, FiLock } from 'react-icons/fi'
+import { createClient } from '@/utils/supabase/client'
+import PortfolioNav from '@/components/PortfolioNav'
+import './home.css'
+
+type PortfolioItem = {
+  id: string
+  title: string
+  category: string | null
+  date: string | null
+  content: string | null
+  cover_url: string | null
+}
+
+type GalleryAlbum = {
+  id: string
+  title: string
+  cover_image_url: string | null
+}
+
+function excerpt(html: string | null) {
+  return (html ?? '').replace(/<h[23][^>]*>[\s\S]*?<\/h[23]>/gi, '')
+    .replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim().slice(0, 110)
 }
 
 export default function Home() {
-  const router = useRouter()
   const [config, setConfig] = useState({ cover_url: '', signature: '我的小小世界' })
-  const [tracks, setTracks] = useState<any[]>([])
-  const [trackIdx, setTrackIdx] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [listOpen, setListOpen] = useState(false)
-  const audioRef = useRef<HTMLAudioElement>(null)
-
-  const [portfolioItems, setPortfolioItems] = useState<any[]>([])
-  const [galleryItems, setGalleryItems] = useState<any[]>([])
+  const [works, setWorks] = useState<PortfolioItem[]>([])
+  const [albums, setAlbums] = useState<GalleryAlbum[]>([])
 
   useEffect(() => {
-    const els = document.querySelectorAll('.sr')
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const d = Number((e.target as HTMLElement).dataset.d ?? 0)
-            setTimeout(() => e.target.classList.add('on'), d)
-          }
-        })
-      },
-      { threshold: 0.08 }
-    )
-    els.forEach((el) => obs.observe(el))
-    return () => obs.disconnect()
-}, [portfolioItems, galleryItems])
-
-  useEffect(() => {
-    fetchConfig()
-    fetchTracks()
-    fetchPortfolio()
-    fetchGallery()
-
+    let active = true
+    const supabase = createClient()
+    void supabase.from('site_config').select('key, value').then(({ data }) => {
+      if (!active || !data) return
+      const entries = Object.fromEntries(data.map(row => [row.key, row.value]))
+      setConfig({ cover_url: entries.cover_url ?? '', signature: entries.signature ?? '我的小小世界' })
+    })
+    void supabase.from('portfolio_items')
+      .select('id, title, category, date, content, cover_url')
+      .eq('is_visible', true).order('sort_order', { ascending: true, nullsFirst: false }).limit(4)
+      .then(({ data }) => { if (active) setWorks(data ?? []) })
+    void supabase.from('gallery_albums')
+      .select('id, title, cover_image_url')
+      .eq('is_featured_home', true).eq('is_visible', true).order('sort_order').limit(3)
+      .then(({ data }) => { if (active) setAlbums(data ?? []) })
+    return () => { active = false }
   }, [])
 
-  useEffect(() => {
-    if (!audioRef.current) return
-    const track = tracks[trackIdx]
-    if (!track) return
+  const featured = works[0]
+  const heroArt = featured?.cover_url || albums[0]?.cover_image_url || config.cover_url
 
-    audioRef.current.src = track.src
-    audioRef.current.load()
-    if (playing) {
-      audioRef.current.play().catch((err) => {
-        console.warn('自动播放失败', err)
-        setPlaying(false)
-      })
-    }
-  }, [trackIdx, tracks, playing])
+  return <div className="home-editorial">
+    <PortfolioNav showSections />
+    <main>
+      <section className="home-hero" aria-labelledby="home-title">
+        {config.cover_url && <img className="home-hero__background" src={config.cover_url} alt="" />}
+        <div className="home-hero__shade" aria-hidden="true" />
+        <div className="home-hero__meta"><span>PERSONAL ARCHIVE</span><span>EST. YURIA</span></div>
+        <h1 id="home-title" className="home-hero__title">YURIA</h1>
 
-  async function fetchConfig() {
-    const { data } = await supabase.from('site_config').select('*')
-    if (data) {
-      const map: any = {}
-      data.forEach((r: any) => {
-        map[r.key] = r.value
-      })
-      setConfig({ cover_url: map.cover_url ?? '', signature: map.signature ?? '我的小小世界' })
-    }
-  }
+        <div className="home-hero__caption">
+          <span className="home-hero__number">01 / AN OPEN JOURNAL</span>
+          <p>{config.signature}</p>
+          <span className="home-hero__caption-line" />
+          <span>作品、影像与未说完的故事。</span>
+        </div>
 
-  async function fetchTracks() {
-    const { data } = await supabase.from('music_tracks').select('*').order('sort_order')
-    setTracks(data || [])
-  }
+        {heroArt && <Link href={featured ? `/portfolio/${featured.id}` : albums[0] ? `/gallery/${albums[0].id}` : '/gallery'} className="home-hero__print" aria-label={featured ? `查看作品：${featured.title}` : '查看图集'}>
+          <div className="home-hero__print-image"><img src={heroArt} alt={featured?.title ?? albums[0]?.title ?? 'Yuria 封面'} /></div>
+          <div className="home-hero__print-caption"><span>FEATURED / 001</span><strong>{featured?.title ?? albums[0]?.title ?? 'Yuria'}</strong><FiArrowUpRight size={18} aria-hidden="true" /></div>
+        </Link>}
 
-  // 首页作品集 - 只读展示中的
-async function fetchPortfolio() {
-  const { data } = await supabase
-    .from('portfolio_items')
-    .select('*')
-    .eq('is_visible', true)
-    .order('sort_order', { ascending: true, nullsFirst: false })
-    .limit(4)
-  setPortfolioItems(data || [])
-}
+        <Link href="#home-works" className="home-hero__scroll">SCROLL TO EXPLORE <FiArrowDown size={17} aria-hidden="true" /></Link>
+        <div className="home-hero__edge" aria-hidden="true"><span>IMAGES / WORDS / MUSIC</span><span>YURIA.XIN</span></div>
+      </section>
 
-  // 图集模块
-async function fetchGallery() {
-  const { data } = await supabase
-    .from('gallery_albums')
-    .select('*')
-    .eq('is_featured_home', true)
-    .eq('is_visible', true)
-    .order('sort_order')
-  setGalleryItems(data || [])
-}
+      <section id="home-works" className="home-section home-works" aria-labelledby="home-works-title">
+        <div className="home-section__heading">
+          <span className="home-section__index">01 / SELECTED WORKS</span>
+          <div className="home-section__title-row"><h2 id="home-works-title">作品集<span>.</span></h2><Link href="/portfolio">查看全部 <FiArrowUpRight aria-hidden="true" /></Link></div>
+          <p>一些创作，一些还在生长的想法。</p>
+        </div>
+        {works.length ? <div className="home-works__grid">
+          {works.map((work, index) => <Link href={`/portfolio/${work.id}`} key={work.id} className="home-work">
+            <div className="home-work__image">
+              {work.cover_url ? <img src={work.cover_url} alt="" loading="lazy" /> : <span aria-hidden="true">Y.</span>}
+              <span className="home-work__view"><FiArrowUpRight size={20} aria-hidden="true" /></span>
+            </div>
+            <div className="home-work__meta"><span>{String(index + 1).padStart(2, '0')} / {work.category || '作品'}</span><span>{work.date ? new Date(work.date).getFullYear() : 'YURIA'}</span></div>
+            <h3>{work.title}</h3>
+            {index === 0 && excerpt(work.content) && <p>{excerpt(work.content)}</p>}
+          </Link>)}
+        </div> : <p className="home-section__empty">作品正在准备中。</p>}
+      </section>
 
-  function togglePlay() {
-    if (!audioRef.current) return
-    if (playing) {
-      audioRef.current.pause()
-      setPlaying(false)
-    } else {
-      audioRef.current.play().catch(() => {})
-      setPlaying(true)
-    }
-  }
-
-  const track = tracks[trackIdx]
-
-  const navItems = [
-    { href: '/', label: '主页', d: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z' },
-    { href: '/portfolio', label: '作品集', d: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
-    { href: '/gallery', label: '图集', d: 'M4 16l4-8 4 8M2 12h12M16 6h.01M16 10a4 4 0 110-8 4 4 0 010 8z' },
-  ]
-
-  return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Inter:wght@300;400;500&display=swap');
-        *{box-sizing:border-box}
-        html,body{font-family:'Inter',sans-serif;background:#efefed;margin:0;padding:0}
-
-        .sr{opacity:0;transform:translateY(26px) scale(.99);filter:blur(3px);
-            transition:opacity .9s cubic-bezier(.22,1,.36,1),
-                       transform .9s cubic-bezier(.22,1,.36,1),
-                       filter .9s cubic-bezier(.22,1,.36,1)}
-        .sr.on{opacity:1;transform:none;filter:none}
-
-        @keyframes br{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:.65;transform:scale(1.15)}}
-        .bdot{display:inline-block;width:4px;height:4px;border-radius:50%;
-              background:#1a1a1a;margin:0 7px;vertical-align:middle;
-              animation:br 3s ease-in-out infinite}
-        .bdot2{animation-delay:1s}
-
-        @keyframes vspin{to{transform:rotate(360deg)}}
-        .vinyl-spin{animation:vspin 3s linear infinite}
-
-        @keyframes wa{0%,100%{height:3px}50%{height:15px}}
-        @keyframes wb{0%,100%{height:8px}50%{height:12px}}
-        @keyframes wc{0%,100%{height:12px}50%{height:4px}}
-        @keyframes wd{0%,100%{height:5px}50%{height:17px}}
-        @keyframes we{0%,100%{height:14px}50%{height:3px}}
-        .wv-on:nth-child(1){animation:wa .7s ease-in-out infinite}
-        .wv-on:nth-child(2){animation:wb .55s ease-in-out infinite .08s}
-        .wv-on:nth-child(3){animation:wc .85s ease-in-out infinite .04s}
-        .wv-on:nth-child(4){animation:wd .65s ease-in-out infinite .12s}
-        .wv-on:nth-child(5){animation:we .75s ease-in-out infinite .06s}
-
-        .sb-link{
-          position:relative;display:flex;align-items:center;gap:12px;
-          padding:12px 18px;border-radius:9px;cursor:pointer;
-          color:#585858;font-size:13px;letter-spacing:.08em;
-          transition:color .2s,background .2s;
-          text-decoration:none;border:none;
-          font-family:'Inter',sans-serif;text-align:left;width:100%;
-          background:transparent;
-        }
-        .sb-link:hover{color:#e8e8e6;background:rgba(255,255,255,.08)}
-        .sb-bar{
-          position:absolute;left:0;top:50%;transform:translateY(-50%);
-          width:2px;height:14px;background:#b0b0b0;border-radius:2px;
-          opacity:0;transition:opacity .2s;
-        }
-        .sb-link:hover .sb-bar{opacity:1}
-
-        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
-        .pw-fadein{animation:fadeUp .4s cubic-bezier(.22,1,.36,1)}
-
-        .layout{display:flex;min-height:100vh}
-        .sidebar{
-          position:fixed;left:0;top:0;bottom:0;width:260px;
-          background:rgba(18,18,18,.9);
-          backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
-          display:flex;flex-direction:column;
-          padding:52px 0 36px;
-          z-index:50;
-          box-shadow:4px 0 48px rgba(0,0,0,.14);
-        }
-        .main-area{margin-left:260px;flex:1;background:#fafaf8;min-height:100vh;padding-bottom:80px}
-
-        .section-header {
-          display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          margin-top: 20px;
-          margin-bottom: 28px;
-        }
-        .section-label {
-          font-size: 13px;
-          letter-spacing: 0.3em;
-          color: #aaa;
-          font-weight: 400;
-        }
-        .section-more {
-          font-size: 12px;
-          color: #aaa;
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-        .section-more:hover { color: #1a1a1a; }
-
-        .port-img-wrap {
-          width: 55%;
-          flex-shrink: 0;
-          border-radius: 16px;
-          overflow: hidden;
-          aspect-ratio: 16 / 9;
-          background: #ddd;
-          transition: transform 0.35s, box-shadow 0.35s;
-        }
-        .port-img-inner {
-          width: 100%;
-          height: 100%;
-          background-size: cover;
-          background-position: center;
-        }
-
-        .g-card {
-          cursor: pointer;
-          text-decoration: none;
-          display: block;
-          transition: transform 0.3s;
-          text-align: center;
-overflow: hidden;
-        }
-        .g-card:hover { transform: translateY(-3px); }
-        .gallery-title {
-          font-size: 14px;
-          color: #666;
-          padding: 16px 2px 6px;
-          letter-spacing: 0.04em;
-          font-weight: 400;
-          text-align: center;
-        }
-
-        @media(max-width:768px){
-          .sidebar{display:none}
-          .main-area{margin-left:0}
-          .hero-section{height:260px!important}
-          .hero-name-txt{font-size:38px!important}
-          .content-wrap{padding:0 20px!important}
-          .player-wrap{padding:0 20px!important}
-          .port-list{gap:42px!important}
-          .port-item{flex-direction:column!important;align-items:flex-start!important}
-          .port-text-wrap{padding:0!important;width:100%}
-          .port-tag-row{order:1;padding:0;width:100%;text-align:left}
-          .port-name-row{order:2;padding:0;width:100%;text-align:left}
-          .port-excerpt-row{order:3;display:block!important;padding:0;width:100%;text-align:left}
-          .port-img-wrap{order:4!important;width:100%!important;max-width:none!important;margin-top:14px;aspect-ratio:16/9!important}
-          .port-img-inner{border-radius:14px!important;width:100%;height:100%}
-          .g-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
-          .theater-btn{max-width:100%!important}
-          .main-area{padding-bottom:110px!important}
-          .section-label{font-size:11px}
-          .section-more{font-size:10px}
-        }
-      `}</style>
-
-      {track && <audio ref={audioRef} onEnded={() => setTrackIdx((i) => (i + 1) % tracks.length)} />}
-
-      <PortfolioNav sidebarOffset />
-      <div className="layout" style={{ position: 'relative', zIndex: 1 }}>
-        <aside className="sidebar">
-          <div
-            style={{
-              fontFamily: 'Noto Serif SC,serif',
-              fontSize: '24px',
-              fontWeight: 300,
-              letterSpacing: '.22em',
-              color: '#f0f0ee',
-              padding: '0 32px',
-              marginBottom: '56px',
-            }}
-          >
-            Yuria
+      <section className="home-gallery" aria-labelledby="home-gallery-title">
+        <div className="home-gallery__inner">
+          <div className="home-section__heading home-section__heading--dark">
+            <span className="home-section__index">02 / VISUAL NOTES</span>
+            <div className="home-section__title-row"><h2 id="home-gallery-title">图集<span>.</span></h2><Link href="/gallery">进入图集 <FiArrowUpRight aria-hidden="true" /></Link></div>
+            <p>用影像留住一些瞬间。</p>
           </div>
+          {albums.length ? <div className="home-gallery__grid">
+            {albums.map((album, index) => <Link href={`/gallery/${album.id}`} className="home-gallery__frame" key={album.id}>
+              <div className="home-gallery__image">{album.cover_image_url ? <img src={album.cover_image_url} alt="" loading="lazy" /> : <span aria-hidden="true">Y.</span>}</div>
+              <div className="home-gallery__caption"><span>{String(index + 1).padStart(2, '0')} / {album.title}</span><FiArrowUpRight size={16} aria-hidden="true" /></div>
+            </Link>)}
+          </div> : <p className="home-section__empty">图集正在准备中。</p>}
+        </div>
+      </section>
 
-          <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px', padding: '0 16px' }}>
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href} className="sb-link">
-                <div className="sb-bar" />
-                <svg
-                  width="17"
-                  height="17"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ flexShrink: 0 }}
-                >
-                  <path d={item.d} />
-                </svg>
-                <span>{item.label}</span>
-              </Link>
-            ))}
-            <Link href="/notes" className="sb-link">
-              <div className="sb-bar" />
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                style={{ flexShrink: 0 }}
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0110 0v4" />
-              </svg>
-              <span>小剧场</span>
-            </Link>
-          </nav>
-
-          <div
-            style={{
-              padding: '0 16px',
-              borderTop: '0.5px solid rgba(255,255,255,.09)',
-              paddingTop: '20px',
-              marginTop: '8px',
-            }}
-          >
-            <AccountEntry placement="sidebar" />
-          </div>
-        </aside>
-
-        <main className="main-area">
-          <div className="hero-section" style={{ position: 'relative', height: '420px', overflow: 'hidden' }}>
-            {config.cover_url ? (
-              <img
-                src={config.cover_url}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                alt="cover"
-              />
-            ) : (
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg,#b8c4d0,#90a0b0 45%,#687888)' }} />
-            )}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  'linear-gradient(to bottom,rgba(250,250,248,0) 0%,rgba(250,250,248,0) 15%,rgba(250,250,248,.08) 38%,rgba(250,250,248,.38) 60%,rgba(250,250,248,.82) 80%,rgba(250,250,248,1) 100%)',
-              }}
-            />
-            <div className="content-wrap" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 56px 30px', zIndex: 2 }}>
-              <div
-                className="hero-name-txt"
-                style={{
-                  fontFamily: 'Noto Serif SC,serif',
-                  fontSize: '60px',
-                  fontWeight: 300,
-                  letterSpacing: '.16em',
-                  color: '#1a1a1a',
-                  lineHeight: 1,
-                }}
-              >
-                Yuria
-              </div>
-              <div style={{ fontSize: '11px', color: '#999', letterSpacing: '.3em', marginTop: '10px' }}>
-                <span className="bdot" />
-                {config.signature}
-                <span className="bdot bdot2" />
-              </div>
-            </div>
-          </div>
-
-          <div className="player-wrap sr" style={{ padding: '0 56px', borderBottom: '0.5px solid #efefed' }} data-d="0">
-            <div
-              style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 0', cursor: 'pointer' }}
-              onClick={() => setListOpen((o) => !o)}
-            >
-              <div
-                className={playing ? 'vinyl-spin' : ''}
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '50%',
-                  flexShrink: 0,
-                  background: 'linear-gradient(135deg,#1a1a1a 0%,#3a3a3a 50%,#1a1a1a 100%)',
-                  position: 'relative',
-                  boxShadow: '0 2px 10px rgba(0,0,0,.25)',
-                }}
-              >
-                {track?.cover_url && (
-                  <img
-                    src={track.cover_url}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      opacity: 0.7,
-                    }}
-                    alt=""
-                  />
-                )}
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: '28%',
-                    borderRadius: '50%',
-                    border: '0.5px solid rgba(255,255,255,.18)',
-                  }}
-                />
-              </div>
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    color: '#1a1a1a',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {track?.title ?? '暂无音乐'}
-                </div>
-                <div style={{ fontSize: '11px', color: '#999', marginTop: '2px' }}>{track?.artist ?? ''}</div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '22px', flexShrink: 0 }}>
-                {[5, 11, 7, 15, 9].map((h, i) => (
-                  <div
-                    key={i}
-                    className={playing ? 'wv-on' : ''}
-                    style={{
-                      width: '2.5px',
-                      borderRadius: '2px',
-                      background: playing ? '#333' : '#d0d0d0',
-                      height: `${h}px`,
-                      transition: 'background .2s',
-                    }}
-                  />
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setTrackIdx((i) => (i - 1 + tracks.length) % tracks.length)
-                    setPlaying(true)
-                  }}
-                  style={{
-                    width: '33px',
-                    height: '33px',
-                    borderRadius: '50%',
-                    border: '1px solid #d8d8d8',
-                    background: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'border-color .2s,background .2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = '#888'
-                    e.currentTarget.style.background = '#f5f5f3'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#d8d8d8'
-                    e.currentTarget.style.background = '#fff'
-                  }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M9.5 2.5L5.5 6l4 3.5V2.5z" fill="#555" />
-                    <rect x="2" y="2.5" width="1.5" height="7" rx=".75" fill="#555" />
-                  </svg>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    togglePlay()
-                  }}
-                  style={{
-                    width: '33px',
-                    height: '33px',
-                    borderRadius: '50%',
-                    background: '#1a1a1a',
-                    border: '1px solid #1a1a1a',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'background .2s',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#383838')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = '#1a1a1a')}
-                >
-                  {playing ? (
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <rect x="3" y="2.5" width="2" height="7" rx="1" fill="#fff" />
-                      <rect x="7" y="2.5" width="2" height="7" rx="1" fill="#fff" />
-                    </svg>
-                  ) : (
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M3.5 2.5l6 3.5-6 3.5V2.5z" fill="#fff" />
-                    </svg>
-                  )}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setTrackIdx((i) => (i + 1) % tracks.length)
-                    setPlaying(true)
-                  }}
-                  style={{
-                    width: '33px',
-                    height: '33px',
-                    borderRadius: '50%',
-                    border: '1px solid #d8d8d8',
-                    background: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'border-color .2s,background .2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = '#888'
-                    e.currentTarget.style.background = '#f5f5f3'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#d8d8d8'
-                    e.currentTarget.style.background = '#fff'
-                  }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2.5 2.5L6.5 6l-4 3.5V2.5z" fill="#555" />
-                    <rect x="8.5" y="2.5" width="1.5" height="7" rx=".75" fill="#555" />
-                  </svg>
-                </button>
-              </div>
-
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 13 13"
-                fill="none"
-                style={{ flexShrink: 0, transition: 'transform .3s', transform: listOpen ? 'rotate(180deg)' : 'none' }}
-              >
-                <path d="M2 4.5l4.5 4.5 4.5-4.5" stroke="#c0c0c0" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </div>
-
-            <div
-              style={{
-                maxHeight: listOpen ? '220px' : '0',
-                overflow: 'hidden',
-                transition: 'max-height .4s cubic-bezier(.22,1,.36,1)',
-              }}
-            >
-              {tracks.map((t, i) => (
-                <div
-                  key={t.id}
-                  onClick={() => {
-                    setTrackIdx(i)
-                    if (!playing) setPlaying(true)
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    padding: '11px 4px',
-                    borderTop: '0.5px solid #f2f2f0',
-                    cursor: 'pointer',
-                    borderRadius: '6px',
-                    transition: 'background .15s',
-                  }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = '#f5f5f3')}
-                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
-                >
-                  <span style={{ fontSize: '10px', color: '#ccc', width: '18px', textAlign: 'center', flexShrink: 0 }}>
-                    {i + 1}
-                  </span>
-                  <span style={{ fontSize: '13px', color: '#666', flex: 1 }}>{t.title}</span>
-                  <span style={{ fontSize: '11px', color: '#bbb' }}>{t.artist}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="sr content-wrap" style={{ padding: '52px 56px 0' }} data-d="60">
-            <div className="section-header">
-              <span className="section-label">PORTFOLIO</span>
-              <Link href="/portfolio" className="section-more">
-                全部
-                <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
-                  <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </Link>
-            </div>
-
-            <div className="port-list" style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
-              {portfolioItems.map((item, i) => (
-                <div
-                  key={item.id}
-                  className="sr port-item"
-                  data-d={`${80 + i * 60}`}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    gap: '0',
-                    alignItems: 'stretch',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <div
-                    className="port-img-wrap"
-                    style={{
-                      order: i % 2 === 1 ? 2 : 1,
-                      width: '46%',
-                      maxWidth: '520px',
-                      flexShrink: 0,
-                      borderRadius: '16px',
-                      overflow: 'hidden',
-                      aspectRatio: '16/9',
-                      background: 'linear-gradient(160deg,#8a9aaa,#5a6a7a)',
-                      transition: 'transform .35s,box-shadow .35s',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'
-                      ;(e.currentTarget as HTMLElement).style.boxShadow = '0 16px 48px rgba(0,0,0,.1)'
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.transform = 'none'
-                      ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
-                    }}
-                  >
-                    {item.cover_url ? (
-                      <img
-                        src={item.cover_url}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        alt={item.title}
-                      />
-                    ) : (
-                      <div
-                        className="port-img-inner"
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          background: 'linear-gradient(160deg,#8a9aaa,#5a6a7a)',
-                        }}
-                      />
-                    )}
-                  </div>
-
-                  <div
-                    className="port-text-wrap"
-                    style={{
-                      order: i % 2 === 1 ? 1 : 2,
-                      flex: 1,
-                      padding: i % 2 === 1 ? '8px 28px 8px 0' : '8px 0 8px 28px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      gap: '12px',
-                    }}
-                  >
-                    <div className="port-tag-row" style={{ fontSize: '13px', letterSpacing: '.22em', color: '#bbb' }}>
-                      {item.category}
-                      {item.date ? ` · ${new Date(item.date).getFullYear()}` : ''}
-                    </div>
-                    <div
-                      className="port-name-row"
-                      style={{
-                        fontFamily: 'Noto Serif SC,serif',
-                        fontSize: '24px',
-                        fontWeight: 300,
-                        letterSpacing: '.08em',
-                        color: '#1a1a1a',
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {item.title}
-                    </div>
-                    <div className="port-excerpt-row" style={{ fontSize: '13px', color: '#999', lineHeight: 1.9 }}>
-                      {getExcerpt(item.content)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="sr content-wrap" style={{ padding: '52px 56px 0' }} data-d="100">
-            <div className="section-header">
-              <span className="section-label">GALLERY</span>
-              <Link href="/gallery" className="section-more">
-                全部
-                <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
-                  <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </Link>
-            </div>
-
-            <div className="g-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '24px' }}>
-            {galleryItems.map((item, i) => (
-  <Link
-    key={item.id}
-    href={`/gallery/${item.id}`}
-    className="sr g-card"
-    data-d={`${110 + i * 28}`}
-    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)')}
-    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = 'none')}
-  >
-    <div style={{
-      borderRadius: '14px',
-      overflow: 'hidden',
-      aspectRatio: '3/2',
-      background: 'linear-gradient(150deg,#e8e8e6,#d8d8d6)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-      transition: 'box-shadow 0.3s',
-    }}
-      onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.14)'}
-      onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)'}
-    >
-      {item.cover_image_url
-        ? <img src={item.cover_image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt={item.title} />
-        : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(150deg,#e0e0de,#c8c8c6)' }} />
-      }
-    </div>
-    <div className="gallery-title">{item.title}</div>
-  </Link>
-))}
-            </div>
-          </div>
-
-          <div className="sr content-wrap" style={{ padding: '52px 56px 72px' }} data-d="140">
-            <div className="section-header">
-              <span className="section-label">小剧场</span>
-            </div>
-            <Link
-              href="/notes"
-              className="theater-btn"
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '20px',
-                padding: '24px 28px',
-                borderRadius: '18px',
-                background: 'rgba(26,26,26,.04)',
-                border: '0.5px solid rgba(0,0,0,.07)',
-                cursor: 'pointer',
-                fontFamily: 'Inter,sans-serif',
-                transition: 'background .2s,box-shadow .2s',
-                textDecoration: 'none',
-                color: 'inherit',
-              }}
-              onMouseEnter={(e) => {
-                ;(e.currentTarget as HTMLElement).style.background = 'rgba(26,26,26,.08)'
-                ;(e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,.06)'
-              }}
-              onMouseLeave={(e) => {
-                ;(e.currentTarget as HTMLElement).style.background = 'rgba(26,26,26,.04)'
-                ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
-              }}
-            >
-              <div
-                style={{
-                  width: '46px',
-                  height: '46px',
-                  borderRadius: '50%',
-                  background: 'rgba(26,26,26,.07)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.5" strokeLinecap="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" />
-                  <path d="M7 11V7a5 5 0 0110 0v4" />
-                </svg>
-              </div>
-              <div style={{ flex: 1, textAlign: 'left' }}>
-                <div
-                  style={{
-                    fontFamily: 'Noto Serif SC,serif',
-                    fontSize: '16px',
-                    fontWeight: 300,
-                    letterSpacing: '.1em',
-                    color: '#1a1a1a',
-                  }}
-                >
-                  小剧场
-                </div>
-                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '5px' }}>私密空间 · 点击进入</div>
-              </div>
-              <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
-                <path d="M5 3l4 4-4 4" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </Link>
-          </div>
-        </main>
-      </div>
-
-    </>
-  )
+      <section className="home-theater" aria-labelledby="home-theater-title">
+        <div className="home-theater__top"><span>03 / PRIVATE SPACE</span><FiLock size={18} aria-hidden="true" /></div>
+        <h2 id="home-theater-title">小剧场</h2>
+        <p>有些故事，只适合在这里慢慢打开。</p>
+        <Link href="/notes">进入小剧场 <FiArrowRight size={19} aria-hidden="true" /></Link>
+        <span className="home-theater__watermark" aria-hidden="true">STORY</span>
+      </section>
+    </main>
+    <footer className="home-footer"><span>Yuria</span><span>IMAGES · WORDS · MUSIC</span><a href="#home-title">回到顶部 ↑</a></footer>
+  </div>
 }
