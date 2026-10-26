@@ -62,7 +62,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
   return <>
     <nav aria-label="顶部导航" className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${visible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className={`transition-colors duration-300 ${scrolled ? isLight ? 'bg-white/50 backdrop-blur-md' : 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
-        <div className="px-6 sm:px-8 h-16 flex items-center justify-between gap-6">
+        <div className="pl-6 pr-3 sm:px-8 h-16 flex items-center justify-between gap-6">
           <Link href={homeHref} className={`${isLight ? 'text-[#1a1a1a]' : 'text-white'} font-serif text-lg tracking-wide`}>yuria</Link>
           <div className="hidden lg:flex items-center gap-6">
             <PortfolioSearch theme={theme} />
@@ -70,9 +70,9 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
             {extraLinks.map(item => <Link key={item.href} href={item.href} className={`text-sm ${linkColor}`}>{item.label}</Link>)}
             <AccountEntry placement="header" light={isLight} />
           </div>
-          <div className={`flex lg:hidden shrink-0 items-center gap-6 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>
+          <div className={`flex lg:hidden shrink-0 items-center gap-1 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>
             <PortfolioSearch theme={theme} overlay />
-            <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls="site-drawer" className="grid place-items-center shrink-0 w-11 h-11"><FiMenu size={21} aria-hidden="true" /></button>
+            <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls="site-drawer" className="grid place-items-center shrink-0 w-11 h-11"><FiMenu size={20} aria-hidden="true" /></button>
           </div>
         </div>
       </div>

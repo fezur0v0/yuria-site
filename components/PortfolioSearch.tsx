@@ -85,18 +85,18 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false, o
     <div
       ref={containerRef}
       onMouseEnter={handleOpen}
-      className={`relative flex items-center justify-center ${overlay ? 'w-9 h-9 shrink-0' : ''}`}
+      className={`relative flex items-center justify-center ${overlay ? 'w-11 h-11 shrink-0' : ''}`}
     >
       {/* 搜索框胶囊容器：收起时使用 500ms + cubic-bezier(0.25, 1, 0.5, 1) 柔和缓出 */}
       <div
         onClick={handleOpen}
-              className={`flex items-center rounded-full border cursor-pointer ${overlay ? 'absolute right-0 top-0 z-10' : ''} ${
+              className={`flex items-center rounded-full border cursor-pointer ${overlay ? 'absolute right-0 top-1/2 -translate-y-1/2 z-10' : ''} ${
           expanded
-            ? `w-56 px-3.5 py-1.5 ${pillBg} backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] duration-300`
-            : `${textOnly ? 'w-8' : 'w-9'} h-9 p-0 ${pillBg} justify-center duration-500`
+            ? `w-56 px-3.5 ${overlay ? 'h-11 py-0' : 'py-1.5'} ${pillBg} backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] duration-300`
+            : `${overlay ? 'w-11 h-11' : textOnly ? 'w-8 h-9' : 'w-9 h-9'} p-0 ${pillBg} justify-center duration-500`
         }`}
         style={{
-          maxWidth: overlay ? 'calc(100vw - 160px)' : undefined,
+          maxWidth: overlay ? 'calc(100vw - 136px)' : undefined,
           transitionProperty: 'width, padding, background-color, border-color, box-shadow',
           transitionTimingFunction: expanded
             ? 'cubic-bezier(0.16, 1, 0.3, 1)'
@@ -105,16 +105,16 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false, o
       >
         {/* 图标 */}
         <button type="button" aria-label="搜索随笔" aria-expanded={expanded} onClick={handleOpen}
-          className={`shrink-0 flex items-center justify-center text-sm ${iconColor} ${expanded ? 'mr-2' : ''}`}>
-          {textOnly ? '搜索' : <FiSearch size={16} aria-hidden="true" />}
+          className={`shrink-0 flex items-center justify-center text-sm ${iconColor} ${expanded ? 'w-5 h-5 mr-2' : 'w-full h-full'}`}>
+          {textOnly ? '搜索' : <FiSearch size={overlay ? 20 : 16} aria-hidden="true" />}
         </button>
 
         {/* 输入框：收起时文字率先淡出（200ms），避免文字被挤压变形 */}
         <div
-          className={`overflow-hidden flex-1 flex items-center transition-all ${
+          className={`overflow-hidden flex items-center transition-all ${
             expanded
-              ? 'w-full opacity-100 duration-300 ease-out'
-              : 'w-0 opacity-0 duration-200 ease-in pointer-events-none'
+              ? 'flex-1 w-full opacity-100 duration-300 ease-out'
+              : 'flex-none w-0 opacity-0 duration-200 ease-in pointer-events-none'
           }`}
         >
           <input
