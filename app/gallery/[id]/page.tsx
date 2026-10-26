@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/content/client';
 import BackButton from '@/components/gallery/BackButton';
 import { useIsOwner } from '@/components/gallery/useIsOwner';
 import { getScatterStyle } from '@/components/gallery/scatterUtils';

@@ -1,6 +1,7 @@
 import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { isOwnerRequest } from '@/utils/auth/isOwner';
+import { contentContext } from '@/utils/content/request';
+import { previewMatches } from '@/utils/migration/preview';
 import { isSameOriginRequest } from '@/utils/security/origin';
 import { createR2Client, getR2Config } from '@/utils/r2/server';
 
@@ -26,7 +27,11 @@ export async function POST(request: Request) {
     return Response.json({ error: '请求来源无效' }, { status: 403 });
   }
 
-  if (!await isOwnerRequest()) {
+  const access = await contentContext();
+  if (!previewMatches(request.headers.get('x-yuria-preview'), access.preview)) {
+    return Response.json({ error: '预览已结束，请刷新页面后继续' }, { status: 409 });
+  }
+  if (!access.owner) {
     return Response.json({ error: '没有上传权限' }, { status: 403 });
   }
 
@@ -51,7 +56,7 @@ export async function POST(request: Request) {
   }
 
   const { bucket, publicUrl } = getR2Config();
-  const key = `${body.folder}/${Date.now()}-${crypto.randomUUID()}-${safeFileName(body.fileName)}`;
+  const key = `${access.preview ? 'migration-preview/' : ''}${body.folder}/${Date.now()}-${crypto.randomUUID()}-${safeFileName(body.fileName)}`;
   const command = new PutObjectCommand({
     Bucket: bucket,
     Key: key,
@@ -70,9 +75,16 @@ export async function DELETE(request: Request) {
     return Response.json({ error: '请求来源无效' }, { status: 403 });
   }
 
-  if (!await isOwnerRequest()) {
+  const access = await contentContext();
+  if (!previewMatches(request.headers.get('x-yuria-preview'), access.preview)) {
+    return Response.json({ error: '预览已结束，请刷新页面后继续' }, { status: 409 });
+  }
+  if (!access.owner) {
     return Response.json({ error: '没有删除权限' }, { status: 403 });
   }
+
+  // Preview record deletion must never delete an original public R2 object.
+  if (access.preview) return Response.json({ deleted: false });
 
   const body = await request.json().catch(() => null) as { url?: string } | null;
   if (!body?.url) {

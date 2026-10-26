@@ -1,5 +1,5 @@
 import NotesIntro from '@/components/notes/NotesIntro'
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/utils/content/server'
 
 export const dynamic = 'force-dynamic'
 

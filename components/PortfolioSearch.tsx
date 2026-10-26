@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/content/client';
 import { FiSearch } from 'react-icons/fi';
 
 interface Item {

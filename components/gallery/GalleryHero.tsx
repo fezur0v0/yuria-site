@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Noto_Serif_SC } from 'next/font/google';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/content/client';
 import { useReducedMotion } from './useReducedMotion';
 import styles from './gallery-home.module.css';
 

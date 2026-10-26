@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/content/client';
 import PortfolioNav from '@/components/PortfolioNav';
 import FloatingWidget from '@/components/FloatingWidget';
 import GalleryHero from '@/components/gallery/GalleryHero';

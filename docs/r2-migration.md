@@ -40,18 +40,59 @@ It does not initialize a live content store or change application readers.
 `utils/migration/content.ts` defines and tests document validation, guest
 filtering before search/counting, owner isolation and optimistic version checks.
 Hidden or locked album images, draft essays and theater content are excluded
-from guest views. The versioned-store writer contract is preparation only: the
-concrete live R2 writer and the existing editor integration are still pending.
+from guest views. The R2 store and editor integration are now available through
+an owner browser preview; production cutover is not enabled.
 
 Tests: `node --experimental-strip-types --test tests/r2-content.test.mjs`.
 
-## Subsequent phases (not yet implemented)
+## Owner browser preview
+
+Client content queries use `/api/content/[table]`. Default mode forwards them to
+the existing Supabase REST API and retains database RLS. Every mutation also
+requires same origin and server `getUser()` owner verification. Browser
+`getSession()` only transports the bearer token; server authorization never
+trusts that session payload. Auth-only clients remain unchanged.
+
+The owner enters preview from `/admin/storage`. An HttpOnly same-site cookie
+selects R2 for that owner browser for one hour. Request mode markers block stale
+tabs when the preview expires or another tab changes mode, so test writes cannot
+silently fall back to production. A persistent banner offers exit and reload.
+
+Preview starts from the verified backup and writes to private
+`content/preview/current.json`. Saves use table revisions and atomic S3
+`If-Match`/`If-None-Match`; previous documents are archived under
+`content/preview/history/`. Read revisions remain pinned until a successful
+local write or full reload; the server-rendered essay editor receives its
+initial revision. Sort patches are serialized per collection. Preview edits are
+test data and are not automatically merged into production.
+
+Queries cover current projection, character/card joins, exact counts,
+pagination, sorting, category filters, tag containment/exclusion and text
+matching. Mutations preserve existing database FK actions: album/image cascade,
+card/record set-null and character reference restrictions. This is a bounded
+content API, not a general SQL engine. Content documents are capped at 32 MiB.
+
+Private images are served through authenticated routes from preview uploads or
+the verified backup. New private R2 uploads use the same-origin server route,
+limited to 4 MiB; default Supabase direct uploads retain existing behavior.
+Larger private uploads need scoped presigned uploads plus bucket CORS if needed.
+Public test uploads use the public bucket's `migration-preview/` prefix. Preview
+deletion never deletes original R2 objects. Legacy private Supabase URLs are
+adapted for display; public repository copies and external links are preserved.
+
+`CONTENT_BACKEND=r2` is reserved for final cutover and is not enabled. Production
+will use `content/live/current.json`; prepare a fresh verified export and pause
+legacy writers before switching. Sitemap reads stay anonymous and published-only.
+
+Tests: `npm run test:content` and `npm run test:auth`.
+
+## Remaining phases
 
 1. Reconcile object counts and references against the verified backup, repository
    assets, existing R2 files and external links. Classify by actual publication
    and use, never by the old `theater-images` bucket name.
-2. Build R2 content readers/writers, search indexes, relations, publishing and
-   conditional writes; keep draft and private indexes inside the private bucket.
+2. Validate the content API and editing behavior against the real private R2
+   preview, including conflict handling, search and media references.
 3. Verify guest, ordinary user and owner access, editing, search, ordering, media,
    draft visibility and sitemap behavior in a preview.
 4. Run a final export during a write pause, reconcile any intervening edits,

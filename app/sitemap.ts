@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { createR2QueryClient } from '@/utils/content/server';
 
 const SITE_URL = 'https://www.yuria.xin';
 const PAGE_SIZE = 1000;
@@ -9,7 +10,7 @@ export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 使用匿名客户端，生成地图时不读取管理员的登录状态。
-  const supabase = createClient(
+  const supabase = process.env.CONTENT_BACKEND === 'r2' ? createR2QueryClient(false, false) : createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { auth: { persistSession: false, autoRefreshToken: false } },

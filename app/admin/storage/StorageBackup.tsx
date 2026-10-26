@@ -17,6 +17,21 @@ export default function StorageBackup() {
   const [ready, setReady] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [contentCheck, setContentCheck] = useState<ContentCheck | null>(null);
+  const [previewError, setPreviewError] = useState('');
+  async function enterPreview() {
+    setBusy(true);
+    setPreviewError('');
+    try {
+      const response = await fetch('/api/admin/content-preview', { method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'enable' }) });
+      const data = await response.json();
+      // Full reload clears content revision caches when changing backends.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      if (response.ok) window.location.assign('/');
+      else setPreviewError(data.error ?? '未能进入预览');
+    } catch { setPreviewError('连接中断，请重试'); }
+    finally { setBusy(false); }
+  }
   async function checkContent() {
     setBusy(true);
     setContentCheck(null);
@@ -71,6 +86,15 @@ export default function StorageBackup() {
           </table></div>
         </>}
       </div>
+    </section>
+    <section className="space-y-4 border-t border-black/10 pt-6">
+      <h2 className="text-lg">实际页面与编辑预览</h2>
+      <p className="text-sm leading-7">仅在当前浏览器里让网站使用 R2 测试副本。其他访客仍使用原数据。
+        可以检查页面、搜索及后台保存；测试修改不会自动合并到正式内容。
+        预览一小时后自动结束，也可以随时点击右下角的“退出预览”。</p>
+      <button type="button" disabled={busy} onClick={() => void enterPreview()}
+        className="rounded-lg bg-black px-4 py-3 text-sm text-white disabled:opacity-40">进入 R2 页面预览</button>
+      {previewError && <p role="alert" className="text-sm">{previewError}</p>}
     </section>
     <div role="status" aria-live="polite" className="break-words text-sm leading-7">
       {busy && <p>处理中，请保持页面打开。完整备份可能需要几分钟。</p>}

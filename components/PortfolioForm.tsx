@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/content/client';
 import PortfolioEditor from '@/components/PortfolioEditor';
 import { uploadPublicMedia } from '@/utils/r2/client';
 import { FiImage, FiCamera } from 'react-icons/fi';
@@ -10,6 +10,7 @@ import { GrFormPrevious, GrSave, GrTrash } from 'react-icons/gr';
 
 interface PortfolioFormProps {
   initialData?: {
+    __content_version?: string;
     id: string;
     title: string;
     category: string | null;
@@ -38,7 +39,7 @@ function normalizeContentHtml(html: string): string {
 
 export default function PortfolioForm({ initialData }: PortfolioFormProps) {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = createClient({ portfolio_items: initialData?.__content_version });
   const isEdit = !!initialData;
 
   const [title, setTitle] = useState(initialData?.title ?? '');

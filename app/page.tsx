@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { FiArrowUpRight, FiLock } from 'react-icons/fi'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/utils/content/client'
 import PortfolioNav from '@/components/PortfolioNav'
 import './home.css'
 

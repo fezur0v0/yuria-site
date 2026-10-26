@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/content/client';
 import { SortableList } from '@/components/admin/SortableList';
 import { MdOutlineDelete, MdOutlineVisibility, MdOutlineVisibilityOff, MdOutlineEdit, MdOutlineStar, MdOutlineStarOutline, MdOutlineTune } from 'react-icons/md';
 

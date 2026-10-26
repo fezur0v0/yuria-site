@@ -1,9 +1,11 @@
+import { createClient } from '@/utils/content/server';
 import { requireOwner } from '@/utils/auth/requireOwner';
 import { notFound } from 'next/navigation';
 import PortfolioForm from '@/components/PortfolioForm';
 
 export default async function EditPortfolioPage({ params }: { params: Promise<{ id: string }> }) {
-  const { supabase } = await requireOwner();
+  await requireOwner();
+  const supabase = await createClient();
   const { id } = await params;
 
   const { data: item } = await supabase

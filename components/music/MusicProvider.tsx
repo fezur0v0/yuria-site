@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/utils/content/client'
 
 export type MusicTrack = {
   id: number

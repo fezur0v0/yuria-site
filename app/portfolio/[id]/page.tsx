@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/content/client';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { FiEdit3, FiArrowLeft, FiArrowRight } from 'react-icons/fi';

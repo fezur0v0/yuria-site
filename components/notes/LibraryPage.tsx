@@ -2,7 +2,7 @@
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/utils/content/client'
 
 const supabase = createClient()
 

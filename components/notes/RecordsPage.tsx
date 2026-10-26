@@ -1,9 +1,10 @@
 'use client'
+import { uploadPrivateImage } from '@/utils/content/privateUpload'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
 import { theaterMediaUrl } from '@/utils/notes/media'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/utils/content/client'
 import TableBuilderModal from '@/components/TableBuilderModal'
 
 const supabase = createClient()
@@ -133,7 +134,7 @@ export default function Records() {
       const file = fileArr[i]
       const ext = file.name.split('.').pop()
       const path = `${crypto.randomUUID()}.${ext}`
-      const { error } = await supabase.storage.from('theater-images').upload(path, file)
+      const { error } = await uploadPrivateImage(path, file)
       if (error) { console.error('上传失败', error); continue }
       const privateUrl = theaterMediaUrl(path)
       setDraftImages(prev => {
@@ -166,7 +167,7 @@ export default function Records() {
     const file = files[0]
     const ext = file.name.split('.').pop()
     const path = `char-${crypto.randomUUID()}.${ext}`
-    const { error } = await supabase.storage.from('theater-images').upload(path, file)
+    const { error } = await uploadPrivateImage(path, file)
     if (!error) {
       setNewCharAvatar(theaterMediaUrl(path))
     }
