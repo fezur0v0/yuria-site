@@ -29,6 +29,22 @@ individual images at 64 MiB and has a 300-second execution budget; larger or slo
 exports need a resumable streaming job. External image/music links, files in the
 website repository and existing R2 objects are not fetched by this Supabase copy.
 
+## Verified content reader and authorization preparation
+
+Set `R2_CONTENT_BACKUP_PREFIX` to a completed private backup. The owner-only
+`/api/admin/storage-content-check` endpoint reads its completion manifest,
+verifies the database byte length, SHA-256 and per-table record counts, and
+returns only owner/guest counts. `/admin/storage` exposes this read-only check.
+It does not initialize a live content store or change application readers.
+
+`utils/migration/content.ts` defines and tests document validation, guest
+filtering before search/counting, owner isolation and optimistic version checks.
+Hidden or locked album images, draft essays and theater content are excluded
+from guest views. The versioned-store writer contract is preparation only: the
+concrete live R2 writer and the existing editor integration are still pending.
+
+Tests: `node --experimental-strip-types --test tests/r2-content.test.mjs`.
+
 ## Subsequent phases (not yet implemented)
 
 1. Reconcile object counts and references against the verified backup, repository
