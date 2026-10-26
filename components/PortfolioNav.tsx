@@ -4,14 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { FiMenu } from 'react-icons/fi';
 import PortfolioSearch from '@/components/PortfolioSearch';
-import { createClient } from '@/utils/supabase/client';
 import AccountEntry from '@/components/account/AccountEntry';
 import './portfolio-nav.css';
-
-interface Profile {
-  nickname: string | null;
-  bio: string | null;
-}
 
 const sections = [
   { href: '/portfolio', label: '随笔' },
@@ -27,7 +21,6 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
   const [visible, setVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const lastScrollY = useRef(0);
   const menuButton = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -45,10 +38,6 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    createClient().from('site_settings').select('nickname, bio').single().then(({ data }) => setProfile(data));
   }, []);
 
   useEffect(() => {
@@ -71,10 +60,6 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
   }, [drawerOpen]);
 
   return <>
-    <style dangerouslySetInnerHTML={{ __html: `
-      @font-face { font-family: 'NameFont'; src: url('https://a.tuchuangyun.top/autoupload/XpaunVhfV7QakiRQCrbgNdiO_OyvX7mIgxFBfDMDErs/20260721/Q5JE/Distant_Stroke_Medium.otf') format('opentype'); }
-      @font-face { font-family: 'BioFont'; src: url('https://a.tuchuangyun.top/autoupload/XpaunVhfV7QakiRQCrbgNdiO_OyvX7mIgxFBfDMDErs/20260624/4rx3/KBIZmjo__M.ttf') format('truetype'); }
-    ` }} />
     <nav aria-label="顶部导航" className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${visible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className={`transition-colors duration-300 ${scrolled ? isLight ? 'bg-white/50 backdrop-blur-md' : 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
         <div className="px-6 sm:px-8 h-16 flex items-center justify-between gap-6">
@@ -85,9 +70,9 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
             {extraLinks.map(item => <Link key={item.href} href={item.href} className={`text-sm ${linkColor}`}>{item.label}</Link>)}
             <AccountEntry placement="header" light={isLight} />
           </div>
-          <div className={`flex lg:hidden items-center gap-6 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>
-            <PortfolioSearch theme={theme} />
-            <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls="site-drawer" className="grid place-items-center w-11 h-11"><FiMenu size={21} aria-hidden="true" /></button>
+          <div className={`flex lg:hidden shrink-0 items-center gap-6 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>
+            <PortfolioSearch theme={theme} overlay />
+            <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls="site-drawer" className="grid place-items-center shrink-0 w-11 h-11"><FiMenu size={21} aria-hidden="true" /></button>
           </div>
         </div>
       </div>
@@ -103,8 +88,6 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
       }}>
         <div className="site-drawer-profile">
           <AccountEntry placement="drawer" onNavigate={closeDrawer} />
-          {profile?.nickname && <h3 style={{ fontFamily: 'NameFont, serif' }}>{profile.nickname}</h3>}
-          {profile?.bio && <p style={{ fontFamily: 'BioFont, sans-serif' }}>{profile.bio}</p>}
         </div>
         <div className="site-drawer-links">
           {[...sections, ...extraLinks].map(item => <Link key={item.href} href={item.href} onClick={closeDrawer}>{item.label}</Link>)}

@@ -109,7 +109,7 @@ export default function GlobalMusicPlayer() {
   if (!current) return null
 
   return <aside ref={rootRef} className={`music-float${expanded ? ' music-float--open' : ''}${dragging ? ' music-float--dragging' : ''}${playing ? ' music-float--playing' : ''}`}
-    style={position ? { right: position.right, bottom: position.bottom } : undefined} aria-label="音乐播放器">
+    style={position ? { left: 'auto', right: position.right, bottom: position.bottom } : undefined} aria-label="音乐播放器">
     <span id="music-drag-help" className="music-float__sr">拖动封面可移动播放器，也可用方向键移动。点击展开或收起。</span>
     <div className="music-float__panel" aria-hidden={!expanded} inert={!expanded}>
       <div className="music-float__body" id="music-controls">

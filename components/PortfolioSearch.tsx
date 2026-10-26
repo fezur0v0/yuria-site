@@ -32,7 +32,7 @@ function highlight(text: string, query: string) {
   );
 }
 
-export default function PortfolioSearch({ theme = 'default', textOnly = false }: { theme?: 'default' | 'light'; textOnly?: boolean }) {
+export default function PortfolioSearch({ theme = 'default', textOnly = false, overlay = false }: { theme?: 'default' | 'light'; textOnly?: boolean; overlay?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<Item[]>([]);
@@ -44,7 +44,7 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false }:
     : (expanded ? 'bg-white/35 border-white/60' : 'bg-white/0 border-transparent');
   const iconColor = isLight ? 'text-[#1a1a1a]' : 'text-white';
   const inputTextColor = isLight ? 'text-[#1a1a1a] placeholder:text-[#1a1a1a]/50' : 'text-white placeholder:text-white/70';
-  
+
 
   useEffect(() => {
     const supabase = createClient();
@@ -85,17 +85,18 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false }:
     <div
       ref={containerRef}
       onMouseEnter={handleOpen}
-      className="relative flex items-center justify-center"
+      className={`relative flex items-center justify-center ${overlay ? 'w-9 h-9 shrink-0' : ''}`}
     >
       {/* 搜索框胶囊容器：收起时使用 500ms + cubic-bezier(0.25, 1, 0.5, 1) 柔和缓出 */}
       <div
         onClick={handleOpen}
-              className={`flex items-center rounded-full border cursor-pointer ${
+              className={`flex items-center rounded-full border cursor-pointer ${overlay ? 'absolute right-0 top-0 z-10' : ''} ${
           expanded
             ? `w-56 px-3.5 py-1.5 ${pillBg} backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] duration-300`
             : `${textOnly ? 'w-8' : 'w-9'} h-9 p-0 ${pillBg} justify-center duration-500`
         }`}
         style={{
+          maxWidth: overlay ? 'calc(100vw - 160px)' : undefined,
           transitionProperty: 'width, padding, background-color, border-color, box-shadow',
           transitionTimingFunction: expanded
             ? 'cubic-bezier(0.16, 1, 0.3, 1)'
@@ -131,19 +132,16 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false }:
       {/* 搜索结果弹窗：中心轴对齐 + 响应式定位 */}
       {expanded && q && (
         <div
-          className="
-            fixed sm:absolute 
-            left-1/2 -translate-x-1/2 
-            top-20 sm:top-full 
-            mt-2 sm:mt-4 
-            w-[calc(100vw-32px)] max-w-sm sm:w-72 
-            max-h-80 overflow-y-auto 
-            flex flex-col gap-1 p-2 rounded-2xl 
-            bg-white/85 backdrop-blur-2xl border border-white/80 
-            shadow-[0_12px_30px_rgba(0,0,0,0.08)] 
-            z-50 animate-in fade-in slide-in-from-top-2 duration-300 
+          className={`${overlay
+            ? 'fixed left-1/2 -translate-x-1/2 top-20 mt-2 w-[calc(100vw-32px)] max-w-sm'
+            : 'fixed sm:absolute left-1/2 -translate-x-1/2 top-20 sm:top-full mt-2 sm:mt-4 w-[calc(100vw-32px)] max-w-sm sm:w-72'}
+            max-h-80 overflow-y-auto
+            flex flex-col gap-1 p-2 rounded-2xl
+            bg-white/85 backdrop-blur-2xl border border-white/80
+            shadow-[0_12px_30px_rgba(0,0,0,0.08)]
+            z-50 animate-in fade-in slide-in-from-top-2 duration-300
             [&::-webkit-scrollbar]:hidden
-          "
+          `}
           style={{ scrollbarWidth: 'none' }}
         >
           {results.length === 0 ? (
