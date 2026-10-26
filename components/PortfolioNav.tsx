@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { FiMenu } from 'react-icons/fi';
 import PortfolioSearch from '@/components/PortfolioSearch';
 import { createClient } from '@/utils/supabase/client';
 import AccountEntry from '@/components/account/AccountEntry';
@@ -29,7 +30,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
   const [profile, setProfile] = useState<Profile | null>(null);
   const lastScrollY = useRef(0);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const closeButton = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
   const isLight = theme === 'light';
   const linkColor = isLight ? 'text-[#1a1a1a]/70 hover:text-[#1a1a1a]' : 'text-white/80 hover:text-white';
   const closeDrawer = () => setDrawerOpen(false);
@@ -54,7 +55,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
     if (!drawerOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    closeButton.current?.focus();
+    drawerRef.current?.focus();
     const escape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') { setDrawerOpen(false); menuButton.current?.focus(); }
     };
@@ -86,21 +87,20 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
           </div>
           <div className={`flex lg:hidden items-center gap-6 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>
             <PortfolioSearch theme={theme} />
-            <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls="site-drawer" className="text-sm py-2">菜单</button>
+            <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls="site-drawer" className="grid place-items-center w-11 h-11"><FiMenu size={21} aria-hidden="true" /></button>
           </div>
         </div>
       </div>
     </nav>
     <div className={`site-drawer-layer lg:hidden${drawerOpen ? ' is-open' : ''}`} aria-hidden={!drawerOpen} inert={!drawerOpen}>
-      <div className="site-drawer-backdrop" onClick={closeDrawer} />
-      <div id="site-drawer" className="site-drawer" role="dialog" aria-modal={drawerOpen ? true : undefined} aria-label="网站导航" onKeyDown={event => {
+      <div className="site-drawer-backdrop" onClick={() => { closeDrawer(); menuButton.current?.focus(); }} />
+      <div ref={drawerRef} id="site-drawer" tabIndex={-1} className="site-drawer" role="dialog" aria-modal={drawerOpen ? true : undefined} aria-label="网站导航" onKeyDown={event => {
         if (event.key !== 'Tab') return;
         const controls = event.currentTarget.querySelectorAll<HTMLElement>('a[href],button:not([disabled])');
         const first = controls[0]; const last = controls[controls.length - 1];
-        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === event.currentTarget)) { event.preventDefault(); last?.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
       }}>
-        <button ref={closeButton} type="button" className="site-drawer-close" onClick={() => { closeDrawer(); menuButton.current?.focus(); }}>关闭</button>
         <div className="site-drawer-profile">
           <AccountEntry placement="drawer" onNavigate={closeDrawer} />
           {profile?.nickname && <h3 style={{ fontFamily: 'NameFont, serif' }}>{profile.nickname}</h3>}
