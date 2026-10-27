@@ -4,7 +4,6 @@ import "./globals.css";
 import SiteSplash from "@/components/SiteSplash";
 import MusicProvider from "@/components/music/MusicProvider";
 import GlobalMusicPlayer from "@/components/music/GlobalMusicPlayer";
-import ContentPreviewBanner from "@/components/ContentPreviewBanner";
 import { siteAsset } from '@/utils/siteAssets';
 
 const geistSans = Geist({
@@ -46,7 +45,6 @@ export default function RootLayout({
         <MusicProvider>
           {children}
           <GlobalMusicPlayer />
-          <ContentPreviewBanner />
         </MusicProvider>
       </body>
     </html>

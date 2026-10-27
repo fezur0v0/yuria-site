@@ -1,8 +1,9 @@
-// Runs the built Next.js app against local Supabase/S3 fixtures, without real credentials.
+// Verifies the live R2 site after temporary migration tools have been retired.
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { runFreshCutover } from '../utils/migration/cutover.ts';
 
 const tables = Object.fromEntries(['site_config', 'site_settings', 'hero_lines', 'intro_lines', 'music_tracks',
   'portfolio_items', 'gallery_albums', 'gallery_images', 'theater_cards', 'theater_records', 'characters'].map(name => [name, []]));
@@ -11,7 +12,7 @@ const image = Buffer.from('fixture-image');
 let fixtureOrigin;
 let sourceWrites = 0;
 const legacyFiles = new Set(['gallery/image.jpg', 'theater-images/image.jpg']);
-let passwords = [{ key: 'old-password-one' }, { key: 'old-password-two' }];
+const passwords = [];
 function json(response, data, status = 200) {
   response.writeHead(status, { 'Content-Type': 'application/json' }); response.end(JSON.stringify(data));
 }
@@ -21,14 +22,6 @@ const fixture = createServer(async (request, response) => {
   const chunks = []; for await (const chunk of request) chunks.push(chunk);
   const bytes = Buffer.concat(chunks);
   if (path === '/auth/v1/user') return json(response, user);
-  if (path === '/rest/v1/rpc/cleanup_legacy_content') {
-    const body = JSON.parse(bytes);
-    assert.deepEqual(body.expected, tables);
-    assert.deepEqual(body.access_keys, passwords.map(row => row.key));
-    for (const name of Object.keys(tables)) tables[name] = [];
-    passwords = []; sourceWrites++;
-    return json(response, { complete: true });
-  }
   if (path.startsWith('/rest/v1/')) {
     if (request.method !== 'GET') sourceWrites++;
     if (path.endsWith('/access_config')) return json(response, passwords);
@@ -80,6 +73,23 @@ tables.characters = [{ id: 'character', name: 'Private character', avatar: `${fi
 const preview = Buffer.from(JSON.stringify({ version: 1, tables: { ...tables,
   portfolio_items: [{ ...tables.portfolio_items[0], title: 'Never publish this test title' }] } }));
 objects.set('content/preview/current.json', { bytes: preview, etag: '"preview"', type: 'application/json' });
+const storeFixture = (key, bytes, type = 'application/json') => objects.set(key, {
+  bytes: Buffer.from(bytes), etag: `"${createHash('md5').update(bytes).digest('hex')}"`, type,
+});
+const state = await runFreshCutover({
+  async table(name) { return structuredClone(tables[name]); },
+  async files() { return [...legacyFiles].map(file => { const [bucket, ...rest] = file.split('/'); return { bucket, path: rest.join('/') }; }); },
+  async download() { return { bytes: image, type: 'image/jpeg' }; },
+}, {
+  async put(key, bytes, type) { storeFixture(key, bytes, type); },
+  async get(key) { return objects.get(key).bytes; },
+}, {
+  async acquire() {}, async abort() {},
+  async activate(active) { storeFixture('content/cutover.json', Buffer.from(JSON.stringify(active))); },
+}, 'live-fixture', fixtureOrigin);
+for (const name of Object.keys(tables)) tables[name] = [];
+legacyFiles.clear();
+
 const exp = Math.floor(Date.now() / 1000) + 3600;
 const accessToken = [Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url'),
   Buffer.from(JSON.stringify({ sub: user.id, exp, aud: 'authenticated', role: 'authenticated' })).toString('base64url'), 'fixture-signature'].join('.');
@@ -108,13 +118,16 @@ try {
     if (attempt === 39) throw new Error(`Next.js failed to start: ${output}`);
     await new Promise(resolve => setTimeout(resolve, 250));
   }
-  assert.equal((await request('/api/admin/storage-cutover')).status, 403);
-  const before = await request('/api/admin/storage-cutover', {}, true); assert.equal(before.status, 200);
-  assert.equal((await before.json()).state.phase, 'idle');
-  const activation = await request('/api/admin/storage-cutover', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'activate-fresh' }) }, true);
-  const result = await activation.json();
-  assert.equal(activation.status, 200, JSON.stringify(result)); assert.equal(result.state.phase, 'active');
+  for (const endpoint of ['storage-backup','storage-content-check','storage-cutover','image-consolidation','supabase-cleanup']) {
+    for (const owner of [false,true]) {
+      assert.equal((await request(`/api/admin/${endpoint}`, {}, owner)).status,404);
+      assert.equal((await request(`/api/admin/${endpoint}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }, owner)).status,404);
+    }
+  }
+  assert.equal((await request('/api/admin/content-preview', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'enable'}) }, true)).status,405);
+  const oldPage = await request('/admin/storage', { redirect:'manual' }, true);
+  if (oldPage.status === 200) assert.match(await oldPage.text(), /url=\/admin|NEXT_REDIRECT;replace;\/admin;/);
+  else { assert.equal(oldPage.status,307); assert.equal(oldPage.headers.get('location'),'/admin'); }
   const mode = await (await request('/api/admin/content-preview', {}, true)).json();
   assert.equal(mode.live, true); assert.equal(mode.preview, false);
   const publicRead = await request('/api/content/portfolio_items?select=id,title');
@@ -128,20 +141,12 @@ try {
   assert.equal((await request('/api/content/portfolio_items?id=eq.original', patch, true)).status, 204);
   const publicAfter = await (await request('/api/content/portfolio_items?select=title')).json();
   assert.equal(publicAfter[0].title, 'Saved in R2');
-  assert.equal(tables.portfolio_items[0].title, 'Original title'); assert.equal(sourceWrites, 0);
+  assert.equal(tables.portfolio_items.length, 0); assert.equal(sourceWrites, 0);
   const media = await request('/api/content/media?bucket=gallery&path=image.jpg');
   assert.equal(media.status, 200); assert.deepEqual(Buffer.from(await media.arrayBuffer()), image);
   assert.equal((await request('/api/content/media?bucket=theater-images&path=image.jpg')).status, 404);
   assert.equal((await request('/api/notes/media?path=image.jpg')).status, 403);
   assert.equal((await request('/api/notes/media?path=image.jpg', {}, true)).status, 200);
-  assert.equal((await request('/api/admin/image-consolidation')).status, 403);
-  const imagePlan = await (await request('/api/admin/image-consolidation', {}, true)).json();
-  assert.equal(imagePlan.remaining, 2);
-  const consolidate = await request('/api/admin/image-consolidation', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'consolidate' }) }, true);
-  const consolidated = await consolidate.json();
-  assert.equal(consolidate.status, 200, JSON.stringify(consolidated));
-  assert.equal(consolidated.complete, true); assert.equal(consolidated.updated, 2);
   const privateFile = '0'.repeat(64) + '.jpg';
   assert.equal((await request(`/api/content/image?key=${privateFile}`)).status, 403);
   objects.set(`content/live/imported/${privateFile}`, { bytes: image, etag: '"private-import"', type: 'image/jpeg' });
@@ -155,31 +160,9 @@ try {
   const article = await (await request('/portfolio/original')).text(); assert.ok(article.includes('Saved in R2')); assert.ok(article.includes('Original body'));
   const sitemap = await (await request('/sitemap.xml')).text(); assert.ok(sitemap.includes('/portfolio/original')); assert.ok(!sitemap.includes('/portfolio/draft'));
   assert.deepEqual(objects.get('content/preview/current.json').bytes, preview);
-  assert.equal((await request('/api/admin/supabase-cleanup')).status, 403);
-  const cleanupOptions = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cleanup' }) };
-  assert.equal((await request('/api/admin/supabase-cleanup', cleanupOptions)).status, 403);
-  const cleanStatus = await (await request('/api/admin/supabase-cleanup', {}, true)).json();
-  assert.equal(cleanStatus.rows, 5); assert.equal(cleanStatus.files, 2); assert.equal(cleanStatus.passwords, 2);
-  const liveBeforeCleanup = objects.get(result.state.contentKey).bytes.slice();
-  const backupFileKey = `${result.state.prefix}/storage/gallery/image.jpg`;
-  const backupFile = objects.get(backupFileKey);
-  objects.set(backupFileKey, { ...backupFile, bytes: Buffer.from('corrupt') });
-  const blocked = await request('/api/admin/supabase-cleanup', cleanupOptions, true);
-  assert.equal(blocked.status, 503); assert.equal(legacyFiles.size, 2); assert.equal(sourceWrites, 0);
-  objects.set(backupFileKey, backupFile);
-  const cleanup = await request('/api/admin/supabase-cleanup', cleanupOptions, true);
-  const cleaned = await cleanup.json();
-  assert.equal(cleanup.status, 200, JSON.stringify(cleaned)); assert.equal(cleaned.complete, true);
-  assert.equal(cleaned.rowsDeleted, 5); assert.equal(cleaned.filesDeleted, 2); assert.equal(cleaned.passwordsDeleted, 2);
-  assert.deepEqual(await (await request('/api/admin/supabase-cleanup', {}, true)).json(), { rows: 0, files: 0, passwords: 0, complete: true });
-  assert.deepEqual(objects.get(result.state.contentKey).bytes, liveBeforeCleanup);
-  assert.deepEqual(objects.get('content/preview/current.json').bytes, preview);
-  assert.equal((await request('/api/content/media?bucket=gallery&path=image.jpg')).status, 200);
-  assert.equal((await request('/api/notes/media?path=image.jpg', {}, true)).status, 200);
-  const repeat = await request('/api/admin/supabase-cleanup', cleanupOptions, true);
-  assert.equal(repeat.status, 200, await repeat.text());
   assert.equal((await request('/api/admin/content-preview', {}, true)).status, 200);
-  console.log('HTTP cutover and image consolidation verified: owner activation, R2 editing, stale editors, public/private media, reference rewrites, detail rendering and sitemap.');
-  console.log('HTTP cleanup verified: owner-only access, corrupt-backup refusal without deletion, Storage API removal, source transaction, zero remaining, idempotent retry, preserved R2 content/media and auth.');
+  assert.equal(sourceWrites,0); assert.equal(legacyFiles.size,0);
+  assert.equal(objects.has(state.contentKey),true);
+  console.log('Live R2 HTTP flow verified after migration retirement: old endpoints unavailable, preview mutations disabled, old page redirects, owner edits and stale-epoch rejection, detail rendering, sitemap, private/public media and Auth preserved with an empty Supabase source.');
 } catch (error) { console.error(output); throw error; }
 finally { child.kill('SIGTERM'); fixture.closeAllConnections(); await new Promise(resolve => fixture.close(resolve)); }

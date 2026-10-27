@@ -1,6 +1,18 @@
 # R2 content migration
 
-## Current phase: live R2 cutover verified; image consolidation available
+## Current phase: completed; temporary migration tools retired
+
+On 2026-10-27 the owner completed source cleanup. A read-only database check
+confirmed zero business rows, zero old password configurations and zero Storage
+objects, with all four Auth users retained. The temporary storage page now
+redirects to `/admin`. Backup, validation, cutover, image-consolidation and source
+cleanup HTTP endpoints and UI components have been removed, as has the database
+cleanup RPC. The read-only `/api/admin/content-preview` GET remains the browser
+content client's backend/epoch handshake; its preview mutation endpoint is gone.
+R2 live content, original migration backups, private media routes, editing,
+version checks and Supabase Auth are retained.
+
+The sections below describe the completed migration for historical reference.
 
 The owner-only `/admin/storage` page checks the configured private R2 bucket and
 copies the eleven business content tables plus all objects in the three legacy

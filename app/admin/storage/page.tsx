@@ -1,7 +1,7 @@
 import { requireOwner } from '@/utils/auth/requireOwner';
-import StorageBackup from './StorageBackup';
+import { redirect } from 'next/navigation';
 
 export default async function StoragePage() {
   await requireOwner();
-  return <StorageBackup />;
+  redirect('/admin');
 }
