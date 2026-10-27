@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import CutoverPanel from './CutoverPanel';
 import ImageConsolidation from './ImageConsolidation';
+import SupabaseCleanup from './SupabaseCleanup';
 
 type Result = { error?: string; ready?: boolean; complete?: boolean; bucket?: string;
   prefix?: string; counts?: Record<string, number>; files?: number; bytes?: number };
@@ -63,6 +64,7 @@ export default function StorageBackup() {
     <h1 className="text-2xl">内容迁移与存储</h1>
     <CutoverPanel />
     <ImageConsolidation />
+    <SupabaseCleanup />
     <details className="space-y-6 border-t border-black/10 pt-6">
     <summary className="cursor-pointer text-sm">之前的备份与预览工具</summary>
     <h2 className="text-lg">复制备份</h2>

@@ -10,6 +10,8 @@ const objects = new Map();
 const image = Buffer.from('fixture-image');
 let fixtureOrigin;
 let sourceWrites = 0;
+const legacyFiles = new Set(['gallery/image.jpg', 'theater-images/image.jpg']);
+let passwords = [{ key: 'old-password-one' }, { key: 'old-password-two' }];
 function json(response, data, status = 200) {
   response.writeHead(status, { 'Content-Type': 'application/json' }); response.end(JSON.stringify(data));
 }
@@ -19,15 +21,29 @@ const fixture = createServer(async (request, response) => {
   const chunks = []; for await (const chunk of request) chunks.push(chunk);
   const bytes = Buffer.concat(chunks);
   if (path === '/auth/v1/user') return json(response, user);
+  if (path === '/rest/v1/rpc/cleanup_legacy_content') {
+    const body = JSON.parse(bytes);
+    assert.deepEqual(body.expected, tables);
+    assert.deepEqual(body.access_keys, passwords.map(row => row.key));
+    for (const name of Object.keys(tables)) tables[name] = [];
+    passwords = []; sourceWrites++;
+    return json(response, { complete: true });
+  }
   if (path.startsWith('/rest/v1/')) {
     if (request.method !== 'GET') sourceWrites++;
+    if (path.endsWith('/access_config')) return json(response, passwords);
     return json(response, tables[path.split('/').pop()] ?? []);
   }
   if (path.startsWith('/storage/v1/object/list/')) {
     const bucket = path.split('/').pop();
-    return json(response, ['gallery', 'theater-images'].includes(bucket) ? [{ id: bucket, name: 'image.jpg' }] : []);
+    return json(response, legacyFiles.has(`${bucket}/image.jpg`) ? [{ id: bucket, name: 'image.jpg' }] : []);
   }
   if (path.startsWith('/storage/v1/object/')) {
+    if (request.method === 'DELETE') {
+      const bucket = path.split('/').pop();
+      for (const prefix of JSON.parse(bytes).prefixes) legacyFiles.delete(`${bucket}/${prefix}`);
+      return json(response, []);
+    }
     response.writeHead(200, { 'Content-Type': 'image/jpeg' }); return response.end(image);
   }
   if (path.startsWith('/private-fixture/')) {
@@ -139,6 +155,31 @@ try {
   const article = await (await request('/portfolio/original')).text(); assert.ok(article.includes('Saved in R2')); assert.ok(article.includes('Original body'));
   const sitemap = await (await request('/sitemap.xml')).text(); assert.ok(sitemap.includes('/portfolio/original')); assert.ok(!sitemap.includes('/portfolio/draft'));
   assert.deepEqual(objects.get('content/preview/current.json').bytes, preview);
+  assert.equal((await request('/api/admin/supabase-cleanup')).status, 403);
+  const cleanupOptions = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cleanup' }) };
+  assert.equal((await request('/api/admin/supabase-cleanup', cleanupOptions)).status, 403);
+  const cleanStatus = await (await request('/api/admin/supabase-cleanup', {}, true)).json();
+  assert.equal(cleanStatus.rows, 5); assert.equal(cleanStatus.files, 2); assert.equal(cleanStatus.passwords, 2);
+  const liveBeforeCleanup = objects.get(result.state.contentKey).bytes.slice();
+  const backupFileKey = `${result.state.prefix}/storage/gallery/image.jpg`;
+  const backupFile = objects.get(backupFileKey);
+  objects.set(backupFileKey, { ...backupFile, bytes: Buffer.from('corrupt') });
+  const blocked = await request('/api/admin/supabase-cleanup', cleanupOptions, true);
+  assert.equal(blocked.status, 503); assert.equal(legacyFiles.size, 2); assert.equal(sourceWrites, 0);
+  objects.set(backupFileKey, backupFile);
+  const cleanup = await request('/api/admin/supabase-cleanup', cleanupOptions, true);
+  const cleaned = await cleanup.json();
+  assert.equal(cleanup.status, 200, JSON.stringify(cleaned)); assert.equal(cleaned.complete, true);
+  assert.equal(cleaned.rowsDeleted, 5); assert.equal(cleaned.filesDeleted, 2); assert.equal(cleaned.passwordsDeleted, 2);
+  assert.deepEqual(await (await request('/api/admin/supabase-cleanup', {}, true)).json(), { rows: 0, files: 0, passwords: 0, complete: true });
+  assert.deepEqual(objects.get(result.state.contentKey).bytes, liveBeforeCleanup);
+  assert.deepEqual(objects.get('content/preview/current.json').bytes, preview);
+  assert.equal((await request('/api/content/media?bucket=gallery&path=image.jpg')).status, 200);
+  assert.equal((await request('/api/notes/media?path=image.jpg', {}, true)).status, 200);
+  const repeat = await request('/api/admin/supabase-cleanup', cleanupOptions, true);
+  assert.equal(repeat.status, 200, await repeat.text());
+  assert.equal((await request('/api/admin/content-preview', {}, true)).status, 200);
   console.log('HTTP cutover and image consolidation verified: owner activation, R2 editing, stale editors, public/private media, reference rewrites, detail rendering and sitemap.');
+  console.log('HTTP cleanup verified: owner-only access, corrupt-backup refusal without deletion, Storage API removal, source transaction, zero remaining, idempotent retry, preserved R2 content/media and auth.');
 } catch (error) { console.error(output); throw error; }
 finally { child.kill('SIGTERM'); fixture.closeAllConnections(); await new Promise(resolve => fixture.close(resolve)); }

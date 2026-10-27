@@ -177,3 +177,25 @@ All twelve public tables still have RLS enabled. Storage retains gallery: 1
 file / 162,778 bytes (public), portfolio: empty (public), theater-images: 20
 files / 9,914,871 bytes (private). No Supabase data, auth records, policies or
 objects were deleted or changed during this inspection.
+
+## Owner cleanup of retained Supabase copies
+
+The owner-only `/admin/storage` cleanup panel checks the active cutover's full
+database and file manifest, reads and verifies every R2 backup object, and
+compares every remaining Supabase row and original image to the backup. New or
+changed source content stops cleanup. Missing source rows/files are allowed for
+retries. The exact remaining business snapshot is copied and read back in the
+private R2 bucket before any source deletion. Auth records and password values
+are never exported by this tool.
+
+Only the approved scope (at most 88 business rows, 21 media files and 2 obsolete
+password configurations) is eligible. Files are removed through the Supabase
+Storage API, retaining buckets and all R2 copies. A `cleanup_legacy_content`
+RPC then locks and compares all source tables and removes rows in one invoker
+transaction, with children before parents. This RPC additionally checks the
+same owner Auth UUID already used by the existing RLS policies; anonymous and
+other authenticated callers cannot execute cleanup. If the owner account is
+migrated to a new Auth UUID, update the existing RLS policies and RPC together.
+It preserves table definitions, policies, Auth and provider bindings. Concurrent
+cleanup requests use a conditional R2 lease; interrupted requests can be retried
+after six minutes. Completion requires all three source counts to reach zero.
