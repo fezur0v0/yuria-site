@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/server'
 import { isOwnerUser } from '@/utils/auth/owner'
 import { AccountAvatar } from '@/components/account/AccountEntry'
 import AccountControls from './AccountControls'
+import AdminNav from '@/components/admin/AdminNav'
 import './account.css'
 
 export const dynamic = 'force-dynamic'
@@ -23,11 +24,13 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const avatarValue = user.user_metadata?.avatar_url
   const avatar = typeof avatarValue === 'string' && avatarValue.startsWith('https://') ? avatarValue : null
 
-  return <main className="account-scene">
+  return <>
+    {isOwner && <AdminNav theme="dark" />}
+    <main className="account-scene">
     <div className="account-shell">
-      <nav className="account-topbar" aria-label="页面导航">
+      {!isOwner && <nav className="account-topbar" aria-label="页面导航">
         <Link href="/" className="account-wordmark">Yuria</Link>
-      </nav>
+      </nav>}
 
       <article className="account-poster">
         <section className="account-cover" aria-label="个人资料">
@@ -60,5 +63,6 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </section>
       </article>
     </div>
-  </main>
+    </main>
+  </>
 }
