@@ -29,6 +29,7 @@ function buildQueryClient() {
           const headers = new Headers(init?.headers);
           const mode = await getBrowserContentMode();
           headers.set('X-Yuria-Preview', mode.preview ? '1' : '0');
+          headers.set('X-Yuria-Content-Epoch', mode.epoch);
           headers.delete('apikey');
           if (session?.access_token) headers.set('Authorization', `Bearer ${session.access_token}`);
           else headers.delete('Authorization');

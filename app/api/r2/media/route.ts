@@ -2,6 +2,7 @@ import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { contentContext } from '@/utils/content/request';
 import { previewMatches } from '@/utils/migration/preview';
+import { epochMatches } from '@/utils/migration/cutover';
 import { isSameOriginRequest } from '@/utils/security/origin';
 import { createR2Client, getR2Config } from '@/utils/r2/server';
 
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
   }
   if (!access.owner) {
     return Response.json({ error: '没有上传权限' }, { status: 403 });
+  }
+  if (access.paused || !epochMatches(request.headers.get('x-yuria-content-epoch'), access.epoch)) {
+    return Response.json({ error: '正在迁移或内容来源已切换，请在迁移完成后刷新页面' }, { status: 409 });
   }
 
   const body = await request.json().catch(() => null) as {
@@ -81,6 +85,9 @@ export async function DELETE(request: Request) {
   }
   if (!access.owner) {
     return Response.json({ error: '没有删除权限' }, { status: 403 });
+  }
+  if (access.paused || !epochMatches(request.headers.get('x-yuria-content-epoch'), access.epoch)) {
+    return Response.json({ error: '正在迁移或内容来源已切换，请在迁移完成后刷新页面' }, { status: 409 });
   }
 
   // Preview record deletion must never delete an original public R2 object.

@@ -24,19 +24,19 @@ export function backupObjectKey(prefix: string, bucket: string, path: string) {
 }
 
 type FileEntry = { bucket: string; path: string };
-type Source = {
+export type BackupSource = {
   table: (name: typeof CONTENT_TABLES[number]) => Promise<unknown[]>;
   files: () => Promise<FileEntry[]>;
   download: (file: FileEntry) => Promise<{ bytes: Uint8Array; type: string }>;
 };
-type Target = {
+export type BackupTarget = {
   put: (key: string, bytes: Uint8Array, type: string) => Promise<void>;
   get: (key: string) => Promise<Uint8Array>;
 };
 const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 const jsonBytes = (value: unknown) => new TextEncoder().encode(JSON.stringify(value));
 
-export async function createVerifiedBackup(source: Source, target: Target, prefix: string) {
+export async function createVerifiedBackup(source: BackupSource, target: BackupTarget, prefix: string) {
   if (!/^migration-backups\/[a-zA-Z0-9_-]+$/.test(prefix)) throw new Error('备份前缀无效');
   async function copy(key: string, bytes: Uint8Array, type: string) {
     const sha256 = digest(bytes);

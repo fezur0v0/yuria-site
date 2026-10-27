@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic';
 const headers = { 'Cache-Control': 'private, no-store', Vary: 'Cookie' };
 export async function GET() {
   const access = await contentContext();
-  return NextResponse.json({ preview: access.preview, r2: access.r2, owner: access.owner }, { headers });
+  return NextResponse.json({ preview: access.preview, r2: access.r2, owner: access.owner,
+    epoch: access.epoch, paused: access.paused, live: access.state.phase === 'active' }, { headers });
 }
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) return NextResponse.json({ error: '请求来源无效' }, { status: 403, headers });
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   if (!['enable', 'disable'].includes(body?.action)) return NextResponse.json({ error: '操作无效' }, { status: 400, headers });
   if (body.action === 'enable') {
+    if (access.state.phase === 'active') return NextResponse.json({ error: '网站已正式使用 R2，无需再进入测试预览' }, { status: 409, headers });
+    if (access.paused) return NextResponse.json({ error: '正在迁移，请稍后再试' }, { status: 409, headers });
     try { await readContent(true); }
     catch { return NextResponse.json({ error: 'R2 内容不可读取，未进入预览' }, { status: 503, headers }); }
   }

@@ -13,7 +13,7 @@ export async function uploadPublicMedia(file: File, folder: string) {
   const mode = await getBrowserContentMode();
   const ticketResponse = await fetch('/api/r2/media', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Yuria-Preview': mode.preview ? '1' : '0' },
+    headers: { 'Content-Type': 'application/json', 'X-Yuria-Preview': mode.preview ? '1' : '0', 'X-Yuria-Content-Epoch': mode.epoch },
     body: JSON.stringify({
       fileName: file.name,
       contentType: file.type,
@@ -45,7 +45,7 @@ export async function deletePublicMedia(url: string) {
   const mode = await getBrowserContentMode();
   const response = await fetch('/api/r2/media', {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', 'X-Yuria-Preview': mode.preview ? '1' : '0' },
+    headers: { 'Content-Type': 'application/json', 'X-Yuria-Preview': mode.preview ? '1' : '0', 'X-Yuria-Content-Epoch': mode.epoch },
     body: JSON.stringify({ url }),
   });
 

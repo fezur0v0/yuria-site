@@ -4,6 +4,8 @@ import { tableName, queryContent, mutateContent } from '@/utils/migration/query'
 import { isSameOriginRequest } from '@/utils/security/origin';
 import { adaptPrivateMedia } from '@/utils/migration/mediaUrls';
 import { previewMatches } from '@/utils/migration/preview';
+import { epochMatches } from '@/utils/migration/cutover';
+import { adaptImportedMedia } from '@/utils/migration/legacyMedia';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,6 +25,10 @@ async function handle(request: Request, context: Context) {
     });
   }
   if (write && !access.owner) return Response.json({ message: '仅站长可保存内容' }, { status: 403, headers: privateHeaders });
+  if (write && (access.paused || !epochMatches(request.headers.get('x-yuria-content-epoch'), access.epoch))) {
+    return Response.json({ message: access.paused ? '正在迁移，请暂停编辑，完成后刷新页面' : '内容来源已切换，请刷新页面后再编辑', code: 'CONTENT_MODE_CHANGED' },
+      { status: 409, headers: { ...privateHeaders, 'X-Yuria-Content-Backend': 'r2' } });
+  }
   const url = new URL(request.url);
   if (!access.r2) {
     // Supabase still verifies the forwarded bearer token and enforces RLS.
@@ -50,7 +56,7 @@ async function handle(request: Request, context: Context) {
     const body = write && request.method !== 'DELETE' ? await request.json() : null;
     let result;
     for (let attempt = 0; attempt < 8; attempt++) {
-      const current = await readContent(access.preview);
+      const current = await readContent(access.preview, access.state);
       const version = tableVersion(current.document.tables[table]);
       if (write) {
         if (request.headers.get('x-yuria-table-version') !== version) {
@@ -71,7 +77,9 @@ async function handle(request: Request, context: Context) {
     headers.set('Content-Range', `${result.rows.length ? `${result.offset}-${result.offset + result.rows.length - 1}` : '*'}/${result.count}`);
     if (single && result.rows.length !== 1) return Response.json({ message: '未找到唯一记录', code: 'PGRST116', details: `The result contains ${result.rows.length} rows` }, { status: 406, headers });
     if (request.method === 'HEAD' || write && !prefer.includes('return=representation')) return new Response(null, { status: write ? 204 : 200, headers });
-    return Response.json(adaptPrivateMedia(single ? result.rows[0] : result.rows), { status: request.method === 'POST' ? 201 : 200, headers });
+    const data = single ? result.rows[0] : result.rows;
+    return Response.json(access.state.phase === 'active' ? adaptImportedMedia(data, process.env.NEXT_PUBLIC_SUPABASE_URL) : adaptPrivateMedia(data),
+      { status: request.method === 'POST' ? 201 : 200, headers });
   } catch {
     return Response.json({ message: 'R2 内容操作未完成，请检查内容格式或稍后重试' }, { status: 400, headers });
   }
