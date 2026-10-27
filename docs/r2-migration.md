@@ -1,6 +1,6 @@
 # R2 content migration
 
-## Current phase: owner-tested preview; final cutover available
+## Current phase: live R2 cutover verified; image consolidation available
 
 The owner-only `/admin/storage` page checks the configured private R2 bucket and
 copies the eleven business content tables plus all objects in the three legacy
@@ -127,9 +127,8 @@ Tests: `npm run test:content` and `npm run test:auth`.
    preview, including conflict handling, search and media references.
 3. Verify guest, ordinary user and owner access, editing, search, ordering, media,
    draft visibility and sitemap behavior in a preview.
-4. Use the final cutover operation while signed in as owner and confirm the
-   returned active state. This authenticated operation has not been run by the
-   coding agent. Recheck live pages, private access and owner saves afterward.
+4. The owner executed final cutover on 2026-10-27. The public live-mode endpoint
+   reports R2 active; public essays, gallery and private access checks pass.
 5. Monitor and reconcile before discussing source cleanup separately. Supabase
    Auth remains enabled; do not delete its database or auth schema.
 
@@ -139,3 +138,42 @@ Cutover verification: `npm run test:content`, `npm run test:auth`, TypeScript an
 the production build. `node tests/cutover-http-check.mjs` exercises the built app
 against local Supabase/S3 HTTP fixtures with disposable credentials; it requires
 permitted loopback access and does not contact production services.
+
+## Website images and external image consolidation
+
+Deploy builds run `scripts/site-assets.mjs` before Next.js. The script copies all
+public image files and the app icon/favicon into immutable content-hashed keys
+in the public R2 bucket, reads back and checksum-verifies every object, then
+generates the public URL manifest. A failed copy prevents publication. Local
+builds without R2 credentials index the same manifest without uploading. The
+five sidebar social icons now use the installed icon set, copied alongside
+website media, instead of requesting another image CDN. The source files remain
+as deployment/rollback copies. Known original paths permanently redirect to R2,
+so old article URLs continue working. The apple touch icon uses the actual app
+icon instead of a missing file.
+
+The owner-only image consolidation panel reads the current live R2 document,
+identifies image fields plus HTML/Markdown/CSS image references, and copies
+external originals to public or private R2 according to publication status.
+Music playback and ordinary social links are excluded. Already imported
+Supabase references and repository image references are rewritten to their R2
+locations without downloading the original hosts again. External downloads use
+HTTPS, checked and pinned public DNS addresses, bounded redirects/bytes/time,
+and image signature checks; no credentials or cookies are sent. Each upload is
+checksum-verified before the document is saved with its original ETag. Failed
+downloads keep their existing URL, remain in the pending count and appear in
+the owner report. Work is automatically batched. Pause editing during this run.
+Private imported images require owner authorization, or a current published
+reference, before the server serves bytes from the private bucket.
+
+## Retained Supabase inventory (read-only check, 2026-10-27)
+
+Auth retains 4 users, with 3 GitHub identities and 2 Google identities. Original
+business tables retain: site_config 2, site_settings 1, hero_lines 2, intro_lines
+4, music_tracks 4, portfolio_items 3, gallery_albums 4, gallery_images 5,
+theater_cards 54, theater_records 3 and characters 6. The unused access_config
+table retains 2 old password configurations; its values were not exported.
+All twelve public tables still have RLS enabled. Storage retains gallery: 1
+file / 162,778 bytes (public), portfolio: empty (public), theater-images: 20
+files / 9,914,871 bytes (private). No Supabase data, auth records, policies or
+objects were deleted or changed during this inspection.

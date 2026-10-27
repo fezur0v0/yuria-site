@@ -118,9 +118,27 @@ try {
   assert.equal((await request('/api/content/media?bucket=theater-images&path=image.jpg')).status, 404);
   assert.equal((await request('/api/notes/media?path=image.jpg')).status, 403);
   assert.equal((await request('/api/notes/media?path=image.jpg', {}, true)).status, 200);
+  assert.equal((await request('/api/admin/image-consolidation')).status, 403);
+  const imagePlan = await (await request('/api/admin/image-consolidation', {}, true)).json();
+  assert.equal(imagePlan.remaining, 2);
+  const consolidate = await request('/api/admin/image-consolidation', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'consolidate' }) }, true);
+  const consolidated = await consolidate.json();
+  assert.equal(consolidate.status, 200, JSON.stringify(consolidated));
+  assert.equal(consolidated.complete, true); assert.equal(consolidated.updated, 2);
+  const privateFile = '0'.repeat(64) + '.jpg';
+  assert.equal((await request(`/api/content/image?key=${privateFile}`)).status, 403);
+  objects.set(`content/live/imported/${privateFile}`, { bytes: image, etag: '"private-import"', type: 'image/jpeg' });
+  assert.equal((await request(`/api/content/image?key=${privateFile}`, {}, true)).status, 200);
+  const articleVersion = (await request('/api/content/portfolio_items?select=id', {}, true)).headers.get('X-Yuria-Table-Version');
+  const publishRef = await request('/api/content/portfolio_items?id=eq.original', { method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-Yuria-Content-Epoch': mode.epoch, 'X-Yuria-Table-Version': articleVersion },
+    body: JSON.stringify({ cover_url: `/api/content/image?key=${privateFile}` }) }, true);
+  assert.equal(publishRef.status, 204);
+  assert.equal((await request(`/api/content/image?key=${privateFile}`)).status, 200);
   const article = await (await request('/portfolio/original')).text(); assert.ok(article.includes('Saved in R2')); assert.ok(article.includes('Original body'));
   const sitemap = await (await request('/sitemap.xml')).text(); assert.ok(sitemap.includes('/portfolio/original')); assert.ok(!sitemap.includes('/portfolio/draft'));
   assert.deepEqual(objects.get('content/preview/current.json').bytes, preview);
-  console.log('HTTP cutover verified: owner activation, latest originals, R2 editing, stale-editor rejection, private/public media, detail rendering, and sitemap.');
+  console.log('HTTP cutover and image consolidation verified: owner activation, R2 editing, stale editors, public/private media, reference rewrites, detail rendering and sitemap.');
 } catch (error) { console.error(output); throw error; }
 finally { child.kill('SIGTERM'); fixture.closeAllConnections(); await new Promise(resolve => fixture.close(resolve)); }

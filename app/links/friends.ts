@@ -1,3 +1,5 @@
+import { siteAsset } from '@/utils/siteAssets';
+
 export interface FriendLink {
   name: string;
   url: string;
@@ -10,7 +12,7 @@ export const FRIEND_LINKS: FriendLink[] = [
     name: '易安',
     url: 'https://iliyian.com/',
     description: '魂梦任悠扬，睡起杨花满绣床。',
-    image: '/images/links/iliyian-avatar.jpg',
+    image: siteAsset('/images/links/iliyian-avatar.jpg'),
   },
 ];
 

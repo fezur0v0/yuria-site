@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/content/client';
+import { siteAsset } from '@/utils/siteAssets';
 
 interface Profile {
   avatar_url: string | null;
@@ -53,7 +54,7 @@ export default function SidebarProfile() {
             url ? (
               <a key={key} href={url} target="_blank" rel="noopener noreferrer" className="opacity-50 hover:opacity-90 transition">
                 <img
-                  src={`https://cdn.simpleicons.org/${LINK_ICON_SLUGS[key] ?? key}/1a1a1a`}
+                  src={siteAsset(LINK_ICON_SLUGS[key] ? `/images/social/${LINK_ICON_SLUGS[key]}.svg` : '/globe.svg')}
                   alt={key}
                   className="w-5 h-5"
                 />

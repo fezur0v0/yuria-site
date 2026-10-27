@@ -1,0 +1,137 @@
+{
+  "baseUrl": "https://pub-35088d0da172442da3eaa5e0025da6a7.r2.dev",
+  "files": {
+    "/file.svg": {
+      "key": "site-assets/2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4/file.svg",
+      "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4",
+      "bytes": 391,
+      "type": "image/svg+xml"
+    },
+    "/globe.svg": {
+      "key": "site-assets/b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf/globe.svg",
+      "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf",
+      "bytes": 1035,
+      "type": "image/svg+xml"
+    },
+    "/images/legacy-media/1785071741596-l4f7ygrt8jo.png": {
+      "key": "site-assets/0f38e50d8958f3a4eceb654eebc6fa0b36f2695d08e0b115893ef6bd4c9172b2/1785071741596-l4f7ygrt8jo.png",
+      "sha256": "0f38e50d8958f3a4eceb654eebc6fa0b36f2695d08e0b115893ef6bd4c9172b2",
+      "bytes": 455287,
+      "type": "image/png"
+    },
+    "/images/legacy-media/cover-1784713796015.jpg": {
+      "key": "site-assets/f48c6c2ff03dcdd752ca51fcba4a0006b819b310c34c7897cffb5311bd935fd4/cover-1784713796015.jpg",
+      "sha256": "f48c6c2ff03dcdd752ca51fcba4a0006b819b310c34c7897cffb5311bd935fd4",
+      "bytes": 13496,
+      "type": "image/jpeg"
+    },
+    "/images/legacy-media/cover-1785504732354.jpg": {
+      "key": "site-assets/4dc138dc5a4bfb5aab8ff93f0520b4c0ad6d45f83ac343fb45885a3ac8aefdd4/cover-1785504732354.jpg",
+      "sha256": "4dc138dc5a4bfb5aab8ff93f0520b4c0ad6d45f83ac343fb45885a3ac8aefdd4",
+      "bytes": 40585,
+      "type": "image/jpeg"
+    },
+    "/images/legacy-media/gallery/e976b221-895f-466e-8525-6ba63b0aaa13/1785858144875-____.jpg": {
+      "key": "site-assets/28b46bd3fd5c7fd8f974c5c7735867cfb6ff7117defad3adb5b7c3ef721ca405/1785858144875-____.jpg",
+      "sha256": "28b46bd3fd5c7fd8f974c5c7735867cfb6ff7117defad3adb5b7c3ef721ca405",
+      "bytes": 144001,
+      "type": "image/jpeg"
+    },
+    "/images/legacy-media/gallery/e976b221-895f-466e-8525-6ba63b0aaa13/1785858168601-___.jpg": {
+      "key": "site-assets/ab39ebab1ea05d07514b1873ce72e09ba1dcf8b5043b1e4ce5909290dd09db74/1785858168601-___.jpg",
+      "sha256": "ab39ebab1ea05d07514b1873ce72e09ba1dcf8b5043b1e4ce5909290dd09db74",
+      "bytes": 162778,
+      "type": "image/jpeg"
+    },
+    "/images/legacy-media/gallery/e976b221-895f-466e-8525-6ba63b0aaa13/1785858197285-xue.jpg": {
+      "key": "site-assets/2bbc94d490258220227b97d66157d2c4efc60b5ceabe639b6bf892272c8e1cf5/1785858197285-xue.jpg",
+      "sha256": "2bbc94d490258220227b97d66157d2c4efc60b5ceabe639b6bf892272c8e1cf5",
+      "bytes": 42884,
+      "type": "image/jpeg"
+    },
+    "/images/links/friend-links-title.webp": {
+      "key": "site-assets/727ceaf3f88a2cbc32746610f7ccc0dcb189cac792bb818129acb783e3e7197c/friend-links-title.webp",
+      "sha256": "727ceaf3f88a2cbc32746610f7ccc0dcb189cac792bb818129acb783e3e7197c",
+      "bytes": 156298,
+      "type": "image/webp"
+    },
+    "/images/links/iliyian-avatar.jpg": {
+      "key": "site-assets/7e82bdc63e18da790e3dd253ae4717565fbbc93c3327794d05ffe872c6a5ceae/iliyian-avatar.jpg",
+      "sha256": "7e82bdc63e18da790e3dd253ae4717565fbbc93c3327794d05ffe872c6a5ceae",
+      "bytes": 36625,
+      "type": "image/jpeg"
+    },
+    "/images/social/bilibili.svg": {
+      "key": "site-assets/738110a50808ff3f7f309a2459a5d32453356e358d2888edefdbbaaaf860a82b/bilibili.svg",
+      "sha256": "738110a50808ff3f7f309a2459a5d32453356e358d2888edefdbbaaaf860a82b",
+      "bytes": 1485,
+      "type": "image/svg+xml"
+    },
+    "/images/social/github.svg": {
+      "key": "site-assets/93e91aa11013d28c074ca4311844ed50c0bcd2593b70fe265e259f0f7f76d00b/github.svg",
+      "sha256": "93e91aa11013d28c074ca4311844ed50c0bcd2593b70fe265e259f0f7f76d00b",
+      "bytes": 928,
+      "type": "image/svg+xml"
+    },
+    "/images/social/qq.svg": {
+      "key": "site-assets/39a0b735346727a0a536b8fb125b0b4eccc2413b157619cd3394ead8f23c8741/qq.svg",
+      "sha256": "39a0b735346727a0a536b8fb125b0b4eccc2413b157619cd3394ead8f23c8741",
+      "bytes": 760,
+      "type": "image/svg+xml"
+    },
+    "/images/social/x.svg": {
+      "key": "site-assets/8979865dd3aef7cc11c5e648d8c79de8f545f7813101c9adaa3ce5f687479966/x.svg",
+      "sha256": "8979865dd3aef7cc11c5e648d8c79de8f545f7813101c9adaa3ce5f687479966",
+      "bytes": 410,
+      "type": "image/svg+xml"
+    },
+    "/images/social/xiaohongshu.svg": {
+      "key": "site-assets/ee3a1cd429594ac4bf124c72fe8737a25bc9decd88947903133b2c12043f3cfe/xiaohongshu.svg",
+      "sha256": "ee3a1cd429594ac4bf124c72fe8737a25bc9decd88947903133b2c12043f3cfe",
+      "bytes": 3685,
+      "type": "image/svg+xml"
+    },
+    "/next.svg": {
+      "key": "site-assets/55995dfad6ecb4945a1e856ddca03c5e16aa5bf13fd21b4df6a74ae79357bcfc/next.svg",
+      "sha256": "55995dfad6ecb4945a1e856ddca03c5e16aa5bf13fd21b4df6a74ae79357bcfc",
+      "bytes": 1375,
+      "type": "image/svg+xml"
+    },
+    "/textures/paper-cream.jpg": {
+      "key": "site-assets/8997ad21ff58d76a35fb60775eacc8487e90495ba2762ea1e41ea628bb19d8a7/paper-cream.jpg",
+      "sha256": "8997ad21ff58d76a35fb60775eacc8487e90495ba2762ea1e41ea628bb19d8a7",
+      "bytes": 7558,
+      "type": "image/jpeg"
+    },
+    "/textures/paper-white.jpg": {
+      "key": "site-assets/d74e2961d4841aa005363e8007bf02df7f448e666dfac56dbcf44fd2a7c6084b/paper-white.jpg",
+      "sha256": "d74e2961d4841aa005363e8007bf02df7f448e666dfac56dbcf44fd2a7c6084b",
+      "bytes": 6092,
+      "type": "image/jpeg"
+    },
+    "/vercel.svg": {
+      "key": "site-assets/f081337b2fee635b455b63275406a3e7f39d6a014e25ad90dab5a67e62a12ac4/vercel.svg",
+      "sha256": "f081337b2fee635b455b63275406a3e7f39d6a014e25ad90dab5a67e62a12ac4",
+      "bytes": 128,
+      "type": "image/svg+xml"
+    },
+    "/window.svg": {
+      "key": "site-assets/644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1/window.svg",
+      "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1",
+      "bytes": 385,
+      "type": "image/svg+xml"
+    },
+    "/icon.png": {
+      "key": "site-assets/f9603dea897a4a6a2f2345ee5d8489aebcabe22b17580f25aab9533016f3a2c4/icon.png",
+      "sha256": "f9603dea897a4a6a2f2345ee5d8489aebcabe22b17580f25aab9533016f3a2c4",
+      "bytes": 47854,
+      "type": "image/png"
+    },
+    "/favicon.ico": {
+      "key": "site-assets/f78123d5cd5435c9592b4842eba37d74da8199586a753989bc081deab4eee58e/favicon.ico",
+      "sha256": "f78123d5cd5435c9592b4842eba37d74da8199586a753989bc081deab4eee58e",
+      "bytes": 1145,
+      "type": "image/x-icon"
+    }
+  }
+}

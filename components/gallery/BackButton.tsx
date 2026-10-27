@@ -2,6 +2,7 @@
 'use client';
 
 import Link from 'next/link';
+import { siteAsset } from '@/utils/siteAssets';
 
 interface BackButtonProps {
   href?: string;
@@ -32,7 +33,7 @@ export default function BackButton({ href, onClick, label, className = '' }: Bac
             className="inline-flex items-center justify-center font-serif font-semibold uppercase transition-transform duration-200 group-hover:-translate-y-0.5"
             style={{
               backgroundColor: style.bg,
-              backgroundImage: style.texture ? `url(${style.texture})` : undefined,
+              backgroundImage: style.texture ? `url(${siteAsset(style.texture)})` : undefined,
               backgroundBlendMode: style.texture ? 'multiply' : undefined,
               backgroundSize: 'cover',
               color: style.color,

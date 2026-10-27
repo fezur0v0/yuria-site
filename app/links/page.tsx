@@ -3,6 +3,7 @@ import Image from 'next/image';
 import PortfolioNav from '@/components/PortfolioNav';
 import { FRIEND_LINKS, friendLinkHost } from './friends';
 import styles from './links.module.css';
+import { siteAsset } from '@/utils/siteAssets';
 
 export const metadata: Metadata = {
   title: '友人帐',
@@ -20,7 +21,7 @@ export default function LinksPage() {
           <h1 className={styles.heading}>
             <span className={styles.srOnly}>友人帐</span>
             <Image
-              src="/images/links/friend-links-title.webp"
+              src={siteAsset('/images/links/friend-links-title.webp')}
               alt=""
               width={960}
               height={422}

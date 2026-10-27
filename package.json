@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/site-assets.mjs && next build",
+    "assets:sync": "node scripts/site-assets.mjs",
     "start": "next start",
     "lint": "eslint",
     "test:auth": "node --experimental-strip-types --test tests/notes-media.test.mjs tests/auth-destination.test.mjs",
-    "test:content": "node --experimental-strip-types --test tests/r2-query.test.mjs tests/r2-content.test.mjs tests/storage-backup.test.mjs tests/storage-cutover.test.mjs"
+    "test:content": "node --experimental-strip-types --test tests/r2-query.test.mjs tests/r2-content.test.mjs tests/storage-backup.test.mjs tests/storage-cutover.test.mjs tests/image-consolidation.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1146.0",

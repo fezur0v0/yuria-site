@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import assets from './generated/site-assets.json';
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -32,6 +33,15 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  images: { remotePatterns: [{ protocol: 'https', hostname: new URL(assets.baseUrl).hostname, pathname: '/site-assets/**' }] },
+  async redirects() {
+    const files = assets.files as Record<string, { key: string }>;
+    const redirects = Object.entries(files).map(([source, file]) => ({ source,
+      destination: `${assets.baseUrl}/${file.key.split('/').map(encodeURIComponent).join('/')}`, permanent: true }));
+    if (files['/icon.png']) redirects.push({ source: '/apple-icon.png',
+      destination: `${assets.baseUrl}/${files['/icon.png'].key}`, permanent: true });
+    return redirects;
+  },
   async headers() {
     return [
       {
