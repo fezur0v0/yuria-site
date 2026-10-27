@@ -1,5 +1,5 @@
 'use client';
-type Mode = { preview: boolean; r2: boolean; owner: boolean };
+type Mode = { preview: boolean; r2: boolean; owner: boolean; epoch: string; paused: boolean; live: boolean };
 let mode: Promise<Mode> | undefined;
 export function getBrowserContentMode() {
   mode ??= fetch('/api/admin/content-preview', { cache: 'no-store' }).then(async response => {

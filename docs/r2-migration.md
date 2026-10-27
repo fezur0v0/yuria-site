@@ -1,6 +1,6 @@
 # R2 content migration
 
-## Current phase: verified private backup
+## Current phase: owner-tested preview; final cutover available
 
 The owner-only `/admin/storage` page checks the configured private R2 bucket and
 copies the eleven business content tables plus all objects in the three legacy
@@ -80,9 +80,41 @@ Public test uploads use the public bucket's `migration-preview/` prefix. Preview
 deletion never deletes original R2 objects. Legacy private Supabase URLs are
 adapted for display; public repository copies and external links are preserved.
 
-`CONTENT_BACKEND=r2` is reserved for final cutover and is not enabled. Production
-will use `content/live/current.json`; prepare a fresh verified export and pause
-legacy writers before switching. Sitemap reads stay anonymous and published-only.
+`/admin/storage` now offers an owner-only final cutover using the latest original
+Supabase content. The owner has explicitly chosen not to merge preview edits.
+The single operation pauses site API saves with a conditional R2 marker, creates
+a new verified database/media backup, re-reads source tables, file lists and
+file bytes to detect drift, verifies the unique live document, then atomically
+publishes its pointer in private `content/cutover.json`. No environment change
+or second deployment is needed at activation. The preview document is untouched.
+
+The marker selects `content/live/runs/<run>/current.json` and the matching fresh
+media backup prefix for all live readers, writers and the dynamic anonymous
+sitemap. A missing live document fails instead of falling back to stale backup
+data. Errors before activation restore the original backend when the marker can
+be read; unknown status remains paused until verified. An interrupted function
+can be unlocked by the owner after six minutes, beyond the 300-second execution
+budget. Recovery never rolls back an active R2 store, including an uncertain
+activation response that may already have committed.
+
+The API rejects old page write epochs after activation; reload open editors.
+R2 preview cookies are ignored once live cutover is active. Private uploads
+always pass through the owner-verified site API so migration pauses apply.
+Keep all other editors, direct Supabase clients and uploads idle during the
+operation. Source re-reads detect changes; the export is not a database-wide
+transaction and cannot lock arbitrary external Supabase clients.
+
+Original Supabase media URLs are adapted to `/api/content/media` in live reads.
+Guest media access is checked against currently published content before reading
+private R2 objects; owner access uses the verified session. Edited documents may
+retain these adapted URLs, which remain valid reference sources. Theater images
+also read new private live uploads before the matching fresh backup. Public R2
+assets, repository image copies and external links remain in their current
+locations; the Supabase originals are retained. This cutover does not claim that
+repository assets or external image hosts have all been consolidated into R2.
+
+`CONTENT_BACKEND=r2` remains a legacy override; do not set it before a validated
+live store exists. The owner cutover marker is the supported activation path.
 
 Tests: `npm run test:content` and `npm run test:auth`.
 
@@ -95,9 +127,15 @@ Tests: `npm run test:content` and `npm run test:auth`.
    preview, including conflict handling, search and media references.
 3. Verify guest, ordinary user and owner access, editing, search, ordering, media,
    draft visibility and sitemap behavior in a preview.
-4. Run a final export during a write pause, reconcile any intervening edits,
-   then switch reads and writes together. Retain the original Supabase content.
+4. Use the final cutover operation while signed in as owner and confirm the
+   returned active state. This authenticated operation has not been run by the
+   coding agent. Recheck live pages, private access and owner saves afterward.
 5. Monitor and reconcile before discussing source cleanup separately. Supabase
    Auth remains enabled; do not delete its database or auth schema.
 
 Tests: `node --experimental-strip-types --test tests/storage-backup.test.mjs`.
+
+Cutover verification: `npm run test:content`, `npm run test:auth`, TypeScript and
+the production build. `node tests/cutover-http-check.mjs` exercises the built app
+against local Supabase/S3 HTTP fixtures with disposable credentials; it requires
+permitted loopback access and does not contact production services.

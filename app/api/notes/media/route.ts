@@ -4,6 +4,7 @@ import { contentR2, missingObject } from '@/utils/content/store';
 import { isSameOriginRequest } from '@/utils/security/origin';
 import { previewMatches } from '@/utils/migration/preview';
 import { isValidTheaterObjectPath } from '@/utils/notes/media';
+import { epochMatches } from '@/utils/migration/cutover';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
   if (access.r2) {
     const { client, bucket } = contentR2();
     const keys = [`content/${access.preview ? 'preview' : 'live'}/media/${path}`];
-    const prefix = process.env.R2_CONTENT_BACKUP_PREFIX;
+    const prefix = access.backupPrefix;
     if (prefix && /^migration-backups\/[a-zA-Z0-9_-]+$/.test(prefix)) keys.push(`${prefix}/storage/theater-images/${path}`);
     for (const key of keys) {
       try {
@@ -69,6 +70,9 @@ export async function POST(request: Request) {
     return Response.json({ error: '预览已结束，请刷新页面后继续' }, { status: 409, headers: privateHeaders });
   }
   if (!access.owner) return Response.json({ error: '没有上传权限' }, { status: 403, headers: privateHeaders });
+  if (access.paused || !epochMatches(request.headers.get('x-yuria-content-epoch'), access.epoch)) {
+    return Response.json({ error: '正在迁移或内容来源已切换，请在迁移完成后刷新页面' }, { status: 409, headers: privateHeaders });
+  }
   const path = new URL(request.url).searchParams.get('path') ?? '';
   const type = request.headers.get('content-type') ?? '';
   if (!isValidTheaterObjectPath(path) || !rasterImageType.test(type)) {

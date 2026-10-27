@@ -5,6 +5,8 @@ import { createR2Client, getR2Config } from '@/utils/r2/server';
 import { privateBucketName } from '@/utils/migration/backup';
 import { decodeContent, type ContentDocument } from '@/utils/migration/content';
 import { readVerifiedContentBackup } from '@/utils/migration/readBackup';
+import { readCutover } from '@/utils/content/cutover';
+import type { CutoverState } from '@/utils/migration/cutover';
 
 export const tableVersion = (rows: unknown[]) => createHash('sha256').update(JSON.stringify(rows)).digest('hex');
 export function contentR2() {
@@ -18,15 +20,16 @@ export function conflict(error: unknown) {
   return !!error && typeof error === 'object' && '$metadata' in error &&
     (error.$metadata as { httpStatusCode?: number }).httpStatusCode === 412;
 }
-export async function readContent(preview: boolean) {
+export async function readContent(preview: boolean, liveState?: CutoverState) {
   const { client, bucket } = contentR2();
-  const key = preview ? 'content/preview/current.json' : 'content/live/current.json';
+  const state = preview ? undefined : liveState ?? (await readCutover()).state;
+  const key = preview ? 'content/preview/current.json' : state?.phase === 'active' ? state.contentKey : 'content/live/current.json';
   try {
     const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
     if (!response.Body || (response.ContentLength ?? 0) > 32 * 1024 * 1024) throw new Error('内容文件不可读取');
     return { document: decodeContent(await response.Body.transformToByteArray()), etag: response.ETag, key };
   } catch (error) {
-    if (!missingObject(error)) throw error;
+    if (!missingObject(error) || !preview) throw error;
     const { document } = await readVerifiedContentBackup();
     return { document, etag: undefined, key };
   }
