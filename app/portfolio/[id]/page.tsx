@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { createClient } from '@/utils/content/client';
+import { createClient } from '@/utils/content/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { FiEdit3, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
@@ -42,7 +42,7 @@ function processArticleContent(html: string): { html: string; toc: TocItem[] } {
 
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ id: string }> }) {
 const { id } = await params;
-const supabase = createClient();
+const supabase = await createClient();
 
 const { data: item } = await supabase
 .from('portfolio_items')
