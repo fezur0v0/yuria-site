@@ -1,11 +1,14 @@
 'use client'
 
 import { useRef } from 'react'
-import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type Modifier } from '@dnd-kit/core'
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { FiMenu, FiMusic } from 'react-icons/fi'
 import { useMusic, type MusicTrack } from './MusicProvider'
+
+const verticalOnly: Modifier = ({ transform }) => ({ ...transform, x: 0 })
+const queueModifiers = [verticalOnly]
 
 function QueueTrack({ track, current, onSelect }: { track: MusicTrack; current: boolean; onSelect: () => void }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: track.id })
@@ -31,7 +34,7 @@ export default function MusicQueue({ onSortingChange }: { onSortingChange: (sort
     <div className="music-float__list-heading">In the wings</div>
     <span id="music-queue-help" className="music-float__sr">长按拖动调整顺序。键盘可按空格拿起，再用上下方向键移动，空格放下，Escape 取消。</span>
     <div ref={scrollRef} className="music-float__queue-scroll">
-      <DndContext sensors={sensors} collisionDetection={closestCenter}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={queueModifiers}
         autoScroll={{ canScroll: element => element === scrollRef.current }}
         accessibility={{ screenReaderInstructions: { draggable: '按空格拿起歌曲，用上下方向键移动，再按空格放下，Escape 取消。' },
           announcements: {
