@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FiMenu } from 'react-icons/fi';
 import PortfolioSearch from '@/components/PortfolioSearch';
 import AccountEntry from '@/components/account/AccountEntry';
+import { usePathname } from 'next/navigation';
 import './portfolio-nav.css';
 
 const sections = [
@@ -16,8 +17,15 @@ const extraLinks = [
   { href: '/guestbook', label: '留言板' },
   { href: '/links', label: '链接' },
 ];
+const adminLinks = [
+  { href: '/admin', label: '基本设置' },
+  { href: '/admin/music', label: '音乐' },
+  { href: '/admin/portfolio', label: '作品集' },
+  { href: '/admin/gallery', label: '图集' },
+];
 
-export default function PortfolioNav({ homeHref = '/', theme = 'default', showSections = false }: { homeHref?: string; theme?: 'default' | 'light'; showSections?: boolean }) {
+export default function PortfolioNav({ homeHref = '/', theme = 'default', showSections = false, mode = 'site' }: { homeHref?: string; theme?: 'default' | 'light'; showSections?: boolean; mode?: 'site' | 'admin' }) {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -25,6 +33,11 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
   const menuButton = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const isLight = theme === 'light';
+  const isAdmin = mode === 'admin';
+  const desktopLinks = isAdmin ? adminLinks : [...(showSections ? sections : []), ...extraLinks];
+  const drawerLinks = isAdmin ? adminLinks : [...sections, ...extraLinks];
+  const drawerId = isAdmin ? 'admin-drawer' : 'site-drawer';
+  const isActive = (href: string) => isAdmin && (pathname === href || href !== '/admin' && pathname.startsWith(`${href}/`));
   const linkColor = isLight ? 'text-[#1a1a1a]/70 hover:text-[#1a1a1a]' : 'text-white/80 hover:text-white';
   const closeDrawer = () => setDrawerOpen(false);
 
@@ -60,26 +73,26 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
   }, [drawerOpen]);
 
   return <>
-    <nav aria-label="顶部导航" className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${visible ? 'translate-y-0' : '-translate-y-full'}`}>
+    <nav aria-label={isAdmin ? '管理面板顶部导航' : '顶部导航'} className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${visible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className={`transition-colors duration-300 ${scrolled ? isLight ? 'bg-white/50 backdrop-blur-md' : 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
         <div className="pl-6 pr-3 sm:px-8 h-16 flex items-center justify-between gap-6">
           <Link href={homeHref} className={`${isLight ? 'text-[#1a1a1a]' : 'text-white'} font-serif text-lg tracking-wide`}>yuria</Link>
           <div className="hidden lg:flex items-center gap-6">
             <PortfolioSearch theme={theme} />
-            {showSections && sections.map(item => <Link key={item.href} href={item.href} className={`text-sm ${linkColor}`}>{item.label}</Link>)}
-            {extraLinks.map(item => <Link key={item.href} href={item.href} className={`text-sm ${linkColor}`}>{item.label}</Link>)}
+            {desktopLinks.map(item => <Link key={item.href} href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}
+              className={`text-sm ${linkColor}${isActive(item.href) ? ' underline underline-offset-8' : ''}`}>{item.label}</Link>)}
             <AccountEntry placement="header" light={isLight} />
           </div>
           <div className={`flex lg:hidden shrink-0 items-center gap-1 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>
             <PortfolioSearch theme={theme} overlay />
-            <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls="site-drawer" className="grid place-items-center shrink-0 w-11 h-11"><FiMenu size={20} aria-hidden="true" /></button>
+            <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls={drawerId} className="grid place-items-center shrink-0 w-11 h-11"><FiMenu size={20} aria-hidden="true" /></button>
           </div>
         </div>
       </div>
     </nav>
     <div className={`site-drawer-layer lg:hidden${drawerOpen ? ' is-open' : ''}`} aria-hidden={!drawerOpen} inert={!drawerOpen}>
       <div className="site-drawer-backdrop" onClick={() => { closeDrawer(); menuButton.current?.focus(); }} />
-      <div ref={drawerRef} id="site-drawer" tabIndex={-1} className="site-drawer" role="dialog" aria-modal={drawerOpen ? true : undefined} aria-label="网站导航" onKeyDown={event => {
+      <div ref={drawerRef} id={drawerId} tabIndex={-1} className="site-drawer" role="dialog" aria-modal={drawerOpen ? true : undefined} aria-label={isAdmin ? '管理导航' : '网站导航'} onKeyDown={event => {
         if (event.key !== 'Tab') return;
         const controls = event.currentTarget.querySelectorAll<HTMLElement>('a[href],button:not([disabled])');
         const first = controls[0]; const last = controls[controls.length - 1];
@@ -90,7 +103,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
           <AccountEntry placement="drawer" onNavigate={closeDrawer} />
         </div>
         <div className="site-drawer-links">
-          {[...sections, ...extraLinks].map(item => <Link key={item.href} href={item.href} onClick={closeDrawer}>{item.label}</Link>)}
+          {drawerLinks.map(item => <Link key={item.href} href={item.href} aria-current={isActive(item.href) ? 'page' : undefined} onClick={closeDrawer}>{item.label}</Link>)}
         </div>
       </div>
     </div>

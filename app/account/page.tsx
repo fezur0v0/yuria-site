@@ -26,7 +26,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
   return <>
     {isOwner && <AdminNav theme="dark" />}
-    <main className="account-scene">
+    <main className={`account-scene${isOwner ? ' account-scene--managed' : ''}`}>
     <div className="account-shell">
       {!isOwner && <nav className="account-topbar" aria-label="页面导航">
         <Link href="/" className="account-wordmark">Yuria</Link>

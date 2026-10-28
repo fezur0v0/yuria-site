@@ -6,6 +6,7 @@
   position: relative;
   isolation: isolate;
 }
+.account-scene--managed { padding-top: 64px; }
 .account-scene::before {
   content: '';
   position: absolute;
