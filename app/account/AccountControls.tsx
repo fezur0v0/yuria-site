@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { FiLogOut } from 'react-icons/fi'
+import Link from 'next/link'
+import { FiLogOut, FiSettings } from 'react-icons/fi'
 import { createClient } from '@/utils/supabase/client'
 import { startAuth } from '@/utils/auth/flow'
 
@@ -44,6 +45,9 @@ export default function AccountControls({ isOwner, hasGoogle, userId, linked }: 
     </div>}
     {linked && hasGoogle && <p role="status" className="account-notice">Google 已连接到当前账号。</p>}
     {error && <p role="alert" className="account-notice account-notice--error">{error}</p>}
-    <button type="button" disabled={busy} onClick={signOut} className="account-signout"><FiLogOut size={15} />退出登录</button>
+    <div className="account-actions">
+      {isOwner && <Link href="/admin" className="account-admin-link"><FiSettings size={15} aria-hidden="true" />setting</Link>}
+      <button type="button" disabled={busy} onClick={signOut} className="account-signout"><FiLogOut size={15} aria-hidden="true" />退出登录</button>
+    </div>
   </>
 }

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { FiArrowUpRight, FiGithub } from 'react-icons/fi'
+import { FiGithub } from 'react-icons/fi'
 import { createClient } from '@/utils/supabase/server'
 import { isOwnerUser } from '@/utils/auth/owner'
 import { AccountAvatar } from '@/components/account/AccountEntry'
@@ -49,7 +49,6 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <div className="account-detail__heading">
             <span className="account-detail__index">ACCOUNT ACCESS</span>
             <h1 id="account-methods">登录方式<span aria-hidden="true">.</span></h1>
-            <p>使用已连接的账号登录 Yuria。</p>
           </div>
           <div className="account-methods">
             {hasGithub && <div className="account-method">
@@ -59,7 +58,6 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </div>}
             <AccountControls isOwner={isOwner} hasGoogle={hasGoogle} userId={user.id} linked={(await searchParams).linked === 'google'} />
           </div>
-          {isOwner && <Link href="/admin" className="account-admin-link">进入管理面板 <FiArrowUpRight size={16} /></Link>}
         </section>
       </article>
     </div>

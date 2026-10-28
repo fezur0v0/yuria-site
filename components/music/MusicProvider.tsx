@@ -2,6 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/utils/content/client'
+import { moveQueueTrack, shuffledNext } from '@/utils/music/queue'
+
+export type PlaybackMode = 'list' | 'single' | 'shuffle'
 
 export type MusicTrack = {
   id: number
@@ -20,8 +23,9 @@ type MusicContextValue = {
   elapsed: number
   duration: number
   seek: (seconds: number) => void
-  loopOne: boolean
-  toggleLoop: () => void
+  mode: PlaybackMode
+  cycleMode: () => void
+  reorder: (activeId: number, overId: number) => void
   toggle: () => void
   next: () => void
   previous: () => void
@@ -38,16 +42,24 @@ export function useMusic() {
 
 export default function MusicProvider({ children }: { children: React.ReactNode }) {
   const [tracks, setTracks] = useState<MusicTrack[]>([])
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentId, setCurrentId] = useState<number | null>(null)
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState('')
   const [elapsed, setElapsed] = useState(0)
   const [duration, setDuration] = useState(0)
-  const [loopOne, setLoopOne] = useState(false)
-  const toggleLoop = useCallback(() => setLoopOne(value => !value), [])
+  const [mode, setMode] = useState<PlaybackMode>('list')
+  const shuffled = useRef<number[]>([])
+  const history = useRef<number[]>([])
+  const cycleMode = useCallback(() => {
+    shuffled.current = []
+    history.current = []
+    setMode(value => value === 'list' ? 'single' : value === 'single' ? 'shuffle' : 'list')
+  }, [])
   const audioRef = useRef<HTMLAudioElement>(null)
   const startAfterChange = useRef(false)
+  const currentIndex = Math.max(0, tracks.findIndex(track => track.id === currentId))
   const current = tracks[currentIndex] ?? null
+  const trackId = current?.id
   const currentSrc = current?.src
 
   useEffect(() => {
@@ -71,9 +83,9 @@ export default function MusicProvider({ children }: { children: React.ReactNode 
       startAfterChange.current = false
       void audio.play().catch(() => { setPlaying(false); setError('点击播放后重试') })
     }
-  }, [currentSrc])
+  }, [currentSrc, trackId])
 
-  const select = useCallback((index: number) => {
+  const choose = useCallback((index: number, remember = true) => {
     if (!tracks[index]) return
     setError('')
     if (index === currentIndex) {
@@ -81,16 +93,36 @@ export default function MusicProvider({ children }: { children: React.ReactNode 
       return
     }
     startAfterChange.current = true
-    setCurrentIndex(index)
-  }, [tracks, currentIndex])
+    if (remember && current) history.current.push(current.id)
+    if (history.current.length > 100) history.current.shift()
+    setCurrentId(tracks[index].id)
+  }, [tracks, currentIndex, current])
+  const select = useCallback((index: number) => choose(index), [choose])
+  const reorder = useCallback((activeId: number, overId: number) => {
+    // Keep the playing track by ID, including before the first explicit selection.
+    if (current) setCurrentId(current.id)
+    setTracks(value => moveQueueTrack(value, activeId, overId))
+  }, [current])
 
   const next = useCallback(() => {
-    if (tracks.length) select((currentIndex + 1) % tracks.length)
-  }, [currentIndex, select, tracks.length])
+    if (!current) return
+    if (mode === 'shuffle') {
+      const draw = shuffledNext(tracks.map(track => track.id), current.id, shuffled.current)
+      shuffled.current = draw.remaining
+      choose(tracks.findIndex(track => track.id === draw.id))
+    } else choose((currentIndex + 1) % tracks.length)
+  }, [currentIndex, choose, tracks, current, mode])
 
   const previous = useCallback(() => {
-    if (tracks.length) select((currentIndex - 1 + tracks.length) % tracks.length)
-  }, [currentIndex, select, tracks.length])
+    if (!tracks.length) return
+    if (mode === 'shuffle') {
+      const previousId = history.current.pop()
+      if (previousId !== undefined) {
+        if (current) shuffled.current = [current.id, ...shuffled.current.filter(id => id !== current.id)]
+        choose(tracks.findIndex(track => track.id === previousId), false)
+      } else { const audio = audioRef.current; if (audio) audio.currentTime = 0 }
+    } else choose((currentIndex - 1 + tracks.length) % tracks.length)
+  }, [currentIndex, choose, tracks, mode, current])
 
   const toggle = useCallback(() => {
     const audio = audioRef.current
@@ -107,12 +139,12 @@ export default function MusicProvider({ children }: { children: React.ReactNode 
     setElapsed(audio.currentTime)
   }, [])
 
-  const value = useMemo(() => ({ tracks, current, currentIndex, playing, error, elapsed, duration, seek, loopOne, toggleLoop, toggle, next, previous, select }),
-    [tracks, current, currentIndex, playing, error, elapsed, duration, seek, loopOne, toggleLoop, toggle, next, previous, select])
+  const value = useMemo(() => ({ tracks, current, currentIndex, playing, error, elapsed, duration, seek, mode, cycleMode, reorder, toggle, next, previous, select }),
+    [tracks, current, currentIndex, playing, error, elapsed, duration, seek, mode, cycleMode, reorder, toggle, next, previous, select])
 
   return <MusicContext.Provider value={value}>
     {children}
-    <audio ref={audioRef} src={currentSrc} preload="metadata" loop={loopOne}
+    <audio ref={audioRef} src={currentSrc} preload="metadata" loop={mode === 'single'}
       onPlay={() => { setPlaying(true); setError('') }}
       onPause={() => setPlaying(false)}
       onTimeUpdate={event => setElapsed(event.currentTarget.currentTime)}

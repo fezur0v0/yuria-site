@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useRef, useState, type PointerEvent, type CSSProperties } from 'react'
-import { FiHeadphones, FiMusic, FiRepeat } from 'react-icons/fi'
+import { FiHeadphones, FiMusic, FiRepeat, FiShuffle } from 'react-icons/fi'
 import { IoPlayBackSharp, IoPlayForwardSharp, IoPauseSharp, IoPlaySharp } from 'react-icons/io5'
 import { useMusic } from './MusicProvider'
+import MusicQueue from './MusicQueue'
 import './music-player.css'
 
-type Position = { right: number; bottom: number }
-type Drag = Position & { x: number; y: number; pointerId: number; moved: boolean }
+type Position = { side: 'left' | 'right'; offset: number; bottom: number }
+type Drag = { left: number; bottom: number; x: number; y: number; pointerId: number; moved: boolean }
 const MARGIN = 12
 function formatTime(seconds: number) {
   const total = Math.max(0, Math.floor(seconds))
@@ -15,7 +16,7 @@ function formatTime(seconds: number) {
 }
 
 export default function GlobalMusicPlayer() {
-  const { tracks, current, currentIndex, playing, error, elapsed, duration, seek, loopOne, toggleLoop, toggle, next, previous, select } = useMusic()
+  const { current, playing, error, elapsed, duration, seek, mode, cycleMode, toggle, next, previous } = useMusic()
   const [expanded, setExpanded] = useState(false)
   const [playlist, setPlaylist] = useState(false)
   const [position, setPosition] = useState<Position | null>(null)
@@ -26,6 +27,7 @@ export default function GlobalMusicPlayer() {
   const listButtonRef = useRef<HTMLButtonElement>(null)
   const dragRef = useRef<Drag | null>(null)
   const suppressClick = useRef(false)
+  const sorting = useRef(false)
   const hasCurrent = current !== null
 
   useEffect(() => {
@@ -33,10 +35,12 @@ export default function GlobalMusicPlayer() {
     if (!root) return
     const fit = () => {
       const rect = root.getBoundingClientRect()
-      const right = Math.max(MARGIN, Math.min(document.documentElement.clientWidth - rect.right, document.documentElement.clientWidth - rect.width - MARGIN))
+      const side = position?.side ?? 'left'
+      const rawOffset = side === 'left' ? rect.left : document.documentElement.clientWidth - rect.right
+      const offset = Math.max(MARGIN, Math.min(rawOffset, document.documentElement.clientWidth - rect.width - MARGIN))
       const bottom = Math.max(MARGIN, Math.min(window.innerHeight - rect.bottom, window.innerHeight - rect.height - MARGIN))
-      if (Math.abs(right - (document.documentElement.clientWidth - rect.right)) > 1 || Math.abs(bottom - (window.innerHeight - rect.bottom)) > 1) {
-        setPosition({ right, bottom })
+      if (Math.abs(offset - rawOffset) > 1 || Math.abs(bottom - (window.innerHeight - rect.bottom)) > 1) {
+        setPosition({ side, offset, bottom })
       }
       const top = window.innerHeight - bottom - rect.height
       const above = Math.max(0, top - MARGIN - 10)
@@ -48,7 +52,7 @@ export default function GlobalMusicPlayer() {
     window.addEventListener('resize', fit)
     fit()
     return () => { observer.disconnect(); window.removeEventListener('resize', fit) }
-  }, [hasCurrent])
+  }, [hasCurrent, position?.side])
 
   useEffect(() => {
     if (!expanded) return
@@ -57,6 +61,7 @@ export default function GlobalMusicPlayer() {
     }
     const escape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
+      if (sorting.current) return
       if (playlist) { setPlaylist(false); listButtonRef.current?.focus() }
       else { setExpanded(false); discRef.current?.focus() }
     }
@@ -65,11 +70,13 @@ export default function GlobalMusicPlayer() {
     return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape) }
   }, [expanded, playlist])
 
-  function move(right: number, bottom: number) {
+  function move(left: number, bottom: number) {
     const root = rootRef.current
     if (!root) return
-    const next = {
-      right: Math.max(MARGIN, Math.min(right, document.documentElement.clientWidth - root.offsetWidth - MARGIN)),
+    const fittedLeft = Math.max(MARGIN, Math.min(left, document.documentElement.clientWidth - root.offsetWidth - MARGIN))
+    const side = fittedLeft + root.offsetWidth / 2 > document.documentElement.clientWidth / 2 ? 'right' : 'left'
+    const next: Position = {
+      side, offset: side === 'left' ? fittedLeft : document.documentElement.clientWidth - root.offsetWidth - fittedLeft,
       bottom: Math.max(MARGIN, Math.min(bottom, window.innerHeight - root.offsetHeight - MARGIN)),
     }
     setPosition(next)
@@ -82,7 +89,7 @@ export default function GlobalMusicPlayer() {
     if (event.button !== 0 || !event.isPrimary) return
     const rect = rootRef.current!.getBoundingClientRect()
     suppressClick.current = false
-    dragRef.current = { x: event.clientX, y: event.clientY, right: document.documentElement.clientWidth - rect.right,
+    dragRef.current = { x: event.clientX, y: event.clientY, left: rect.left,
       bottom: window.innerHeight - rect.bottom, pointerId: event.pointerId, moved: false }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
@@ -96,11 +103,17 @@ export default function GlobalMusicPlayer() {
     drag.moved = true
     suppressClick.current = true
     setDragging(true)
-    move(drag.right - dx, drag.bottom - dy)
+    move(drag.left + dx, drag.bottom - dy)
   }
 
   function endDrag(event: PointerEvent<HTMLButtonElement>) {
     if (dragRef.current?.pointerId !== event.pointerId) return
+    if (dragRef.current.moved) {
+      const rect = rootRef.current!.getBoundingClientRect()
+      const side = rect.left + rect.width / 2 > document.documentElement.clientWidth / 2 ? 'right' : 'left'
+      setPosition({ side, offset: side === 'left' ? rect.left : document.documentElement.clientWidth - rect.right,
+        bottom: window.innerHeight - rect.bottom })
+    }
     dragRef.current = null
     setDragging(false)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
@@ -108,8 +121,9 @@ export default function GlobalMusicPlayer() {
 
   if (!current) return null
 
-  return <aside ref={rootRef} className={`music-float${expanded ? ' music-float--open' : ''}${dragging ? ' music-float--dragging' : ''}${playing ? ' music-float--playing' : ''}`}
-    style={position ? { left: 'auto', right: position.right, bottom: position.bottom } : undefined} aria-label="音乐播放器">
+  const modeLabel = mode === 'list' ? '列表循环；切换为单曲循环' : mode === 'single' ? '单曲循环；切换为随机播放' : '随机播放；切换为列表循环'
+  return <aside ref={rootRef} className={`music-float${position?.side === 'right' ? ' music-float--right' : ''}${expanded ? ' music-float--open' : ''}${dragging ? ' music-float--dragging' : ''}${playing ? ' music-float--playing' : ''}`}
+    style={position ? { left: position.side === 'left' ? position.offset : 'auto', right: position.side === 'right' ? position.offset : 'auto', bottom: position.bottom } : undefined} aria-label="音乐播放器">
     <span id="music-drag-help" className="music-float__sr">拖动封面可移动播放器，也可用方向键移动。点击展开或收起。</span>
     <div className="music-float__panel" aria-hidden={!expanded} inert={!expanded}>
       <div className="music-float__body" id="music-controls">
@@ -127,7 +141,9 @@ export default function GlobalMusicPlayer() {
           <span>{duration ? `−${formatTime(duration - elapsed)}` : '--:--'}</span>
         </div>
         <div className="music-float__controls">
-          <button type="button" className={loopOne ? 'is-active' : ''} aria-label={loopOne ? '切换为列表循环' : '切换为单曲循环'} aria-pressed={loopOne} onClick={toggleLoop}><FiRepeat size={20} />{loopOne && <sup>1</sup>}</button>
+          <button type="button" className={mode !== 'list' ? 'is-active' : ''} aria-label={`播放模式：${modeLabel}`} title={modeLabel} onClick={cycleMode}>
+            {mode === 'shuffle' ? <FiShuffle size={20} /> : <span className="music-float__repeat"><FiRepeat size={22} />{mode === 'single' && <span>1</span>}</span>}
+          </button>
           <button type="button" aria-label="上一首" onClick={previous}><IoPlayBackSharp size={29} /></button>
           <button type="button" className="music-float__play" aria-label={playing ? '暂停' : '播放'} onClick={toggle}>{playing ? <IoPauseSharp size={35} /> : <IoPlaySharp size={35} />}</button>
           <button type="button" aria-label="下一首" onClick={next}><IoPlayForwardSharp size={29} /></button>
@@ -144,7 +160,7 @@ export default function GlobalMusicPlayer() {
         if (!delta) return
         event.preventDefault()
         const rect = rootRef.current!.getBoundingClientRect()
-        move(document.documentElement.clientWidth - rect.right + delta[0], window.innerHeight - rect.bottom + delta[1])
+        move(rect.left - delta[0], window.innerHeight - rect.bottom + delta[1])
       }}
       onClick={event => {
         if (suppressClick.current && event.detail !== 0) { suppressClick.current = false; return }
@@ -153,13 +169,7 @@ export default function GlobalMusicPlayer() {
       {current.cover_url ? <img src={current.cover_url} alt="" draggable={false} /> : <FiMusic size={26} aria-hidden="true" />}
     </button>
     <div className={`music-float__list${listLayout.below ? ' music-float__list--below' : ''}${expanded && playlist ? ' is-visible' : ''}`} id="music-playlist" style={{ maxHeight: listLayout.height }} aria-hidden={!expanded || !playlist} inert={!expanded || !playlist}>
-      <div className="music-float__list-heading"><span>待播清单</span><small>{tracks.length} 首歌曲</small></div>
-      {tracks.map((track, index) => <button type="button" key={track.id} onClick={() => select(index)} aria-current={index === currentIndex ? 'true' : undefined}
-        className={`music-float__track${index === currentIndex ? ' is-current' : ''}`}>
-        <span className="music-float__thumbnail">{track.cover_url ? <img src={track.cover_url} alt="" loading="lazy" /> : <FiMusic size={16} />}</span>
-        <span className="music-float__track-name"><strong>{track.title}</strong><small>{track.artist}</small></span>
-        {index === currentIndex && <FiMusic size={15} aria-hidden="true" />}
-      </button>)}
+      <MusicQueue onSortingChange={value => { sorting.current = value }} />
     </div>
     {error && <p className="music-float__error" role="status">{error}</p>}
   </aside>
