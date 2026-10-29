@@ -19,11 +19,11 @@ export default function Turnstile({ siteKey, onToken, onError }: {
   const render = useCallback(() => {
     if (!container.current || !window.turnstile || widget.current !== null) return
     widget.current = window.turnstile.render(container.current, {
-      sitekey: siteKey, action: 'login', theme: 'light', size: 'flexible', language: 'zh-cn',
+      sitekey: siteKey, action: 'login', theme: 'light', size: 'flexible', language: 'en',
       callback: (token: string) => { callbacks.current.onError(''); callbacks.current.onToken(token) },
-      'expired-callback': () => { callbacks.current.onToken(''); callbacks.current.onError('验证已过期，请重新验证。') },
-      'error-callback': () => { callbacks.current.onToken(''); callbacks.current.onError('验证暂时不可用，请检查网络或重新加载。') },
-      'timeout-callback': () => { callbacks.current.onToken(''); callbacks.current.onError('验证超时，请重试。') },
+      'expired-callback': () => { callbacks.current.onToken(''); callbacks.current.onError('Verification expired. Please verify again.') },
+      'error-callback': () => { callbacks.current.onToken(''); callbacks.current.onError('Verification is unavailable. Check your connection or reload.') },
+      'timeout-callback': () => { callbacks.current.onToken(''); callbacks.current.onError('Verification timed out. Please try again.') },
     })
   }, [siteKey])
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function Turnstile({ siteKey, onToken, onError }: {
   }, [render])
   return <>
     <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" onReady={render}
-      onError={() => { onToken(''); onError('验证组件加载失败，请检查网络或重新加载。') }} />
-    <div ref={container} className="w-full min-h-[65px]" aria-label="真人验证" />
+      onError={() => { onToken(''); onError('Verification could not load. Check your connection or reload.') }} />
+    <div ref={container} className="w-full min-h-[65px]" aria-label="Human verification" />
   </>
 }

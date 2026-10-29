@@ -1,17 +1,20 @@
 # Login lettering
 
-The display fonts are bundled with the login page through `next/font/local`.
-Visitors do not request them from Google Fonts at runtime.
+Fonts are bundled through `next/font/local`; visitors do not request Google
+Fonts at runtime.
 
-- `KleeOne.ttf`: Klee One, weight 600, a Google Fonts text subset covering
+- `NotoSansJP-Black.ttf`: Noto Sans JP, weight 900, Google Fonts text subset
+  covering `あなた誰なの`, used for the hollow display headings.
+  Source: https://fonts.google.com/specimen/Noto+Sans+JP
+  License: `NotoSansJP-OFL.txt`.
+- `KleeOne.ttf`: Klee One, weight 600, Google Fonts text subset covering
   `あなたねえ教えてよお誰なのまた、ここで。今日もいい一曲を`.
   Source: https://fonts.google.com/specimen/Klee+One
   License: `KleeOne-OFL.txt`.
-- `Caveat.ttf`: Caveat, weight 400, a Google Fonts text subset of Latin
-  letters, numbers and punctuation used for the English annotations/signature.
+- `Caveat.ttf`: Caveat, weight 400, retained from the earlier letter design.
   Source: https://fonts.google.com/specimen/Caveat
   License: `Caveat-OFL.txt`.
 
-When changing the Japanese display copy, update the subset so every new glyph
-is included. Functional login labels and verification messages retain the
-regular UI fonts and Chinese wording.
+When changing Japanese display copy, update the appropriate subset to include
+all new glyphs. Functional login labels and verification messages use regular
+UI fonts and English wording.
