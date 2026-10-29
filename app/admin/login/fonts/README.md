@@ -3,8 +3,11 @@
 Fonts are bundled through `next/font/local`; visitors do not request Google
 Fonts at runtime.
 
-- `NotoSansJP-Black.ttf`: Noto Sans JP, weight 900, Google Fonts text subset
-  covering `あなた誰なの`, used for the hollow display headings.
+- `NotoSansJP-Black.ttf`: Yuria Outline JP, derived from the Noto Sans JP weight-900 text subset
+  covering `あなた誰なの`. Overlapping contours are unioned with FontTools
+  `removeOverlaps` / skia-pathops before CSS outlines are drawn. This removes
+  interior seams where strokes intersect. Advance widths are unchanged.
+  The internal family name is Yuria Outline JP; the original OFL is retained.
   Source: https://fonts.google.com/specimen/Noto+Sans+JP
   License: `NotoSansJP-OFL.txt`.
 - `KleeOne.ttf`: Klee One, weight 600, Google Fonts text subset covering
