@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import localFont from 'next/font/local'
-import { FiArrowUpRight, FiCheck, FiGithub } from 'react-icons/fi'
+import { FiArrowUpRight, FiGithub } from 'react-icons/fi'
 import { SiGoogle } from 'react-icons/si'
 import { getLoginProtection, safeAuthDestination, startAuth } from '@/utils/auth/flow'
 import Turnstile from '@/components/auth/Turnstile'
@@ -13,15 +13,20 @@ const lettering = localFont({ src: './fonts/NotoSansJP-Black.ttf', variable: '--
 const handwriting = localFont({ src: './fonts/KleeOne.ttf', variable: '--font-letter-jp', weight: '600', display: 'swap', adjustFontFallback: false })
 const providers = ['google', 'github'] as const
 
-function Coordinates() {
-  return <div className={styles.coordinates} aria-hidden="true">
-    <div className={styles.orbit}><i /><i /><i /><span>Y</span></div>
-    <span className={styles.crosshairOne}>+</span><span className={styles.crosshairTwo}>+</span>
-    <span className={styles.gridPatch} />
-    <div className={styles.diagram}><span>IDENTITY / SIGNAL</span><svg viewBox="0 0 160 46" fill="none"><path d="M0 35h34L50 9h40l17 26h53M0 40h37L53 14h33l17 26h57M64 0v46M130 0v46" stroke="currentColor" strokeWidth=".7" /></svg><span>35°41′ / 139°41′</span></div>
-    <div className={styles.registration}><span>✳</span><span>PERSONAL ARCHIVE<br />IMAGES / WORDS / MUSIC</span></div>
-    <span className={styles.verticalCode}>Y—XIN / TRANSMISSION 000.026</span>
-    <span className={styles.microCode}>[ ID ]<br />0 1 0 0 1<br />1 0 1 1 0<br />0 1 0 1 1</span>
+function IndustrialMarks() {
+  return <div className={styles.industrial} aria-hidden="true">
+    <div className={styles.dotField} />
+    <svg className={styles.matrixMark} viewBox="0 0 164 100" fill="none">
+      <path d="M4 16h156M4 23h119M122 25v50h36M145 56h12M145 65h12M145 74h12" stroke="currentColor" strokeWidth=".7" />
+      <path d="M4 12h63v4H4zM76 12h5v4h-5zM87 12h2v4h-2zM111 42h10v10h-10zM101 52h10v10h-10zM121 52h10v10h-10zM111 62h10v10h-10z" fill="currentColor" />
+      <path d="M101 42h10v10h-10zM121 42h10v10h-10zM111 52h10v10h-10zM121 62h10v10h-10zM32 42v7m-4-3h8M54 67v7m-4-3h8" stroke="currentColor" strokeWidth=".7" />
+      <text x="5" y="42" fill="currentColor" fontSize="8" fontFamily="monospace">A3—D</text><text x="5" y="86" fill="currentColor" fontSize="4" fontFamily="monospace">AR / 17—20.0610</text>
+    </svg>
+    <div className={styles.indexRail}><strong>YX /—02</strong><span>TYPE / ACCESS SYSTEM</span><i /></div>
+    <svg className={styles.chevrons} viewBox="0 0 132 24" fill="none"><path d="m2 3 9 9-9 9m17-18 9 9-9 9m17-18 9 9-9 9" stroke="currentColor" strokeWidth="3" /><path d="M66 5h64M66 12h46M66 19h56" stroke="currentColor" strokeWidth=".7" /></svg>
+    <span className={styles.edgeCode}>Y—XIN / OPEN ARCHIVE</span>
+    <span className={styles.bracketTop} /><span className={styles.bracketBottom} />
+    <div className={styles.measure}><i /><i /><i /><i /><i /><span>00 / 100</span></div>
   </div>
 }
 
@@ -96,7 +101,7 @@ export default function LoginPage() {
         <Link href="/" className={styles.back}>HOME <FiArrowUpRight size={14} aria-hidden="true" /></Link>
       </header>
       <div className={styles.canvas}>
-        <Coordinates />
+        <IndustrialMarks />
         <h1 id="letter-title" className={styles.title} lang="ja"><span className={styles.salutation}>あなた</span><span className={styles.addressee}>誰なの</span></h1>
         <div className={styles.whisper} lang="ja"><span>ねえ</span><span>ねえ</span><span>ねえ</span></div>
         <p className={styles.question} lang="ja">教えてよお<span aria-hidden="true">↘</span></p>
@@ -104,7 +109,6 @@ export default function LoginPage() {
         <section className={styles.admission} aria-labelledby="login-title" aria-busy={busy}>
           <div className={styles.admissionHeading}>
             <h2 ref={loginHeading} tabIndex={-1} id="login-title">CHOOSE YOUR ENTRANCE</h2>
-            {protection?.enabled && <span className={styles.verified}><FiCheck size={10} aria-hidden="true" />VERIFIED</span>}
           </div>
           <div className={styles.tickets}>
             {providers.map((provider, index) => <div key={provider} className={`${styles.ticketWrap} ${index === 0 ? styles.googleWrap : styles.githubWrap}`}>
