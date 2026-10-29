@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type PointerEvent, type CSSProperties } from 'react'
+import { usePathname } from 'next/navigation'
 import { FiHeadphones, FiMusic, FiRepeat, FiShuffle } from 'react-icons/fi'
 import { IoPlayBackSharp, IoPlayForwardSharp, IoPauseSharp, IoPlaySharp } from 'react-icons/io5'
 import { useMusic } from './MusicProvider'
@@ -16,6 +17,7 @@ function formatTime(seconds: number) {
 }
 
 export default function GlobalMusicPlayer() {
+  const pathname = usePathname()
   const { current, playing, error, elapsed, duration, seek, mode, cycleMode, toggle, next, previous } = useMusic()
   const [expanded, setExpanded] = useState(false)
   const [playlist, setPlaylist] = useState(false)
@@ -29,6 +31,7 @@ export default function GlobalMusicPlayer() {
   const suppressClick = useRef(false)
   const sorting = useRef(false)
   const hasCurrent = current !== null
+  const hiddenForLogin = pathname === '/admin/login'
 
   useEffect(() => {
     const root = rootRef.current
@@ -52,7 +55,7 @@ export default function GlobalMusicPlayer() {
     window.addEventListener('resize', fit)
     fit()
     return () => { observer.disconnect(); window.removeEventListener('resize', fit) }
-  }, [hasCurrent, position?.side])
+  }, [hasCurrent, position?.side, hiddenForLogin])
 
   useEffect(() => {
     if (!expanded) return
@@ -119,7 +122,7 @@ export default function GlobalMusicPlayer() {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
 
-  if (!current) return null
+  if (!current || hiddenForLogin) return null
 
   const modeLabel = mode === 'list' ? '列表循环；切换为单曲循环' : mode === 'single' ? '单曲循环；切换为随机播放' : '随机播放；切换为列表循环'
   return <aside ref={rootRef} className={`music-float${position?.side === 'right' ? ' music-float--right' : ''}${expanded ? ' music-float--open' : ''}${dragging ? ' music-float--dragging' : ''}${playing ? ' music-float--playing' : ''}`}

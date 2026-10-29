@@ -1,10 +1,12 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import HandwritingIcon from './HandwritingIcon'
 
 const MIN_DISPLAY_MS = 2200 // 至少展示这么久，保证动画能完整播放一轮
 
 export default function SiteSplash() {
+  const pathname = usePathname()
   const [visible, setVisible] = useState(true)
   const [fading, setFading] = useState(false)
 
@@ -35,7 +37,7 @@ export default function SiteSplash() {
     return () => window.removeEventListener('load', handleLoad)
   }, [])
 
-  if (!visible) return null
+  if (!visible || pathname === '/admin/login') return null
 
   return (
     <div style={{

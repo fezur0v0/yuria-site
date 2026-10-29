@@ -20,7 +20,11 @@ previous OAuth flow without needing to change Google or GitHub credentials.
 ## Enforcement
 
 The login page loads the public configuration from `/api/auth/start`, renders the
-official Turnstile script, and disables login until a token is available. The
+official Turnstile script, and initially shows only the verification step. The
+Japanese composition and login buttons appear after a token is available; expiry
+or verification failure returns to the gate. The widget stays mounted while its
+step is hidden so expiry callbacks remain active. The site splash and floating
+player are hidden on this login route. The
 same-origin POST validates the token using Cloudflare Siteverify, checking success,
 hostname, and the `login` action. Missing, expired, repeated, or failed tokens do
 not start OAuth. Network failures fail closed. CSP permits only Cloudflare's
