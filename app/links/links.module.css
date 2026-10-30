@@ -12,9 +12,18 @@
 .hero { padding-top: 22px; }
 .heroMeta { display: flex; justify-content: space-between; gap: 24px; font: 12px/1.6 var(--font-geist-mono), monospace; letter-spacing: .1em; color: #a7a7a7; }
 .heroTitle { position: relative; isolation: isolate; display: grid; place-items: center; aspect-ratio: 1000 / 360; margin-top: 32px; }
-.heroTitle h1 { position: relative; z-index: 1; margin: 0; font: 400 clamp(120px, 24vw, 326px)/1.06 var(--font-friends-display), Impact, sans-serif; letter-spacing: -.015em; color: var(--paper); mix-blend-mode: difference; }
-.signalBackdrop { position: absolute; inset: 0; color: #aaa; opacity: .75; pointer-events: none; }
+.heroTitle h1 { position: relative; z-index: 1; margin: 0; font: 400 clamp(120px, 24vw, 326px)/1.06 var(--font-friends-display), Impact, sans-serif; letter-spacing: -.015em; color: transparent; -webkit-text-stroke: 1.5px #cecece; }
+.signalBackdrop { position: absolute; inset: 0; color: #fff; pointer-events: none; }
 .signalBackdrop svg { display: block; width: 100%; height: 100%; font-family: var(--font-geist-mono), monospace; }
+.signalTrace { stroke: #fff; }
+.signalHeart { transform-box: fill-box; transform-origin: center; animation: signal-heart 3.6s ease-in-out infinite; }
+.signalSweep { filter: drop-shadow(0 0 3px #fff9); animation: signal-sweep 3.6s linear infinite; }
+.signalTail { animation: signal-tail 3.6s linear infinite; }
+.signalNumber { animation: signal-number 3.6s ease-in-out infinite; }
+@keyframes signal-heart { 0%, 16%, 34%, 100% { transform: scale(1); } 7% { transform: scale(1.14); } 24% { transform: scale(1.08); } }
+@keyframes signal-sweep { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes signal-tail { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -44; } }
+@keyframes signal-number { 0%, 36%, 100% { opacity: .8; } 9%, 24% { opacity: 1; } }
 .signalLabel { position: absolute; z-index: 2; right: 3%; bottom: 6%; font: 500 clamp(20px, 2vw, 28px)/1.4 var(--font-friends-kr), serif; letter-spacing: .04em; color: #bbb; white-space: nowrap; }
 .heroFoot { margin: 26px 0 0; font: 12px/1.6 var(--font-geist-mono), monospace; letter-spacing: .14em; color: #929292; }
 .directory { padding-top: 76px; }
@@ -50,7 +59,7 @@
 @media (max-width: 1000px) {
   .main { padding-top: 100px; }
   .heroMeta { font-size: 11px; }
-  .heroTitle h1 { font-size: 24vw; }
+  .heroTitle h1 { font-size: 24vw; -webkit-text-stroke-width: 1px; }
   .friendList { grid-template-columns: minmax(0, 1fr); gap: 36px; }
   .friend { width: min(100%, 720px); justify-self: center; }
   .friend:only-child { grid-column: auto; }
@@ -91,4 +100,9 @@
   .friendInfo { padding: 18px 10px; }.friendName { font-size: 30px; }
   .friendDescription { font-size: 12px; }.visit { font-size: 9px; }.host { font-size: 9px; }
 }
-@media (prefers-reduced-motion: reduce) { .friendCard, .photoImage, .visitIcon svg, .footer a::after { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .friendCard, .photoImage, .visitIcon svg, .footer a::after { transition: none; }
+  .signalHeart, .signalSweep, .signalTail, .signalNumber { animation: none; }
+  .signalSweep { display: none; }
+  .signalNumber { opacity: 1; }
+}

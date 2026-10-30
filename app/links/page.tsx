@@ -19,14 +19,16 @@ export const metadata: Metadata = {
 };
 
 function SignalBackdrop() {
+  const trace = 'M104 184h80l30-32 32 75 42-126 35 83h45l37-139 60 270 42-131h82l30-36 26 69 25-33h88';
   return <div className={styles.signalBackdrop} aria-hidden="true">
     <svg viewBox="0 0 1000 360" fill="none" focusable="false">
       <defs><pattern id="friends-signal-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0h6v6H0z" fill="currentColor" /><path d="M0 0v6" stroke="#141414" strokeWidth="2" /></pattern></defs>
       <path d="M12 48V16h32m912 0h32v32M12 312v32h32m944-32v32h-32" stroke="currentColor" strokeWidth="1.2" opacity=".45" />
-      <path d="M45 165h12v8h8v-8h12v8h8v20h-8v8h-8v8h-8v-8h-8v-8h-8v-20h0Z" fill="url(#friends-signal-hatch)" opacity=".8" />
-      <path d="M104 184h80l30-32 32 75 42-126 35 83h45l37-139 60 270 42-131h82l30-36 26 69 25-33h88" stroke="currentColor" strokeWidth="3" strokeLinejoin="bevel" />
-      <path d="M803 184h145" stroke="currentColor" strokeWidth="2" strokeDasharray="3 8" />
-      <text x="824" y="98" fill="url(#friends-signal-hatch)" fontSize="82" fontWeight="700" letterSpacing="-5" opacity=".8">125</text>
+      <path className={styles.signalHeart} d="M45 165h12v8h8v-8h12v8h8v20h-8v8h-8v8h-8v-8h-8v-8h-8v-20h0Z" fill="url(#friends-signal-hatch)" />
+      <path className={styles.signalTrace} d={trace} stroke="currentColor" strokeWidth="3" strokeLinejoin="bevel" />
+      <path className={styles.signalSweep} d={trace} pathLength="100" stroke="currentColor" strokeWidth="5" strokeDasharray="10 90" strokeLinejoin="bevel" />
+      <path className={styles.signalTail} d="M803 184h145" stroke="currentColor" strokeWidth="2" strokeDasharray="3 8" />
+      <text className={styles.signalNumber} x="824" y="98" fill="url(#friends-signal-hatch)" fontSize="82" fontWeight="700" letterSpacing="-5">125</text>
       <path d="M36 30h26m8 0h7m9 0h18M37 308v13m12-13v13m12-13v13m12-13v13m12-13v13m12-13v13" stroke="currentColor" strokeWidth="1.5" opacity=".65" />
       <path d="M37 328h270v10H37z" fill="url(#friends-signal-hatch)" opacity=".6" />
     </svg>
