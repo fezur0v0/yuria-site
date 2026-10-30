@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import localFont from 'next/font/local'
-import { FiArrowUpRight, FiGithub, FiPlus } from 'react-icons/fi'
+import { FiGithub, FiPlus } from 'react-icons/fi'
 import { SiGoogle } from 'react-icons/si'
 import { getLoginProtection, safeAuthDestination, startAuth } from '@/utils/auth/flow'
 import Turnstile from '@/components/auth/Turnstile'
@@ -98,7 +98,7 @@ export default function LoginPage() {
       <header className={styles.header}>
         <Link href="/" className={styles.wordmark} aria-label="Yuria home">yuria</Link>
         <span className={styles.headerNote}>AN OPEN JOURNAL / A PRIVATE FREQUENCY</span>
-        <Link href="/" className={styles.back}>HOME <FiArrowUpRight size={14} aria-hidden="true" /></Link>
+        <Link href="/" className={styles.back}>HOME</Link>
       </header>
       <div className={styles.canvas}>
         <IndustrialMarks />
@@ -133,7 +133,7 @@ export default function LoginPage() {
           <p className={styles.admissionFoot}>TWO WAYS IN. ONE LITTLE WORLD.<span lang="ja">また、ここで。</span></p>
         </section>
       </div>
-      <footer className={styles.footer}><span>YURIA.XIN / PERSONAL SPACE</span><span className={styles.footerTicks} aria-hidden="true">┼ ┼ ┼ ┼ ┼ ┼ ┼ ┼ ┼ ┼ ┼</span><span>NO SIGNAL IS EVER ORDINARY <FiArrowUpRight size={13} aria-hidden="true" /></span></footer>
+      <footer className={styles.footer}><span>YURIA.XIN / PERSONAL SPACE</span><span className={styles.footerQuote} lang="es">está lloviendo en Macondo</span><span>NO SIGNAL IS EVER ORDINARY</span></footer>
     </div>}
   </main>
 }
