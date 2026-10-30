@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import localFont from 'next/font/local'
-import { FiArrowUpRight, FiGithub } from 'react-icons/fi'
+import { FiArrowUpRight, FiGithub, FiPlus } from 'react-icons/fi'
 import { SiGoogle } from 'react-icons/si'
 import { getLoginProtection, safeAuthDestination, startAuth } from '@/utils/auth/flow'
 import Turnstile from '@/components/auth/Turnstile'
@@ -22,7 +22,7 @@ function IndustrialMarks() {
       <path d="M101 42h10v10h-10zM121 42h10v10h-10zM111 52h10v10h-10zM121 62h10v10h-10zM32 42v7m-4-3h8M54 67v7m-4-3h8" stroke="currentColor" strokeWidth=".7" />
       <text x="5" y="42" fill="currentColor" fontSize="8" fontFamily="monospace">A3—D</text><text x="5" y="86" fill="currentColor" fontSize="4" fontFamily="monospace">AR / 17—20.0610</text>
     </svg>
-    <div className={styles.indexRail}><strong>YX /—02</strong><span>TYPE / ACCESS SYSTEM</span><i /></div>
+    <div className={styles.indexRail}><strong>Aster.</strong><span>TYPE / ACCESS SYSTEM</span><i /></div>
     <svg className={styles.chevrons} viewBox="0 0 132 24" fill="none"><path d="m2 3 9 9-9 9m17-18 9 9-9 9m17-18 9 9-9 9" stroke="currentColor" strokeWidth="3" /><path d="M66 5h64M66 12h46M66 19h56" stroke="currentColor" strokeWidth=".7" /></svg>
     <span className={styles.edgeCode}>Y—XIN / OPEN ARCHIVE</span>
     <span className={styles.bracketTop} /><span className={styles.bracketBottom} />
@@ -104,7 +104,7 @@ export default function LoginPage() {
         <IndustrialMarks />
         <h1 id="letter-title" className={styles.title} lang="ja"><span className={styles.salutation}>あなた</span><span className={styles.addressee}>誰なの</span></h1>
         <div className={styles.whisper} lang="ja"><span>ねえ</span><span>ねえ</span><span>ねえ</span></div>
-        <p className={styles.question} lang="ja">教えてよお<span aria-hidden="true">↘</span></p>
+        <p className={styles.question} lang="ja">教えてよぉ</p>
 
         <section className={styles.admission} aria-labelledby="login-title" aria-busy={busy}>
           <div className={styles.admissionHeading}>
@@ -116,11 +116,11 @@ export default function LoginPage() {
                 <span className={styles.ticketBand} aria-hidden="true"><span>Y / XIN</span>{provider === 'google' ? <SiGoogle size={30} /> : <FiGithub size={33} />}<span>ADMIT ONE</span></span>
                 <span className={styles.ticketBody}>
                   <span className={styles.ticketTop}><span>YURIA / ACCOUNT ACCESS</span><span>OPEN PASS</span></span>
-                  <span className={styles.providerName}>{provider === 'google' ? 'GOOGLE' : 'GITHUB'}<FiArrowUpRight size={27} aria-hidden="true" /></span>
+                  <span className={styles.providerName}>{provider === 'google' ? 'GOOGLE' : 'GITHUB'}<FiPlus size={27} aria-hidden="true" /></span>
                   <span className={styles.ticketDetails}><span><small>ACCESS</small><strong>SIGN IN</strong></span><span><small>SECTION</small><strong>{index === 0 ? 'G—01' : 'H—02'}</strong></span><span><small>ADMISSION</small><strong>ONE / YOU</strong></span></span>
                   <span className={styles.ticketFineprint}>A LITTLE SIGNAL. A LITTLE HELLO.</span>
                 </span>
-                <span className={styles.stub} aria-hidden="true"><span>ENTRY / {index === 0 ? '001' : '002'}</span><span className={styles.barcode} /><strong>{index === 0 ? '0001—G' : '0002—H'}</strong><span className={styles.stubArrow}>↗</span></span>
+                <span className={styles.stub} aria-hidden="true"><span>ENTRY / {index === 0 ? '001' : '002'}</span><span className={styles.barcode} /><strong>{index === 0 ? '0001—G' : '0002—H'}</strong><span className={styles.stubMark} /></span>
               </button>
             </div>)}
           </div>

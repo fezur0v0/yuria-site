@@ -33,7 +33,6 @@
 .whisper { position: absolute; top: 9%; right: 14%; display: flex; align-items: baseline; gap: 14px; font: 600 min(23px, 3cqh)/1.5 var(--font-letter-jp), serif; color: #969696; }
 .whisper span:nth-child(2) { font-size: .74em; }.whisper span:nth-child(3) { font-size: .52em; }
 .question { position: absolute; top: 27%; left: 5%; font: 600 min(23px, 3cqh)/1.4 var(--font-letter-jp), serif; letter-spacing: .05em; margin: 0; color: #aeaeae; transform: rotate(-7deg); }
-.question>span { display: block; margin-top: min(10px, 1.3cqh); font: 300 min(41px, 5.4cqh)/1 Arial, sans-serif; }
 .admission { --ticket-height: min(172px, 21cqh); position: absolute; z-index: 2; top: 50%; left: 50%; translate: -50% -50%; width: min(600px, 61%); }
 .admissionHeading { margin: 0 0 min(19px, 2.5cqh); padding-inline: 8px; }
 .admissionHeading h2 { margin: 0; font: 400 8px/1.5 var(--font-geist-mono), monospace; letter-spacing: .19em; color: #ababab; outline: none; }
@@ -51,7 +50,7 @@
 .ticketBody { display: flex; flex-direction: column; justify-content: space-between; padding: min(12px, 1.6cqh) 18px min(8px, 1cqh); min-width: 0; min-height: 0; }
 .ticketTop { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: min(7px, .9cqh); border-bottom: 1px solid #9b9b9b4f; font: 6px/1.5 var(--font-geist-mono), monospace; letter-spacing: .07em; white-space: nowrap; }
 .providerName { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: min(7px, .9cqh) 0; font-size: min(43px, 5.6cqh, 4vw); font-weight: 850; line-height: 1; letter-spacing: -.055em; }
-.providerName>svg { width: min(27px, 3.5cqh); height: min(27px, 3.5cqh); flex: none; transition: transform .25s; }.ticket:hover .providerName>svg { transform: translate(3px, -3px); }
+.providerName>svg { width: min(27px, 3.5cqh); height: min(27px, 3.5cqh); flex: none; transition: transform .25s; }.ticket:hover .providerName>svg { transform: rotate(90deg); }
 .ticketDetails { display: grid; grid-template-columns: 1fr 1fr 1.2fr; border-block: 1px solid #979797; }
 .ticketDetails>span { padding: min(5px, .7cqh) 7px; border-right: 1px solid #979797; }.ticketDetails>span:first-child { padding-left: 0; }.ticketDetails>span:last-child { border-right: 0; }
 .ticketDetails small { display: block; font: min(5px, .9cqh)/1.5 var(--font-geist-mono), monospace; letter-spacing: .08em; }
@@ -60,7 +59,7 @@
 .stub { border-left: 2px dotted #7070707d; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: min(13px, 1.7cqh) 9px min(10px, 1.3cqh); min-height: 0; }
 .stub>span:first-child { font: 6px/1.5 var(--font-geist-mono), monospace; letter-spacing: .08em; white-space: nowrap; }
 .barcode { display: block; width: 40px; height: min(74px, 10cqh); flex: 0 1 auto; min-height: 10px; background: repeating-linear-gradient(90deg,#202020 0 1px,transparent 1px 3px,#202020 3px 5px,transparent 5px 6px,#202020 6px 7px,transparent 7px 11px,#202020 11px 14px,transparent 14px 17px); }
-.stub>strong { font: 6px/1.4 var(--font-geist-mono), monospace; letter-spacing: .08em; }.stubArrow { font: min(25px, 3.4cqh)/1 Arial, sans-serif; }
+.stub>strong { font: 6px/1.4 var(--font-geist-mono), monospace; letter-spacing: .08em; }.stubMark { width: min(18px, 2.5cqh); height: min(14px, 1.9cqh); background: linear-gradient(90deg,currentColor 0 30%,transparent 30% 44%,currentColor 44% 67%,transparent 67% 84%,currentColor 84%); opacity: .7; }
 .admissionFoot { margin: min(25px, 3cqh) 0 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 6px/1.5 var(--font-geist-mono), monospace; letter-spacing: .1em; color: #8d8d8d; }
 .admissionFoot>span { font: 600 min(18px, 2.8cqh)/1.5 var(--font-letter-jp), serif; letter-spacing: .02em; }
 .industrial { position: absolute; inset: 0; z-index: -1; pointer-events: none; color: #8d8d8d; }
@@ -87,7 +86,7 @@
   .poster { padding-inline: max(6%, env(safe-area-inset-left)) max(6%, env(safe-area-inset-right)); }
   .header { gap: 12px; }.wordmark { font-size: 19px; }.headerNote { display: none; }.back { font-size: 8px; gap: 7px; }
   .title { font-size: min(18.7vw, 14cqh, 100px); -webkit-text-stroke-width: 1px; }.salutation { left: 2%; top: 4%; }.addressee { right: 3%; bottom: 4%; }
-  .whisper { top: 20%; right: 3%; gap: 10px; font-size: min(19px, 3cqh); }.question { left: 4%; top: 17.5%; font-size: min(19px, 3cqh); }.question>span { font-size: min(23px, 3cqh); margin-top: 3px; }
+  .whisper { top: 20%; right: 3%; gap: 10px; font-size: min(19px, 3cqh); }.question { left: 4%; top: 17.5%; font-size: min(19px, 3cqh); }
   .admission { --ticket-height: min(139px, 21cqh); width: calc(100% - 12px); }
   .admissionHeading { margin-bottom: min(15px, 2cqh); padding-inline: 0; }.admissionHeading h2 { font-size: 6px; letter-spacing: .1em; }
   .tickets { gap: min(18px, 2.5cqh); }.googleWrap { transform: translateX(-3px) rotate(-5deg); }.githubWrap { transform: translateX(3px) rotate(4deg); }
@@ -96,7 +95,7 @@
   .ticketBody { padding: min(10px, 1.4cqh) 10px min(7px, 1cqh); }.ticketTop { font-size: 5px; padding-bottom: min(6px, .8cqh); }.ticketTop>span:last-child { display: none; }
   .providerName { font-size: min(35px, 7.1vw, 5.2cqh); margin: min(7px, 1cqh) 0; }.providerName>svg { width: min(20px, 3cqh); height: min(20px, 3cqh); }
   .ticketDetails>span { padding: min(4px, .6cqh) 4px; }.ticketDetails small { font-size: 4px; letter-spacing: 0; }.ticketDetails strong { font-size: min(6px, 1.1cqh); }.ticketFineprint { font-size: 4px; letter-spacing: .02em; }
-  .stub { padding: min(11px, 1.5cqh) 5px min(7px, 1cqh); }.stub>span:first-child { font-size: 4px; letter-spacing: 0; }.stub>strong { font-size: 5px; letter-spacing: 0; }.barcode { height: min(58px, 9cqh); width: 28px; }.stubArrow { font-size: min(22px, 3.3cqh); }
+  .stub { padding: min(11px, 1.5cqh) 5px min(7px, 1cqh); }.stub>span:first-child { font-size: 4px; letter-spacing: 0; }.stub>strong { font-size: 5px; letter-spacing: 0; }.barcode { height: min(58px, 9cqh); width: 28px; }
   .admissionFoot { margin-top: min(23px, 3cqh); font-size: 4px; gap: 8px; letter-spacing: .02em; }.admissionFoot>span { font-size: min(15px, 2.6cqh); }
   .dotField { width: 98%; height: 66%; left: 1%; top: 17%; }.dotField::before { background-size: 10px 10px; }.dotField::after { background-size: 16px 16px; }
   .matrixMark { width: 90px; top: 5%; right: 0; opacity: .5; }.indexRail { left: 0; bottom: 6%; }.indexRail strong { font-size: min(16px, 2.6cqh); }.indexRail>span { font-size: 4px; letter-spacing: .02em; }.indexRail>i { width: 80px; height: 3px; }
@@ -104,14 +103,14 @@
   .footer { font-size: 5px; gap: 13px; }.footerTicks { display: none; }.footer>span:last-child { font-size: 4px; gap: 4px; }.footer>span:last-child svg { width: 10px; }
 }
 @media (max-width: 360px) { .poster { padding-inline: 5.5%; }.ticket { --stub: 48px; grid-template-columns: 42px minmax(0,1fr) var(--stub); }.ticketBody { padding-inline: 8px; }.providerName { font-size: min(23px, 5.2cqh); }.ticketDetails strong { font-size: 5px; }.admissionFoot>span { font-size: min(13px, 2.6cqh); }.admissionFoot { font-size: 3.6px; }.gate { padding: 20px; } }
-@media (max-height: 650px) { .measure, .question>span { display: none; }.question,.whisper { top: 19%; }.admissionFoot { margin-top: 1.8cqh; } }
+@media (max-height: 650px) { .measure { display: none; }.question,.whisper { top: 19%; }.admissionFoot { margin-top: 1.8cqh; } }
 @media (max-height: 540px) {
   .poster { grid-template-rows: 38px minmax(0,1fr) 26px; }.wordmark { font-size: 17px; }.headerNote { font-size: 5px; }
   .title { font-size: min(17vw, 14cqh, 66px); }.salutation { top: 2%; left: 2%; }.addressee { bottom: 2%; right: 2%; }
   .admission { --ticket-height: 20cqh; }.admissionHeading { margin-bottom: 1.7cqh; }.admissionHeading h2 { font-size: 5px; }.tickets { gap: 2.6cqh; }
   .ticketBand { padding-block: 1.2cqh; }.ticketBand>span { font-size: 4px; }.ticketBand>span:first-child { padding-bottom: 2px; }.ticketBand>svg { width: 5cqh; height: 5cqh; }
   .ticketBody { padding-block: 1.2cqh; }.ticketTop { font-size: 4px; padding-bottom: .8cqh; }.providerName { font-size: 5cqh; margin: .7cqh 0; }.ticketDetails>span { padding-block: .5cqh; }.ticketDetails small { font-size: 3px; }.ticketDetails strong { font-size: 4px; margin-top: 1px; }.ticketFineprint { display: none; }
-  .stub { padding-block: 1.2cqh; }.stub>span:first-child,.stub>strong { font-size: 4px; }.stubArrow { display: none; }.barcode { height: 10cqh; }
+  .stub { padding-block: 1.2cqh; }.stub>span:first-child,.stub>strong { font-size: 4px; }.stubMark { display: none; }.barcode { height: 10cqh; }
   .admissionFoot { margin-top: 1.8cqh; font-size: 4px; }.admissionFoot>span { font-size: 3cqh; }.question,.whisper { top: 22%; font-size: min(15px, 4cqh); }.question { left: 0; }.whisper { right: 3%; }
   .matrixMark { width: 90px; top: 1%; right: 1%; }.indexRail strong { font-size: 4cqh; }.indexRail>span { display: none; }.measure { display: none; }.footer { font-size: 4px; }
 }
