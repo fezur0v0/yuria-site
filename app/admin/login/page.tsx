@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import Link from 'next/link'
 import localFont from 'next/font/local'
 import { FiGithub, FiPlus } from 'react-icons/fi'
@@ -14,13 +14,27 @@ const handwriting = localFont({ src: './fonts/KleeOne.ttf', variable: '--font-le
 const providers = ['google', 'github'] as const
 
 function IndustrialMarks() {
+  const hatchId = useId()
   return <div className={styles.industrial} aria-hidden="true">
     <div className={styles.dotField} />
-    <svg className={styles.matrixMark} viewBox="0 0 164 100" fill="none">
-      <path d="M4 16h156M4 23h119M122 25v50h36M145 56h12M145 65h12M145 74h12" stroke="currentColor" strokeWidth=".7" />
-      <path d="M4 12h63v4H4zM76 12h5v4h-5zM87 12h2v4h-2zM111 42h10v10h-10zM101 52h10v10h-10zM121 52h10v10h-10zM111 62h10v10h-10z" fill="currentColor" />
-      <path d="M101 42h10v10h-10zM121 42h10v10h-10zM111 52h10v10h-10zM121 62h10v10h-10zM32 42v7m-4-3h8M54 67v7m-4-3h8" stroke="currentColor" strokeWidth=".7" />
-      <text x="5" y="42" fill="currentColor" fontSize="8" fontFamily="monospace">A3—D</text><text x="5" y="86" fill="currentColor" fontSize="4" fontFamily="monospace">AR / 17—20.0610</text>
+    <svg className={styles.matrixMark} viewBox="0 0 188 180" fill="none" focusable="false">
+      <defs>
+        <pattern id={hatchId} width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <path d="M0 0h4v4H0z" fill="currentColor" />
+          <path d="M0 0v4" stroke="#181818" strokeWidth="1.1" />
+        </pattern>
+      </defs>
+      <path d="M18 12v156M15 38h8m-5 12h4m-4 12h4m-7 12h8m-5 12h4m-4 12h4m-7 12h8m-5 12h4m-4 12h4m-7 12h8" stroke="currentColor" strokeWidth=".7" opacity=".65" />
+      <g fill="currentColor" fontSize="7">
+        <text x="28" y="41">00</text><text x="28" y="77">52</text><text x="28" y="113">100</text><text x="28" y="149">250</text>
+      </g>
+      <path d="M60 38h24v12h12v12h12V50h12V38h24v12h12v36h-12v12h-12v12h-12v12h-12v12H96v-12H84v-12H72V98H60V86H48V50h12Z" fill={`url(#${hatchId})`} />
+      <path d="M66 83h18l8-16 15 31 9-16h22" stroke="#181818" strokeWidth="2.8" />
+      <text x="115" y="72" fill="#181818" fontSize="12" fontWeight="700">520</text>
+      <path d="M157 116h6v6h6v6h-6v6h-6v-6h-6v-6h6Z" fill={`url(#${hatchId})`} />
+      <text x="65" y="152" fill="currentColor" fontSize="6" letterSpacing="1">A LITTLE SIGNAL.</text>
+      <path d="M105 160h64v12h-64z" fill={`url(#${hatchId})`} />
+      <text x="137" y="169" textAnchor="middle" fill="#181818" fontSize="7" fontWeight="700" letterSpacing="1">HELLO</text>
     </svg>
     <div className={styles.indexRail}><strong>Aster.</strong><span>TYPE / ACCESS SYSTEM</span><i /></div>
     <svg className={styles.chevrons} viewBox="0 0 132 24" fill="none"><path d="m2 3 9 9-9 9m17-18 9 9-9 9m17-18 9 9-9 9" stroke="currentColor" strokeWidth="3" /><path d="M66 5h64M66 12h46M66 19h56" stroke="currentColor" strokeWidth=".7" /></svg>

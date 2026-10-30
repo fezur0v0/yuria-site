@@ -73,7 +73,7 @@
 .dotField { position: absolute; width: 64%; height: 74%; top: 13%; left: 18%; }
 .dotField::before, .dotField::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, #bdbdbd 1px, transparent 1.6px) 0 0/12px 12px; mask-image: linear-gradient(90deg,transparent,#000 23%,#000 77%,transparent),linear-gradient(0deg,transparent,#000 24%,#000 76%,transparent); mask-composite: intersect; opacity: .23; filter: blur(.45px); }
 .dotField::after { inset: 9% -5% -9% 5%; background-size: 19px 19px; opacity: .12; filter: blur(1.8px); }
-.matrixMark { position: absolute; width: min(164px, 17%); height: auto; right: 6%; top: 14%; opacity: .75; }
+.matrixMark { position: absolute; width: min(164px, 17%); height: auto; right: 6%; top: 14%; color: #b9b9b9; opacity: .75; font-family: var(--font-geist-mono), monospace; }
 .indexRail { position: absolute; left: 3%; bottom: 9%; display: flex; flex-direction: column; gap: min(8px, 1cqh); }
 .indexRail strong { font: 800 min(23px, 3.1cqh)/1 var(--font-geist-sans), sans-serif; letter-spacing: -.05em; }
 .indexRail>span { font: 5px/1.5 var(--font-geist-mono), monospace; letter-spacing: .12em; }.indexRail>i { width: 128px; height: 5px; background: linear-gradient(90deg,currentColor 0 76%,transparent 76% 79%,currentColor 79% 83%,transparent 83% 86%,currentColor 86% 87%,transparent 87%); }
@@ -95,7 +95,7 @@
   .ticket:hover:not(:disabled) .stub { transform: rotateY(-7deg); box-shadow: inset 5px 0 9px -8px #0008; }
   .ticket:hover:not(:disabled) .providerName>svg { transform: rotate(90deg); }
 }
-@media (max-width: 1000px) { .admission { width: min(570px, 76%); }.question { left: 1%; }.matrixMark { right: 1%; }.headerNote { font-size: 6px; } }
+@media (max-width: 1000px) { .admission { width: min(570px, 76%); }.question { left: 1%; }.matrixMark { right: 0; width: 90px; }.headerNote { font-size: 6px; } }
 @media (max-width: 760px) {
   .poster { padding-inline: max(6%, env(safe-area-inset-left)) max(6%, env(safe-area-inset-right)); }
   .header { gap: 12px; }.wordmark { font-size: 19px; }.headerNote { display: none; }.back { font-size: 8px; gap: 7px; }
@@ -112,12 +112,12 @@
   .stub { padding: min(11px, 1.5cqh) 5px min(7px, 1cqh); }.stub>span:first-child { font-size: 4px; letter-spacing: 0; }.stub>strong { font-size: 5px; letter-spacing: 0; }.barcode { height: min(58px, 9cqh); width: 28px; }
   .admissionFoot { margin-top: min(23px, 3cqh); font-size: 4px; gap: 8px; letter-spacing: .02em; }.admissionFoot>span { font-size: min(15px, 2.6cqh); }
   .dotField { width: 98%; height: 66%; left: 1%; top: 17%; }.dotField::before { background-size: 10px 10px; }.dotField::after { background-size: 16px 16px; }
-  .matrixMark { width: 90px; top: 5%; right: 0; opacity: .5; }.indexRail { left: 0; bottom: 6%; }.indexRail strong { font-size: min(16px, 2.6cqh); }.indexRail>span { font-size: 4px; letter-spacing: .02em; }.indexRail>i { width: 80px; height: 3px; }
+  .matrixMark { width: 82px; top: 5%; right: 0; opacity: .5; }.indexRail { left: 0; bottom: 6%; }.indexRail strong { font-size: min(16px, 2.6cqh); }.indexRail>span { font-size: 4px; letter-spacing: .02em; }.indexRail>i { width: 80px; height: 3px; }
   .chevrons { left: -4%; top: 43%; width: 25px; opacity: .4; }.edgeCode { right: -5%; font-size: 5px; }.measure { bottom: 23%; right: 0; transform: scale(.7); transform-origin: right bottom; }.bracketTop,.bracketBottom { display: none; }
   .footer { font-size: 5px; gap: 13px; }.footerQuote { position: static; translate: none; font-size: 10px; }.footer>span:last-child { display: none; }
 }
 @media (max-width: 360px) { .poster { padding-inline: 5.5%; }.ticket { --stub: 48px; grid-template-columns: 42px minmax(0,1fr) var(--stub); }.ticketBody { padding-inline: 8px; }.providerName { font-size: min(23px, 5.2cqh); }.ticketDetails strong { font-size: 5px; }.admissionFoot>span { font-size: min(13px, 2.6cqh); }.admissionFoot { font-size: 3.6px; }.gate { padding: 20px; } }
-@media (max-height: 650px) { .entranceMark { width: 58px; height: 10px; }.measure { display: none; }.question,.whisper { top: 19%; }.admissionFoot { margin-top: 1.8cqh; } }
+@media (max-height: 650px) { .entranceMark { width: 58px; height: 10px; }.matrixMark { width: 62px; }.measure { display: none; }.question,.whisper { top: 19%; }.admissionFoot { margin-top: 1.8cqh; } }
 @media (max-height: 540px) {
   .poster { grid-template-rows: 38px minmax(0,1fr) 26px; }.wordmark { font-size: 17px; }.headerNote { font-size: 5px; }
   .title { font-size: min(17vw, 14cqh, 66px); }.salutation { top: 2%; left: 2%; }.addressee { bottom: 2%; right: 2%; }
@@ -126,7 +126,7 @@
   .ticketBody { padding-block: 1.2cqh; }.ticketTop { font-size: 4px; padding-bottom: .8cqh; }.providerName { font-size: 5cqh; margin: .7cqh 0; }.ticketDetails>span { padding-block: .5cqh; }.ticketDetails small { font-size: 3px; }.ticketDetails strong { font-size: 4px; margin-top: 1px; }.ticketFineprint { display: none; }
   .stub { padding-block: 1.2cqh; }.stub>span:first-child,.stub>strong { font-size: 4px; }.stubMark { display: none; }.barcode { height: 10cqh; }
   .admissionFoot { margin-top: 1.8cqh; font-size: 4px; }.admissionFoot>span { font-size: 3cqh; }.question,.whisper { top: 22%; font-size: min(15px, 4cqh); }.question { left: 0; }.whisper { right: 3%; }
-  .matrixMark { width: 90px; top: 1%; right: 1%; }.indexRail strong { font-size: 4cqh; }.indexRail>span { display: none; }.measure { display: none; }.footer { font-size: 4px; }
+  .matrixMark { width: 44px; top: 1%; right: 1%; }.indexRail strong { font-size: 4cqh; }.indexRail>span { display: none; }.measure { display: none; }.footer { font-size: 4px; }
 }
 /* Enlarge the microtype on roomy desktop canvases without crowding phone tickets. */
 @media (min-width: 1001px) and (min-height: 651px) {
@@ -148,4 +148,5 @@
   .matrixMark { width: min(188px, 18%); }
   .chevrons { width: min(148px, 14%); }
 }
+@media (min-width: 1001px) and (max-width: 1200px) and (min-height: 651px) { .matrixMark { width: min(145px, 15%); right: 0; } }
 @media (prefers-reduced-motion: reduce) { .poster, .ticket, .departing .barcode { animation: none; }.ticketWrap, .ticket, .stub, .providerName>svg, .back::after { transition: none; } .ticket:hover:not(:disabled) .stub { transform: none; } }
