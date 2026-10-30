@@ -18,20 +18,18 @@ export const metadata: Metadata = {
   alternates: { canonical: '/links' },
 };
 
-function SignalStamp() {
-  return <div className={styles.signalMark}>
-    <svg viewBox="0 0 280 150" fill="none" aria-hidden="true" focusable="false">
-      <defs><pattern id="friends-signal-hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0h4v4H0z" fill="currentColor" /><path d="M0 0v4" stroke="#141414" strokeWidth="1.2" /></pattern></defs>
-      <path d="M15 28V15h14m222 0h14v13M15 110v26h14m236-26v26h-14" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M28 29h7m4 0h3m4 0h11M27 108v6m6-6v6m6-6v6m6-6v6m6-6v6m6-6v6" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M32 56h8v4h4v-4h8v4h4v12h-4v4h-4v4h-4v4h-4v-4h-4v-4h-4v-4h-4V60h4Z" fill="url(#friends-signal-hatch)" />
-      <path d="M64 67h13l7-10 9 26 12-48 17 70 10-38h27" stroke="currentColor" strokeWidth="2.2" />
-      <path d="M164 67h77" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2 4" />
-      <text x="189" y="50" fill="url(#friends-signal-hatch)" fontSize="38" fontWeight="700" letterSpacing="-3">125</text>
-      <path d="M29 121h214v10H29z" fill="url(#friends-signal-hatch)" />
-      <path d="M249 116v18m5-11v11m5-16v16" stroke="currentColor" strokeWidth="1.3" />
+function SignalBackdrop() {
+  return <div className={styles.signalBackdrop} aria-hidden="true">
+    <svg viewBox="0 0 1000 360" fill="none" focusable="false">
+      <defs><pattern id="friends-signal-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0h6v6H0z" fill="currentColor" /><path d="M0 0v6" stroke="#141414" strokeWidth="2" /></pattern></defs>
+      <path d="M12 48V16h32m912 0h32v32M12 312v32h32m944-32v32h-32" stroke="currentColor" strokeWidth="1.2" opacity=".45" />
+      <path d="M45 165h12v8h8v-8h12v8h8v20h-8v8h-8v8h-8v-8h-8v-8h-8v-20h0Z" fill="url(#friends-signal-hatch)" opacity=".8" />
+      <path d="M104 184h80l30-32 32 75 42-126 35 83h45l37-139 60 270 42-131h82l30-36 26 69 25-33h88" stroke="currentColor" strokeWidth="3" strokeLinejoin="bevel" />
+      <path d="M803 184h145" stroke="currentColor" strokeWidth="2" strokeDasharray="3 8" />
+      <text x="824" y="98" fill="url(#friends-signal-hatch)" fontSize="82" fontWeight="700" letterSpacing="-5" opacity=".8">125</text>
+      <path d="M36 30h26m8 0h7m9 0h18M37 308v13m12-13v13m12-13v13m12-13v13m12-13v13m12-13v13" stroke="currentColor" strokeWidth="1.5" opacity=".65" />
+      <path d="M37 328h270v10H37z" fill="url(#friends-signal-hatch)" opacity=".6" />
     </svg>
-    <span className={styles.signalLabel} lang="ko">칼바람</span>
   </div>;
 }
 
@@ -42,8 +40,9 @@ export default function LinksPage() {
       <header className={styles.hero}>
         <div className={styles.heroMeta}><span>YURIA / LINK DIRECTORY</span><span>PERSONAL CONNECTIONS</span></div>
         <div className={styles.heroTitle}>
+          <SignalBackdrop />
           <h1><span className={styles.srOnly}>友人帐</span><span aria-hidden="true">FRIENDS</span></h1>
-          <SignalStamp />
+          <span className={styles.signalLabel} lang="ko">칼바람</span>
         </div>
         <p className={styles.heroFoot}>IN GOOD COMPANY.</p>
       </header>
