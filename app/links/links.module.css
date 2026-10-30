@@ -41,9 +41,8 @@
 .friend:nth-child(even) .friendCard { transform: rotate(-2deg); }
 .friendCard:hover, .friendCard:focus-visible { transform: rotate(0) translateY(-7px); box-shadow: 0 25px 70px #0007; }
 .friendCard:focus-visible { outline: 2px solid #eee; outline-offset: 9px; }
-.photo { position: relative; display: block; min-height: 375px; overflow: hidden; background: #454545; }
-.photoImage { object-fit: cover; filter: grayscale(1) contrast(1.05); transition: transform .6s cubic-bezier(.22,1,.36,1); }.friendCard:hover .photoImage { transform: scale(1.04); }
-.photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg,#0005,transparent 45%); pointer-events: none; }
+.photo { position: relative; display: block; width: 100%; aspect-ratio: 1 / 1; align-self: center; overflow: hidden; background: #454545; }
+.photoImage { object-fit: cover; transition: transform .6s cubic-bezier(.22,1,.36,1); }.friendCard:hover .photoImage { transform: scale(1.04); }
 .photoTop { position: absolute; z-index: 1; top: 13px; left: 13px; color: #eee; background: #151515b3; padding: 5px 7px; font: 6px/1.5 var(--font-geist-mono), monospace; letter-spacing: .12em; }
 .photoNumber { position: absolute; z-index: 1; bottom: 10px; left: 16px; font: 400 68px/1 var(--font-friends-display), sans-serif; letter-spacing: -.04em; color: transparent; -webkit-text-stroke: 1px #f5f5f5a8; }
 .photoCorner { position: absolute; z-index: 1; right: 14px; bottom: 18px; width: 22px; height: 22px; border-right: 1px solid #eee; border-bottom: 1px solid #eee; }
@@ -71,7 +70,7 @@
 .page button:focus-visible, .explore:focus-visible, .siteIdentity a:focus-visible, .footer a:focus-visible { outline: 2px solid #eee; outline-offset: 5px; }
 @media (max-width: 1050px) {
   .main { padding-inline: 6%; }.heroTitle { gap: 6%; }.titleCross { height: 100px; }.titleCross i { height: 12px; }
-  .directoryLayout { grid-template-columns: minmax(0,.65fr) minmax(0,1.8fr); gap: 5%; }.editorialTitle { font-size: 35px; }.photo { min-height: 335px; }.friendCard { grid-template-columns: minmax(0,1.12fr) minmax(0,1fr); }.friendInfo { padding: 17px 15px 10px; }.friendName { font-size: 40px; }.friendDescription { font-size: 12px; margin-block: 17px; }.cardMeta { font-size: 5px; }.cardBottom { padding-top: 22px; }.barcode { width: 50px; }.exchange { gap: 7%; padding-inline: 0; }.siteCard { padding: 20px; }
+  .directoryLayout { grid-template-columns: minmax(0,.65fr) minmax(0,1.8fr); gap: 5%; }.editorialTitle { font-size: 35px; }.friendCard { grid-template-columns: minmax(0,1.12fr) minmax(0,1fr); }.friendInfo { padding: 17px 15px 10px; }.friendName { font-size: 40px; }.friendDescription { font-size: 12px; margin-block: 17px; }.cardMeta { font-size: 5px; }.cardBottom { padding-top: 22px; }.barcode { width: 50px; }.exchange { gap: 7%; padding-inline: 0; }.siteCard { padding: 20px; }
 }
 @media (max-width: 760px) {
   .main { padding: 90px 6% 0; }.hero { padding-top: 16px; }.heroMeta { font-size: 6px; gap: 10px; padding-bottom: 13px; }.heroMeta>span:last-child { letter-spacing: .03em; }
@@ -81,12 +80,12 @@
   .directoryLayout { display: flex; flex-direction: column; align-items: stretch; gap: 40px; padding: 28px 0 55px; }
   .editorial { padding: 0; }.eyebrow { font-size: 6px; }.editorialTitle { font-size: 34px; line-height: 1; margin: 18px 0 16px; max-width: 100%; }.editorialTitle br { display: none; }.editorialTitle em { margin-top: 6px; }.editorialChinese { font-size: 11px; }.editorialNote { position: absolute; right: 0; top: auto; bottom: 0; margin-top: 0; width: 31%; gap: 5px; }.editorialNote>span { font-size: 18px; }.editorialNote p { font-size: 6px; }.miniRuler { display: none; }
   .friendList { gap: 50px; }.friendCard { grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); padding: 6px; transform: rotate(1.5deg); }.friend:nth-child(even) .friendCard { transform: rotate(-1.5deg); }
-  .photo { min-height: 295px; }.photoTop { top: 8px; left: 7px; font-size: 4px; padding: 4px; }.photoNumber { font-size: 48px; bottom: 10px; left: 10px; }.photoCorner { width: 15px; height: 15px; right: 9px; bottom: 13px; }
+  .photoTop { top: 8px; left: 7px; font-size: 4px; padding: 4px; }.photoNumber { font-size: 48px; bottom: 10px; left: 10px; }.photoCorner { width: 15px; height: 15px; right: 9px; bottom: 13px; }
   .friendInfo { padding: 13px 12px 9px; }.cardMeta { font-size: 4px; letter-spacing: .02em; padding-bottom: 11px; }.friendName { font-size: 37px; margin-top: 19px; }.host { font-size: 7px; margin-top: 5px; }.friendDescription { font-size: 11px; line-height: 1.85; margin: 17px 0; }.visit { font-size: 6px; padding-top: 10px; gap: 6px; }.visitIcon { width: 24px; height: 24px; }.visitIcon svg { width: 15px; }.cardBottom { gap: 8px; padding-top: 20px; }.barcode { width: 44px; height: 18px; }.cardBottom small { font-size: 4px; }.cardCaption { margin-top: 23px; font-size: 5px; }
   .exchange { grid-template-columns: 1fr; gap: 33px; padding: 36px 0 43px; }.exchangeIntro h2 { font-size: 64px; margin-top: 17px; }.exchangeIntro h2 br { display: none; }.exchangeGraphic { top: 19px; bottom: auto; left: auto; right: 1%; transform: scale(.6); transform-origin: top right; }
   .siteCard { width: 100%; padding: 22px; }.siteCardTop { font-size: 5px; }.siteIdentity { margin-top: 22px; }.siteCard>p { font-size: 12px; }.footer { font-size: 5px; gap: 10px; padding-bottom: 105px; }.footer>span:last-child { display: none; }
 }
 @media (max-width: 360px) {
-  .heroMeta { font-size: 5px; }.heroBottom p { font-size: 14px; }.editorialTitle { font-size: 30px; }.editorialNote { width: 28%; }.editorialNote p { font-size: 5px; }.photo { min-height: 280px; }.friendInfo { padding-inline: 9px; }.friendName { font-size: 31px; }.friendDescription { font-size: 10px; }.visit { font-size: 5px; }.cardMeta { font-size: 3.5px; }.siteCard { padding: 19px; }.exchangeIntro h2 { font-size: 57px; }
+  .heroMeta { font-size: 5px; }.heroBottom p { font-size: 14px; }.editorialTitle { font-size: 30px; }.editorialNote { width: 28%; }.editorialNote p { font-size: 5px; }.friendInfo { padding-inline: 9px; }.friendName { font-size: 31px; }.friendDescription { font-size: 10px; }.visit { font-size: 5px; }.cardMeta { font-size: 3.5px; }.siteCard { padding: 19px; }.exchangeIntro h2 { font-size: 57px; }
 }
 @media (prefers-reduced-motion: reduce) { .friendCard,.photoImage,.visitIcon svg,.copyButton,.explore svg,.footer a::after { transition: none; } }
