@@ -102,18 +102,19 @@ export default function LoginPage() {
       </header>
       <div className={styles.canvas}>
         <IndustrialMarks />
-        <h1 id="letter-title" className={styles.title} lang="ja"><span className={styles.salutation}>あなた</span><span className={styles.addressee}>誰なの</span></h1>
+        <h1 id="letter-title" className={styles.title} lang="ja"><span className={styles.salutation}>あなた
+          <span className={styles.salutationMark} aria-hidden="true">
+            <svg className={styles.entranceMark} viewBox="0 0 142 24" fill="none">
+              <path d="M1 2h19v5H1zM25 2h21M1 22h14m4 0h4m4 0h10" stroke="currentColor" strokeWidth=".8" />
+              <path d="m1 18 8-8h7l-8 8zm21 0 13-13h7L29 18zm25 0L60 5h7L54 18zm25 0L85 5h7L79 18zm25 0 13-13h7l-13 13zm25 0 13-13h7l-13 13z" fill="currentColor" />
+            </svg>
+          </span>
+        </span><span className={styles.addressee}>誰なの</span></h1>
         <div className={styles.whisper} lang="ja"><span>ねえ</span><span>ねえ</span><span>ねえ</span></div>
         <p className={styles.question} lang="ja">教えてよぉ</p>
 
         <section className={styles.admission} aria-labelledby="login-title" aria-busy={busy}>
           <h2 ref={loginHeading} tabIndex={-1} id="login-title" className={styles.accessibleTitle}>Sign in</h2>
-          <div className={styles.admissionHeading} aria-hidden="true">
-            <svg className={styles.entranceMark} viewBox="0 0 142 24" fill="none">
-              <path d="M1 2h19v5H1zM25 2h21M1 22h14m4 0h4m4 0h10" stroke="currentColor" strokeWidth=".8" />
-              <path d="m1 18 8-8h7l-8 8zm21 0 13-13h7L29 18zm25 0L60 5h7L54 18zm25 0L85 5h7L79 18zm25 0 13-13h7l-13 13zm25 0 13-13h7l-13 13z" fill="currentColor" />
-            </svg>
-          </div>
           <div className={styles.tickets}>
             {providers.map((provider, index) => <div key={provider} className={`${styles.ticketWrap} ${index === 0 ? styles.googleWrap : styles.githubWrap}`}>
               <button type="button" disabled={disabled} onClick={() => handleLogin(provider)} aria-label={`Continue with ${provider === 'google' ? 'Google' : 'GitHub'}`} className={`${styles.ticket} ${activeProvider === provider ? styles.departing : ''}`}>

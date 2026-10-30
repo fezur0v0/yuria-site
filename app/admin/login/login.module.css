@@ -21,8 +21,8 @@
   overflow: clip;
   animation: reveal .6s ease both;
 }
-.header { display: flex; align-items: center; justify-content: space-between; gap: 25px; border-bottom: 1px solid #8282824a; min-width: 0; }
-.wordmark { color: #efefef; font: 21px/1 Georgia, serif; letter-spacing: .06em; text-decoration: none; }
+.header { font-family: var(--font-geist-mono), monospace; display: flex; align-items: center; justify-content: space-between; gap: 25px; border-bottom: 1px solid #8282824a; min-width: 0; }
+.wordmark { color: #efefef; font: 400 21px/1 var(--font-geist-mono), monospace; letter-spacing: .06em; text-decoration: none; }
 .headerNote { font-size: 7px; letter-spacing: .19em; color: #949494; }
 .back { position: relative; color: #c6c6c6; font-size: 9px; letter-spacing: .1em; text-decoration: none; padding-block: 10px; }
 .back::after { content: ''; position: absolute; left: 0; right: 0; bottom: 6px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .3s ease; }
@@ -37,7 +37,7 @@
 .question { position: absolute; top: 27%; left: 5%; font: 600 min(23px, 3cqh)/1.4 var(--font-letter-jp), serif; letter-spacing: .05em; margin: 0; color: #aeaeae; transform: rotate(-7deg); }
 .admission { --ticket-height: min(172px, 21cqh); position: absolute; z-index: 2; top: 50%; left: 50%; translate: -50% -50%; width: min(600px, 61%); }
 .accessibleTitle { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; outline: none; }
-.admissionHeading { position: absolute; left: 50%; translate: -50% 0; bottom: calc(100% + min(12px, 1.6cqh)); pointer-events: none; }
+.salutationMark { position: absolute; top: calc(100% + min(8px, 1cqh)); right: 0; display: block; line-height: 0; pointer-events: none; }
 .entranceMark { display: block; width: 116px; height: 20px; color: #bdbdbd; opacity: .3; }
 .tickets { display: flex; flex-direction: column; gap: min(22px, 2.8cqh); }
 .ticketWrap { width: 100%; perspective: 900px; filter: drop-shadow(0 2px 1px #0005) drop-shadow(0 7px 9px #0003); transition: transform .5s cubic-bezier(.22,1,.36,1), filter .5s; }
@@ -82,7 +82,7 @@
 .bracketTop, .bracketBottom { position: absolute; width: 22px; height: 22px; border-color: #999; border-style: solid; opacity: .45; }.bracketTop { top: 6%; left: 0; border-width: 1px 0 0 1px; }.bracketBottom { right: 0; bottom: 6%; border-width: 0 1px 1px 0; }
 .measure { position: absolute; right: 10%; bottom: 24%; display: flex; align-items: end; gap: 5px; opacity: .7; }.measure i { width: 3px; height: 10px; background: currentColor; }.measure i:nth-child(2),.measure i:nth-child(4) { height: 6px; }.measure>span { margin-left: 5px; font: 5px/1 var(--font-geist-mono), monospace; }
 .footer { position: relative; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid #8282824a; font: 6px/1.5 var(--font-geist-mono), monospace; letter-spacing: .1em; color: #a1a1a1; }
-.footerQuote { position: absolute; left: 50%; translate: -50% 0; font: italic clamp(10px, 1vw, 13px)/1.5 Georgia, serif; letter-spacing: .015em; color: #898989; white-space: nowrap; }
+.footerQuote { position: absolute; left: 50%; translate: -50% 0; font: 400 clamp(10px, 1vw, 12px)/1.5 var(--font-geist-mono), monospace; letter-spacing: .015em; color: #898989; white-space: nowrap; }
 .error { margin: 15px 0; padding-left: 9px; border-left: 1px solid currentColor; color: #b8b8b8; font-size: 11px; line-height: 1.8; overflow-wrap: anywhere; }.gate .error { color: #585858; }
 .retry { display: block; border: 0; border-bottom: 1px solid currentColor; padding: 4px 0; margin: 10px auto 0; background: transparent; color: #3c3c3c; font-size: 11px; cursor: pointer; }
 .busy { font: 8px/1.8 var(--font-geist-mono), monospace; margin: 12px 0 0; color: #cacaca; letter-spacing: .12em; }
@@ -102,7 +102,7 @@
   .title { font-size: min(18.7vw, 14cqh, 100px); -webkit-text-stroke-width: 1px; }.salutation { left: 2%; top: 4%; }.addressee { right: 3%; bottom: 4%; }
   .whisper { top: 20%; right: 3%; gap: 10px; font-size: min(19px, 3cqh); }.question { left: 4%; top: 17.5%; font-size: min(19px, 3cqh); }
   .admission { --ticket-height: min(139px, 21cqh); width: calc(100% - 12px); }
-  .admissionHeading { bottom: calc(100% + min(10px, 1.4cqh)); }.entranceMark { width: 82px; height: 14px; opacity: .25; }
+  .entranceMark { width: 82px; height: 14px; opacity: .25; }
   .tickets { gap: min(18px, 2.5cqh); }.googleWrap { transform: translateX(-3px) rotate(-5deg); }.githubWrap { transform: translateX(3px) rotate(4deg); }
   .ticket { --stub: 56px; grid-template-columns: 48px minmax(0,1fr) var(--stub); }
   .ticketBand { padding: min(12px, 1.6cqh) 5px; }.ticketBand>span { font-size: 5px; letter-spacing: .02em; }.ticketBand>span:first-child { padding: 0 0 4px; }.ticketBand>svg { width: min(24px, 3.5cqh); height: min(24px, 3.5cqh); }
@@ -121,11 +121,31 @@
 @media (max-height: 540px) {
   .poster { grid-template-rows: 38px minmax(0,1fr) 26px; }.wordmark { font-size: 17px; }.headerNote { font-size: 5px; }
   .title { font-size: min(17vw, 14cqh, 66px); }.salutation { top: 2%; left: 2%; }.addressee { bottom: 2%; right: 2%; }
-  .admission { --ticket-height: 20cqh; }.admissionHeading { bottom: calc(100% + 1cqh); }.entranceMark { width: 58px; height: 10px; }.tickets { gap: 2.6cqh; }
+  .admission { --ticket-height: 20cqh; }.entranceMark { width: 58px; height: 10px; }.tickets { gap: 2.6cqh; }
   .ticketBand { padding-block: 1.2cqh; }.ticketBand>span { font-size: 4px; }.ticketBand>span:first-child { padding-bottom: 2px; }.ticketBand>svg { width: 5cqh; height: 5cqh; }
   .ticketBody { padding-block: 1.2cqh; }.ticketTop { font-size: 4px; padding-bottom: .8cqh; }.providerName { font-size: 5cqh; margin: .7cqh 0; }.ticketDetails>span { padding-block: .5cqh; }.ticketDetails small { font-size: 3px; }.ticketDetails strong { font-size: 4px; margin-top: 1px; }.ticketFineprint { display: none; }
   .stub { padding-block: 1.2cqh; }.stub>span:first-child,.stub>strong { font-size: 4px; }.stubMark { display: none; }.barcode { height: 10cqh; }
   .admissionFoot { margin-top: 1.8cqh; font-size: 4px; }.admissionFoot>span { font-size: 3cqh; }.question,.whisper { top: 22%; font-size: min(15px, 4cqh); }.question { left: 0; }.whisper { right: 3%; }
   .matrixMark { width: 90px; top: 1%; right: 1%; }.indexRail strong { font-size: 4cqh; }.indexRail>span { display: none; }.measure { display: none; }.footer { font-size: 4px; }
+}
+/* Enlarge the microtype on roomy desktop canvases without crowding phone tickets. */
+@media (min-width: 1001px) and (min-height: 651px) {
+  .headerNote { font-size: 9px; letter-spacing: .14em; }
+  .back { font-size: 10px; }
+  .footer { font-size: 8px; letter-spacing: .08em; }
+  .footerQuote { font-size: 11px; }
+  .entranceMark { width: 132px; height: auto; }
+  .ticketBand>span { font-size: 9px; letter-spacing: .08em; }
+  .ticketTop { font-size: 7.5px; letter-spacing: .04em; }
+  .ticketDetails small { font-size: 6.5px; }
+  .ticketDetails strong { font-size: 10px; }
+  .ticketFineprint { font-size: 6.5px; letter-spacing: .07em; }
+  .stub>span:first-child, .stub>strong { font-size: 8px; letter-spacing: .03em; }
+  .admissionFoot { font-size: 8px; letter-spacing: .06em; }
+  .indexRail>span, .measure>span { font-size: 7px; }
+  .indexRail>i { width: 144px; height: 6px; }
+  .edgeCode { font-size: 8px; letter-spacing: .1em; }
+  .matrixMark { width: min(188px, 18%); }
+  .chevrons { width: min(148px, 14%); }
 }
 @media (prefers-reduced-motion: reduce) { .poster, .ticket, .departing .barcode { animation: none; }.ticketWrap, .ticket, .stub, .providerName>svg, .back::after { transition: none; } .ticket:hover:not(:disabled) .stub { transform: none; } }
