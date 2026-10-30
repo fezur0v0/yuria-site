@@ -34,8 +34,9 @@
 .whisper span:nth-child(2) { font-size: .74em; }.whisper span:nth-child(3) { font-size: .52em; }
 .question { position: absolute; top: 27%; left: 5%; font: 600 min(23px, 3cqh)/1.4 var(--font-letter-jp), serif; letter-spacing: .05em; margin: 0; color: #aeaeae; transform: rotate(-7deg); }
 .admission { --ticket-height: min(172px, 21cqh); position: absolute; z-index: 2; top: 50%; left: 50%; translate: -50% -50%; width: min(600px, 61%); }
-.admissionHeading { margin: 0 0 min(19px, 2.5cqh); padding-inline: 8px; }
-.admissionHeading h2 { margin: 0; font: 400 8px/1.5 var(--font-geist-mono), monospace; letter-spacing: .19em; color: #ababab; outline: none; }
+.accessibleTitle { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; outline: none; }
+.admissionHeading { position: absolute; left: 50%; translate: -50% 0; bottom: calc(100% + min(12px, 1.6cqh)); pointer-events: none; }
+.entranceMark { display: block; width: 116px; height: 20px; color: #bdbdbd; opacity: .3; }
 .tickets { display: flex; flex-direction: column; gap: min(22px, 2.8cqh); }
 .ticketWrap { width: 100%; transition: transform .35s cubic-bezier(.22,1,.36,1), filter .35s; }
 .googleWrap { transform: translateX(-25px) rotate(-5deg); }.githubWrap { transform: translateX(23px) rotate(4deg); }
@@ -88,7 +89,7 @@
   .title { font-size: min(18.7vw, 14cqh, 100px); -webkit-text-stroke-width: 1px; }.salutation { left: 2%; top: 4%; }.addressee { right: 3%; bottom: 4%; }
   .whisper { top: 20%; right: 3%; gap: 10px; font-size: min(19px, 3cqh); }.question { left: 4%; top: 17.5%; font-size: min(19px, 3cqh); }
   .admission { --ticket-height: min(139px, 21cqh); width: calc(100% - 12px); }
-  .admissionHeading { margin-bottom: min(15px, 2cqh); padding-inline: 0; }.admissionHeading h2 { font-size: 6px; letter-spacing: .1em; }
+  .admissionHeading { bottom: calc(100% + min(10px, 1.4cqh)); }.entranceMark { width: 82px; height: 14px; opacity: .25; }
   .tickets { gap: min(18px, 2.5cqh); }.googleWrap { transform: translateX(-3px) rotate(-5deg); }.githubWrap { transform: translateX(3px) rotate(4deg); }
   .ticket { --stub: 56px; grid-template-columns: 48px minmax(0,1fr) var(--stub); }
   .ticketBand { padding: min(12px, 1.6cqh) 5px; }.ticketBand>span { font-size: 5px; letter-spacing: .02em; }.ticketBand>span:first-child { padding: 0 0 4px; }.ticketBand>svg { width: min(24px, 3.5cqh); height: min(24px, 3.5cqh); }
@@ -103,11 +104,11 @@
   .footer { font-size: 5px; gap: 13px; }.footerTicks { display: none; }.footer>span:last-child { font-size: 4px; gap: 4px; }.footer>span:last-child svg { width: 10px; }
 }
 @media (max-width: 360px) { .poster { padding-inline: 5.5%; }.ticket { --stub: 48px; grid-template-columns: 42px minmax(0,1fr) var(--stub); }.ticketBody { padding-inline: 8px; }.providerName { font-size: min(23px, 5.2cqh); }.ticketDetails strong { font-size: 5px; }.admissionFoot>span { font-size: min(13px, 2.6cqh); }.admissionFoot { font-size: 3.6px; }.gate { padding: 20px; } }
-@media (max-height: 650px) { .measure { display: none; }.question,.whisper { top: 19%; }.admissionFoot { margin-top: 1.8cqh; } }
+@media (max-height: 650px) { .entranceMark { width: 58px; height: 10px; }.measure { display: none; }.question,.whisper { top: 19%; }.admissionFoot { margin-top: 1.8cqh; } }
 @media (max-height: 540px) {
   .poster { grid-template-rows: 38px minmax(0,1fr) 26px; }.wordmark { font-size: 17px; }.headerNote { font-size: 5px; }
   .title { font-size: min(17vw, 14cqh, 66px); }.salutation { top: 2%; left: 2%; }.addressee { bottom: 2%; right: 2%; }
-  .admission { --ticket-height: 20cqh; }.admissionHeading { margin-bottom: 1.7cqh; }.admissionHeading h2 { font-size: 5px; }.tickets { gap: 2.6cqh; }
+  .admission { --ticket-height: 20cqh; }.admissionHeading { bottom: calc(100% + 1cqh); }.entranceMark { width: 58px; height: 10px; }.tickets { gap: 2.6cqh; }
   .ticketBand { padding-block: 1.2cqh; }.ticketBand>span { font-size: 4px; }.ticketBand>span:first-child { padding-bottom: 2px; }.ticketBand>svg { width: 5cqh; height: 5cqh; }
   .ticketBody { padding-block: 1.2cqh; }.ticketTop { font-size: 4px; padding-bottom: .8cqh; }.providerName { font-size: 5cqh; margin: .7cqh 0; }.ticketDetails>span { padding-block: .5cqh; }.ticketDetails small { font-size: 3px; }.ticketDetails strong { font-size: 4px; margin-top: 1px; }.ticketFineprint { display: none; }
   .stub { padding-block: 1.2cqh; }.stub>span:first-child,.stub>strong { font-size: 4px; }.stubMark { display: none; }.barcode { height: 10cqh; }
