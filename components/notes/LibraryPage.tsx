@@ -1,9 +1,10 @@
 'use client'
 import NotesNavigation from './NotesNavigation'
+import NotesPagination from './NotesPagination'
 import notesStyles from './notes-shell.module.css'
-import { FiPlus } from 'react-icons/fi'
+import { FiPlus, FiMinus } from 'react-icons/fi'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/content/client'
 
@@ -80,6 +81,7 @@ export default function Library() {
   const router = useRouter()
   const [cards, setCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
+  const latestRead = useRef(0)
   const [search, setSearch] = useState('')
   const [selectedTags, setSelectedTags] = useState<Record<string, 'include' | 'exclude'>>({})
   const [allTags, setAllTags] = useState<string[]>([])
@@ -104,6 +106,7 @@ export default function Library() {
   }, [page, search, selectedTags])
 
   async function fetchCards() {
+    const read = ++latestRead.current
     setLoading(true)
     let query = supabase.from('theater_cards').select('*', { count: 'exact' })
     if (search) query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`)
@@ -119,8 +122,11 @@ export default function Library() {
     mainExclude.forEach(category => { query = query.neq('category', category) })
 
     const { data, count } = await query.order('created_at', { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
-    setCards(data || [])
+    if (read !== latestRead.current) return
     setTotal(count || 0)
+    const lastPage = Math.max(1, Math.ceil((count || 0) / PAGE_SIZE))
+    if (page > lastPage) { setPage(lastPage); return }
+    setCards(data || [])
     setLoading(false)
   }
 
@@ -220,9 +226,9 @@ export default function Library() {
     <section className={notesStyles.filterSection}><h3>分类</h3><div className={notesStyles.chips}>{MAIN_CATEGORIES.map(filterChip)}</div></section>
     <section className={notesStyles.filterSection}>
       <div className={notesStyles.filterTitle}><h3>标签</h3><input className={notesStyles.filterInput} aria-label="搜索标签" type="search" value={tagSearch} onChange={e => setTagSearch(e.target.value)} placeholder="搜索标签…" /></div>
-      <div className={notesStyles.chips}>{(tagsExpanded || tagSearch ? matchingTags : matchingTags.slice(0, 8)).map(filterChip)}</div>
+      <div className={notesStyles.chips}>{(tagsExpanded || tagSearch ? matchingTags : matchingTags.slice(0, 16)).map(filterChip)}</div>
       {matchingTags.length === 0 && <p className={notesStyles.filterHint}>{allTags.length ? '没有找到这个标签' : '还没有标签'}</p>}
-      {!tagSearch && matchingTags.length > 8 && <button type="button" className={notesStyles.more} onClick={() => setTagsExpanded(value => !value)}>{tagsExpanded ? '收起' : 'more'}</button>}
+      {!tagSearch && matchingTags.length > 16 && <button type="button" className={notesStyles.expandTags} aria-expanded={tagsExpanded} title={tagsExpanded ? '收起标签' : '展开全部标签'} onClick={() => setTagsExpanded(value => !value)}><span>{tagsExpanded ? 'less' : 'more'}</span>{tagsExpanded ? <FiMinus size={14} aria-hidden="true" /> : <FiPlus size={14} aria-hidden="true" />}</button>}
     </section>
     <p className={notesStyles.filterHint}>点击包含，再次点击排除，再次点击取消。</p>
     {Object.keys(selectedTags).length > 0 && <button type="button" className={notesStyles.more} onClick={() => { setSelectedTags({}); setPage(1) }}>清空筛选</button>}
@@ -342,25 +348,7 @@ export default function Library() {
           </div>
         )}
 
-        {totalPages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '32px', flexWrap: 'wrap' }}>
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-              style={{ padding: '7px 14px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: page === 1 ? '#ccc' : '#333', cursor: page === 1 ? 'not-allowed' : 'pointer', fontSize: '13px' }}>← 上一页</button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i
-              return <button key={p} onClick={() => setPage(p)} style={{ width: '36px', height: '36px', borderRadius: '8px', border: '1px solid', borderColor: p === page ? '#1a1a1a' : '#ebebeb', background: p === page ? '#1a1a1a' : '#fff', color: p === page ? '#fff' : '#333', cursor: 'pointer', fontSize: '13px' }}>{p}</button>
-            })}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-              style={{ padding: '7px 14px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: page === totalPages ? '#ccc' : '#333', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontSize: '13px' }}>下一页 →</button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#aaa' }}>
-              跳转到
-              <input type="number" min={1} max={totalPages} defaultValue={page}
-                onKeyDown={e => { if (e.key === 'Enter') { const v = parseInt((e.target as HTMLInputElement).value); if (v >= 1 && v <= totalPages) setPage(v) } }}
-                style={{ width: '48px', padding: '6px 8px', border: '1px solid #ebebeb', borderRadius: '6px', fontSize: '12px', textAlign: 'center', outline: 'none' }} />
-              页
-            </div>
-          </div>
-        )}
+        <NotesPagination page={page} totalPages={totalPages} onChange={setPage} />
       </main>
 
       {showAdd && (

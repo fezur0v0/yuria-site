@@ -1,7 +1,8 @@
+:root{--yuria-drawer-width:min(304px,calc(100vw - 32px))}
 .site-drawer-layer{position:fixed;inset:0;z-index:80;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease,visibility .3s}
 .site-drawer-layer.is-open{opacity:1;visibility:visible;pointer-events:auto}
 .site-drawer-backdrop{position:absolute;inset:0;background:#0006;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
-.site-drawer{position:absolute;top:0;right:0;width:min(304px,calc(100vw - 32px));height:100%;overflow-y:auto;overscroll-behavior:contain;padding:44px 24px calc(32px + env(safe-area-inset-bottom));border-left:1px solid #ffffff24;background:rgba(10,10,10,.84);backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);box-shadow:-16px 0 60px #0005;color:#fff;transform:translateX(100%);transition:transform .4s cubic-bezier(.22,1,.36,1)}
+.site-drawer{position:absolute;top:0;right:0;width:var(--yuria-drawer-width);height:100%;overflow-y:auto;overscroll-behavior:contain;padding:44px 24px calc(32px + env(safe-area-inset-bottom));border-left:1px solid #ffffff24;background:rgba(10,10,10,.84);backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);box-shadow:-16px 0 60px #0005;color:#fff;transform:translateX(100%);transition:transform .4s cubic-bezier(.22,1,.36,1)}
 .site-drawer-layer.is-open .site-drawer{transform:none}
 .site-drawer-profile{text-align:center;margin:8px 0 30px}
 .site-drawer .account-polaroid{background:#ffffff0d;border-color:#ffffff29;box-shadow:0 8px 25px #0004}

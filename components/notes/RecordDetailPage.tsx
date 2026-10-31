@@ -1,6 +1,8 @@
 'use client'
 import { uploadPrivateImage } from '@/utils/content/privateUpload'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
+import CharacterSelect from './CharacterSelect'
+import RecordToolbar from './RecordToolbar'
 import { theaterMediaUrl } from '@/utils/notes/media'
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -75,11 +77,6 @@ export default function RecordDetail() {
   const contentRef = useRef<HTMLTextAreaElement>(null)
 
   const [charDropdownOpen, setCharDropdownOpen] = useState(false)
-  const [showNewCharForm, setShowNewCharForm] = useState(false)
-  const [newCharName, setNewCharName] = useState('')
-  const [newCharAvatar, setNewCharAvatar] = useState('')
-  const [newCharUploading, setNewCharUploading] = useState(false)
-  const [savingNewChar, setSavingNewChar] = useState(false)
 
   const [cardDropdownOpen, setCardDropdownOpen] = useState(false)
   const [cardSearch, setCardSearch] = useState('')
@@ -156,30 +153,6 @@ export default function RecordDetail() {
     })
   }
 
-  async function handleNewCharAvatar(files: FileList | null) {
-    if (!files || files.length === 0) return
-    setNewCharUploading(true)
-    const file = files[0]
-    const ext = file.name.split('.').pop()
-    const path = `char-${crypto.randomUUID()}.${ext}`
-    const { error } = await uploadPrivateImage(path, file)
-    if (!error) {
-      setNewCharAvatar(theaterMediaUrl(path))
-    }
-    setNewCharUploading(false)
-  }
-  async function saveNewCharacter() {
-    if (!newCharName.trim()) return
-    setSavingNewChar(true)
-    const { data } = await supabase.from('characters').insert({ name: newCharName.trim(), avatar: newCharAvatar || null }).select().single()
-    if (data) {
-      setCharacters(prev => [...prev, data as Character])
-      setEditForm(p => ({ ...p, character_id: data.id }))
-    }
-    setNewCharName(''); setNewCharAvatar(''); setShowNewCharForm(false); setCharDropdownOpen(false)
-    setSavingNewChar(false)
-  }
-
   function insertMarkdown(type: 'bold' | 'quote' | 'strike' | 'ul' | 'ol') {
     const ta = contentRef.current
     if (!ta) return
@@ -242,7 +215,6 @@ export default function RecordDetail() {
   function prevImage() { setLightboxIndex(i => (i === null ? null : (i - 1 + images.length) % images.length)) }
   function nextImage() { setLightboxIndex(i => (i === null ? null : (i + 1) % images.length)) }
 
-  const selectedChar = characters.find(c => c.id === editForm.character_id)
   const selectedCard = cardOptions.find(c => c.id === editForm.card_id)
   const filteredCardOptions = cardOptions.filter(c => c.title.toLowerCase().includes(cardSearch.toLowerCase()))
 
@@ -258,8 +230,6 @@ export default function RecordDetail() {
         .thumb:hover { transform: scale(1.02); }
         .scroll-hide::-webkit-scrollbar { display: none; }
         .scroll-hide { scrollbar-width: none; -ms-overflow-style: none; }
-        .md-btn { background:#f5f5f3;border:1px solid #ebebeb;border-radius:6px;padding:4px 10px;font-size:12px;color:#666;cursor:pointer; }
-        .md-btn:hover { background:#eaeae8; }
       `}</style>
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px 80px' }}>
@@ -344,51 +314,13 @@ export default function RecordDetail() {
       {showEdit && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
           onClick={() => { setShowEdit(false); setCharDropdownOpen(false); setCardDropdownOpen(false) }}>
-          <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" aria-label="编辑记录" style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>编辑记录</h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ position: 'relative' }}>
+              <div>
                 <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色 *</label>
-                <div onClick={() => { setCharDropdownOpen(v => !v); setCardDropdownOpen(false) }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', cursor: 'pointer', color: selectedChar ? '#1a1a1a' : '#bbb' }}>
-                  {selectedChar ? (<>{selectedChar.avatar ? <PrivateTheaterImage src={selectedChar.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}{selectedChar.name}</>) : '点击选择角色'}
-                  <svg style={{ marginLeft: 'auto' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
-                </div>
-                {charDropdownOpen && (
-                  <div className="scroll-hide" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: '#fff', border: '1px solid #ebebeb', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', maxHeight: '240px', overflowY: 'auto', zIndex: 10 }}>
-                    {!showNewCharForm ? (
-                      <>
-                        <div onClick={() => setShowNewCharForm(true)} style={{ padding: '10px 12px', fontSize: '13px', color: '#1a1a1a', fontWeight: 500, cursor: 'pointer', borderBottom: '1px solid #f0f0ee', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                          新角色
-                        </div>
-                        {characters.map(c => (
-                          <div key={c.id} onClick={() => { setEditForm(p => ({ ...p, character_id: c.id })); setCharDropdownOpen(false) }}
-                            style={{ padding: '9px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: editForm.character_id === c.id ? '#1a1a1a' : '#555', background: editForm.character_id === c.id ? '#f5f5f3' : '#fff' }}>
-                            {c.avatar ? <PrivateTheaterImage src={c.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}
-                            {c.name}
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <div style={{ padding: '12px' }}>
-                        <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>新建角色</div>
-                        <input value={newCharName} onChange={e => setNewCharName(e.target.value)} placeholder="角色名字"
-                          style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '8px', padding: '8px 10px', fontSize: '13px', outline: 'none', marginBottom: '8px' }} />
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#999', cursor: 'pointer', marginBottom: '10px' }}>
-                          {newCharAvatar ? <PrivateTheaterImage src={newCharAvatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#f0f0ee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</div>}
-                          {newCharUploading ? '上传中...' : '上传头像（可选）'}
-                          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleNewCharAvatar(e.target.files)} />
-                        </label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={() => { setShowNewCharForm(false); setNewCharName(''); setNewCharAvatar('') }} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: '#666', fontSize: '12px', cursor: 'pointer' }}>取消</button>
-                          <button onClick={saveNewCharacter} disabled={!newCharName.trim() || savingNewChar} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: !newCharName.trim() || savingNewChar ? '#f0f0ee' : '#1a1a1a', color: !newCharName.trim() || savingNewChar ? '#aaa' : '#fff', fontSize: '12px', cursor: 'pointer' }}>{savingNewChar ? '保存中' : '保存角色'}</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                <CharacterSelect characters={characters} value={editForm.character_id} open={charDropdownOpen} onOpenChange={open => { setCharDropdownOpen(open); if (open) setCardDropdownOpen(false) }} onChange={id => setEditForm(previous => ({ ...previous, character_id: id }))} />
               </div>
 
               <div style={{ position: 'relative' }}>
@@ -431,17 +363,8 @@ export default function RecordDetail() {
               </div>
 
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '12px', color: '#aaa' }}>正文</label>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong> </button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; </button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s> </button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ul')}>• </button>
-                    <button type="button" className="md-btn" onClick={() => setShowTableBuilder(true)}>⊞</button>
-                  </div>
-                </div>
-                <textarea ref={contentRef} value={editForm.content} onChange={e => setEditForm(p => ({ ...p, content: e.target.value }))} rows={7}
+                <RecordToolbar onFormat={insertMarkdown} onTable={() => setShowTableBuilder(true)} />
+                <textarea aria-label="记录正文" ref={contentRef} value={editForm.content} onChange={e => setEditForm(p => ({ ...p, content: e.target.value }))} rows={7}
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
               </div>
 
@@ -489,7 +412,7 @@ export default function RecordDetail() {
             </div>
 
             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-              <button onClick={() => setShowEdit(false)} style={{ flex: 1, padding: '11px', borderRadius: '10px', border: '1px solid #ebebeb', background: '#fff', color: '#666', fontSize: '13px', cursor: 'pointer' }}>取消</button>
+              <button onClick={() => { setShowEdit(false); setCharDropdownOpen(false); setCardDropdownOpen(false) }} style={{ flex: 1, padding: '11px', borderRadius: '10px', border: '1px solid #ebebeb', background: '#fff', color: '#666', fontSize: '13px', cursor: 'pointer' }}>取消</button>
               <button onClick={saveEdit} disabled={saving || !editForm.title || !editForm.character_id}
                 style={{ flex: 2, padding: '11px', borderRadius: '10px', border: 'none', background: saving || !editForm.title || !editForm.character_id ? '#f0f0ee' : '#1a1a1a', color: saving || !editForm.title || !editForm.character_id ? '#aaa' : '#fff', fontSize: '13px', cursor: saving || !editForm.title || !editForm.character_id ? 'not-allowed' : 'pointer' }}>
                 {saving ? '保存中...' : '保存修改'}

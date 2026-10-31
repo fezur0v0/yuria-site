@@ -1,9 +1,12 @@
 'use client'
 import { uploadPrivateImage } from '@/utils/content/privateUpload'
 import NotesNavigation from './NotesNavigation'
+import NotesPagination from './NotesPagination'
 import notesStyles from './notes-shell.module.css'
-import { FiPlus } from 'react-icons/fi'
+import { FiPlus, FiCheck } from 'react-icons/fi'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
+import CharacterSelect from './CharacterSelect'
+import RecordToolbar from './RecordToolbar'
 import { theaterMediaUrl } from '@/utils/notes/media'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -56,6 +59,7 @@ export default function Records() {
   const [records, setRecords] = useState<RecordRow[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
   const [loading, setLoading] = useState(true)
+  const latestRead = useRef(0)
   const [search, setSearch] = useState('')
   const [activeChar, setActiveChar] = useState<string | null>(null)
   const [characterSearch, setCharacterSearch] = useState('')
@@ -81,7 +85,6 @@ export default function Records() {
 
   // 角色下拉
   const [charDropdownOpen, setCharDropdownOpen] = useState(false)
-  const [showNewCharForm, setShowNewCharForm] = useState(false)
   const [newCharName, setNewCharName] = useState('')
   const [newCharAvatar, setNewCharAvatar] = useState('')
   const [newCharUploading, setNewCharUploading] = useState(false)
@@ -114,13 +117,17 @@ export default function Records() {
   }
 
   async function fetchRecords() {
+    const read = ++latestRead.current
     setLoading(true)
     let query = supabase.from('theater_records').select('*, characters(id,name,avatar)', { count: 'exact' })
     if (search) query = query.or(`title.ilike.%${search}%,extra_tag.ilike.%${search}%,content.ilike.%${search}%`)
     if (activeChar) query = query.eq('character_id', activeChar)
     const { data, count } = await query.order('created_at', { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
-    setRecords((data as any) || [])
+    if (read !== latestRead.current) return
     setTotal(count || 0)
+    const lastPage = Math.max(1, Math.ceil((count || 0) / PAGE_SIZE))
+    if (page > lastPage) { setPage(lastPage); return }
+    setRecords((data as any) || [])
     setLoading(false)
   }
 
@@ -190,7 +197,7 @@ export default function Records() {
       setCharacters(prev => [...prev, data as Character])
       setNewRecord(prev => ({ ...prev, character_id: data.id }))
       setCharacterSearch('')
-      setNewCharName(''); setNewCharAvatar(''); setShowNewCharForm(false); setCharDropdownOpen(false); setAddingCharacter(false)
+      setNewCharName(''); setNewCharAvatar(''); setCharDropdownOpen(false); setAddingCharacter(false)
     } catch { setNewCharError('角色未保存，请稍后重试。') }
     finally { setSavingNewChar(false) }
   }
@@ -250,7 +257,6 @@ export default function Records() {
   }
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
-  const selectedChar = characters.find(c => c.id === newRecord.character_id)
   const selectedCard = cardOptions.find(c => c.id === newRecord.card_id)
   const filteredCardOptions = cardOptions.filter(c => c.title.toLowerCase().includes(cardSearch.toLowerCase()))
 
@@ -265,8 +271,7 @@ export default function Records() {
   </div> : <>
     <div className={notesStyles.characterSearch}><input className={notesStyles.filterInput} type="search" aria-label="搜索角色" value={characterSearch} onChange={e => setCharacterSearch(e.target.value)} placeholder="搜索角色…" /><button type="button" className={notesStyles.addButton} aria-label="新增角色" onClick={() => { setAddingCharacter(true); setNewCharError('') }}><FiPlus size={23} /></button></div>
     <div className={notesStyles.characterList}>
-      <button type="button" aria-pressed={activeChar === null} onClick={() => selectChar(null)}>全部角色</button>
-      {matchingCharacters.map(character => <button type="button" key={character.id} aria-pressed={activeChar === character.id} onClick={() => selectChar(character.id)}><span className={notesStyles.characterAvatar} aria-hidden="true">{character.avatar ? <PrivateTheaterImage src={character.avatar} alt="" /> : character.name[0]}</span><span>{character.name}</span></button>)}
+      {matchingCharacters.map(character => <button type="button" key={character.id} aria-pressed={activeChar === character.id} onClick={() => selectChar(activeChar === character.id ? null : character.id)}><span className={notesStyles.characterAvatar} aria-hidden="true">{character.avatar ? <PrivateTheaterImage src={character.avatar} alt="" /> : character.name[0]}</span><span>{character.name}</span>{activeChar === character.id && <FiCheck size={17} className={notesStyles.selectedCheck} aria-hidden="true" />}</button>)}
     </div>
     {matchingCharacters.length === 0 && <p className={notesStyles.filterHint}>没有找到角色</p>}
   </>
@@ -329,83 +334,21 @@ export default function Records() {
           </div>
         )}
 
-        {totalPages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '32px', flexWrap: 'wrap' }}>
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '7px 14px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: page === 1 ? '#ccc' : '#333', cursor: page === 1 ? 'not-allowed' : 'pointer', fontSize: '13px' }}>← 上一页</button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i
-              return <button key={p} onClick={() => setPage(p)} style={{ width: '36px', height: '36px', borderRadius: '8px', border: '1px solid', borderColor: p === page ? '#1a1a1a' : '#ebebeb', background: p === page ? '#1a1a1a' : '#fff', color: p === page ? '#fff' : '#333', cursor: 'pointer', fontSize: '13px' }}>{p}</button>
-            })}
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: '7px 14px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: page === totalPages ? '#ccc' : '#333', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontSize: '13px' }}>下一页 →</button>
-          </div>
-        )}
+        <NotesPagination page={page} totalPages={totalPages} onChange={setPage} />
       </main>
 
       {/* 新增记录弹窗 */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
           onClick={() => { setShowAdd(false); setCharDropdownOpen(false); setCardDropdownOpen(false) }}>
-          <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" aria-label="新增记录" style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>新增记录</h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-              {/* 角色下拉选择 */}
-              <div style={{ position: 'relative' }}>
+              <div>
                 <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>角色 *</label>
-                <div onClick={() => { setCharDropdownOpen(v => !v); setCardDropdownOpen(false) }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', cursor: 'pointer', color: selectedChar ? '#1a1a1a' : '#bbb' }}>
-                  {selectedChar ? (
-                    <>
-                      {selectedChar.avatar ? <PrivateTheaterImage src={selectedChar.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}
-                      {selectedChar.name}
-                    </>
-                  ) : '点击选择角色'}
-                  <svg style={{ marginLeft: 'auto' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
-                </div>
-
-                {charDropdownOpen && (
-                  <div className="scroll-hide" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: '#fff', border: '1px solid #ebebeb', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', maxHeight: '240px', overflowY: 'auto', zIndex: 10 }}>
-                    {!showNewCharForm ? (
-                      <>
-                        <div onClick={() => setShowNewCharForm(true)}
-                          style={{ padding: '10px 12px', fontSize: '13px', color: '#1a1a1a', fontWeight: 500, cursor: 'pointer', borderBottom: '1px solid #f0f0ee', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                          新角色
-                        </div>
-                        {characters.map(c => (
-                          <div key={c.id} onClick={() => { setNewRecord(p => ({ ...p, character_id: c.id })); setCharDropdownOpen(false) }}
-                            style={{ padding: '9px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: newRecord.character_id === c.id ? '#1a1a1a' : '#555', background: newRecord.character_id === c.id ? '#f5f5f3' : '#fff' }}>
-                            {c.avatar ? <PrivateTheaterImage src={c.avatar} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#e8e8e6' }} />}
-                            {c.name}
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <div style={{ padding: '12px' }}>
-                        <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>新建角色</div>
-                        {newCharError && <p role="alert" style={{ fontSize: 12, color: '#777' }}>{newCharError}</p>}
-                        <input value={newCharName} onChange={e => setNewCharName(e.target.value)} placeholder="角色名字"
-                          style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '8px', padding: '8px 10px', fontSize: '13px', outline: 'none', marginBottom: '8px' }} />
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#999', cursor: 'pointer', marginBottom: '10px' }}>
-                          {newCharAvatar
-                            ? <PrivateTheaterImage src={newCharAvatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
-                            : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#f0f0ee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</div>}
-                          {newCharUploading ? '上传中...' : '上传头像（可选）'}
-                          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleNewCharAvatar(e.target.files)} />
-                        </label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={() => { setShowNewCharForm(false); setNewCharName(''); setNewCharAvatar('') }}
-                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ebebeb', background: '#fff', color: '#666', fontSize: '12px', cursor: 'pointer' }}>取消</button>
-                          <button onClick={saveNewCharacter} disabled={!newCharName.trim() || savingNewChar || newCharUploading}
-                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: !newCharName.trim() || savingNewChar ? '#f0f0ee' : '#1a1a1a', color: !newCharName.trim() || savingNewChar ? '#aaa' : '#fff', fontSize: '12px', cursor: 'pointer' }}>
-                            {savingNewChar ? '保存中' : '保存角色'}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                <CharacterSelect characters={characters} value={newRecord.character_id} open={charDropdownOpen} onOpenChange={open => { setCharDropdownOpen(open); if (open) setCardDropdownOpen(false) }} onChange={id => setNewRecord(previous => ({ ...previous, character_id: id }))} />
               </div>
 
               {/* 关联词库下拉 */}
@@ -452,18 +395,8 @@ export default function Records() {
               </div>
 
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '12px', color: '#aaa' }}>正文</label>
-                  <div className="md-toolbar">
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('bold')}><strong>B</strong> 加粗</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('quote')}>&ldquo;&rdquo; 引用</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('strike')}><s>S</s> 删除线</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ul')}>• 列表</button>
-                    <button type="button" className="md-btn" onClick={() => insertMarkdown('ol')}>1. 列表</button>
-                    <button type="button" className="md-btn" onClick={() => setShowTableBuilder(true)}>⊞ 表格</button>
-                  </div>
-                </div>
-                <textarea ref={contentRef} value={newRecord.content} onChange={e => setNewRecord(p => ({ ...p, content: e.target.value }))} rows={7}
+                <RecordToolbar onFormat={insertMarkdown} onTable={() => setShowTableBuilder(true)} />
+                <textarea aria-label="记录正文" ref={contentRef} value={newRecord.content} onChange={e => setNewRecord(p => ({ ...p, content: e.target.value }))} rows={7}
                   placeholder="在这里写正文...（选中文字后点上方按钮可快速加粗/引用）"
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
               </div>
@@ -514,7 +447,7 @@ export default function Records() {
             </div>
 
             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-              <button onClick={() => { setShowAdd(false); setDraftImages([]) }}
+              <button onClick={() => { setShowAdd(false); setCharDropdownOpen(false); setCardDropdownOpen(false); setDraftImages([]) }}
                 style={{ flex: 1, padding: '11px', borderRadius: '10px', border: '1px solid #ebebeb', background: '#fff', color: '#666', fontSize: '13px', cursor: 'pointer' }}>取消</button>
               <button onClick={saveRecord} disabled={saving || !newRecord.title || !newRecord.character_id}
                 style={{ flex: 2, padding: '11px', borderRadius: '10px', border: 'none', background: saving || !newRecord.title || !newRecord.character_id ? '#f0f0ee' : '#1a1a1a', color: saving || !newRecord.title || !newRecord.character_id ? '#aaa' : '#fff', fontSize: '13px', cursor: saving || !newRecord.title || !newRecord.character_id ? 'not-allowed' : 'pointer' }}>
