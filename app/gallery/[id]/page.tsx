@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useId } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/utils/content/client';
 import PortfolioNav from '@/components/PortfolioNav';
@@ -16,6 +16,33 @@ import { isVideoUrl } from '@/utils/media';
 
 interface Album { id: string; title: string; description: string | null; }
 interface GalleryImage { id: string; image_url: string; caption: string | null; sort_order: number; }
+
+function AlbumAtmosphere() {
+  const id = useId();
+  return <div className={detailStyles.heroBackdrop} aria-hidden="true">
+    <div className={detailStyles.dotField} />
+    <svg className={detailStyles.softCube} viewBox="0 0 400 400" fill="none" focusable="false">
+      <defs>
+        <linearGradient id={`${id}-top`} x1="85" y1="65" x2="240" y2="125" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white" stopOpacity=".02" /><stop offset="1" stopColor="white" stopOpacity=".62" />
+        </linearGradient>
+        <linearGradient id={`${id}-front`} x1="285" y1="125" x2="155" y2="305" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white" stopOpacity=".85" /><stop offset=".48" stopColor="white" stopOpacity=".3" /><stop offset="1" stopColor="white" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id={`${id}-side`} x1="118" y1="135" x2="67" y2="235" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white" stopOpacity=".26" /><stop offset="1" stopColor="white" stopOpacity="0" />
+        </linearGradient>
+        <filter id={`${id}-blur`} x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB"><feGaussianBlur stdDeviation="5" /></filter>
+      </defs>
+      <g filter={`url(#${id}-blur)`}>
+        <path d="M60 60H250L310 120H120Z" fill={`url(#${id}-top)`} />
+        <path d="M120 120H310V310H120Z" fill={`url(#${id}-front)`} />
+        <path d="M60 60L120 120V310L60 250Z" fill={`url(#${id}-side)`} />
+      </g>
+      <path d="M54 60H66M60 54V66M244 60H256M250 54V66M304 120H316M310 114V126M304 310H316M310 304V316" stroke="currentColor" strokeWidth="1" />
+    </svg>
+  </div>;
+}
 
 export default function AlbumDetailPage() {
   const params = useParams();
@@ -146,14 +173,12 @@ export default function AlbumDetailPage() {
 
         {loading ? <div className={detailStyles.loading} role="status"><span className={detailStyles.skeleton} aria-hidden="true" /><span>LOADING THE ARCHIVE…</span></div> : loadError ? <div className={detailStyles.message} role="alert"><p>{loadError}</p><button type="button" onClick={() => { setLoading(true); void fetchData(); }}>重试</button></div> : !album ? <div className={detailStyles.message}><h1>相册未找到</h1><p>这个相册暂时无法访问。</p></div> : <>
           <header className={detailStyles.hero}>
-            <div className={detailStyles.heroGrid} aria-hidden="true"><span /><span /><span /></div>
+            <AlbumAtmosphere />
             <div className={detailStyles.heroTop}>
               <div className={detailStyles.archiveBadge}><span>ARCHIVE</span><strong>{String(images.length).padStart(2, '0')}</strong><span>FILES</span></div>
               <p className={detailStyles.eyebrow}>YURIA<br />VISUAL COLLECTION</p>
-              <div className={detailStyles.signalStrip} aria-hidden="true"><span /><i /><i /></div>
             </div>
             <div className={detailStyles.heroCopy}>
-              <span className={detailStyles.titleMarker} aria-hidden="true">[ + ]</span>
               <h1>{album.title}</h1>
               <span className={detailStyles.heroTag}>A COLLECTION OF MOMENTS</span>
             </div>

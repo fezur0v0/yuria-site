@@ -12,21 +12,16 @@
 .editStatus { font: 12px/1.5 var(--font-geist-mono), monospace; color: #aaa; letter-spacing: .06em; margin-right: 5px; }
 .busySpinner { width: 17px; height: 17px; border: 1.5px solid #8885; border-top-color: currentColor; border-radius: 50%; animation: busy-turn .8s linear infinite; }
 .hero { position: relative; isolation: isolate; padding: 28px 4% 40px; margin-bottom: 36px; }
-.heroGrid { position: absolute; z-index: -1; inset: 0; pointer-events: none; background: radial-gradient(#c5c5c52b .8px,transparent 1px) 0 0/16px 16px; mask-image: linear-gradient(90deg,transparent,#000 12%,#000 85%,transparent); }
-.heroGrid span { position: absolute; border: 1px solid #b4b4b416; background: #b4b4b408; }
-.heroGrid span:nth-child(1) { top: 36px; bottom: 28px; left: 9%; width: 38%; }
-.heroGrid span:nth-child(2) { top: 96px; bottom: 0; left: 29%; width: 49%; background: #aaa1; }
-.heroGrid span:nth-child(3) { top: 0; height: 65px; right: 4%; width: 54px; background: #a0a0a01a; }
+.heroBackdrop { position: absolute; z-index: -1; inset: -24px -2% -10px; overflow: hidden; pointer-events: none; }
+.dotField { position: absolute; inset: 8% 18% 2% 0; background: radial-gradient(circle,#c9c9cc60 .8px,transparent 1px) 0 0/16px 16px; mask-image: radial-gradient(ellipse at 38% 48%,#0009 0%,#0006 26%,transparent 68%); }
+.dotField::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle,#dedee090 1.2px,transparent 1.8px) 8px 8px/24px 24px; filter: blur(1.3px); mask-image: radial-gradient(ellipse at 76% 45%,#000 0%,transparent 58%); }
+.softCube { position: absolute; top: -18px; right: 0; width: clamp(260px,34vw,420px); height: auto; color: #d4d4d8; opacity: .42; }
 .heroTop { display: flex; align-items: center; gap: 24px; }
-.archiveBadge { display: grid; grid-template-columns: auto auto; align-items: end; gap: 5px 14px; padding: 12px 15px; background: #b6b6b623; color: #ddd; font: 12px/1.2 var(--font-geist-mono),monospace; }
+.archiveBadge { display: grid; grid-template-columns: auto auto; align-items: end; gap: 5px 14px; padding: 12px 15px; color: #ddd; font: 12px/1.2 var(--font-geist-mono),monospace; }
 .archiveBadge>span:first-child { grid-column: 1/-1; color: #aaaab0; font-size: 11px; letter-spacing: .08em; }
 .archiveBadge strong { font: 500 38px/.95 var(--font-geist-sans),sans-serif; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
 .eyebrow { margin: 0; color: #aaaab0; font: 12px/1.8 var(--font-geist-mono),monospace; letter-spacing: .055em; }
-.signalStrip { display: flex; align-items: flex-end; gap: 7px; width: 24%; max-width: 220px; height: 44px; margin-left: auto; }
-.signalStrip>span { height: 100%; flex: 1; background: repeating-linear-gradient(-45deg,#c4c4c420 0 2px,transparent 2px 6px); }
-.signalStrip i { width: 5px; height: 7px; background: #999; }.signalStrip i:last-child { height: 3px; }
 .heroCopy { position: relative; min-width: 0; margin: 44px 0 30px 12%; padding: 12px 0 8px; }
-.titleMarker { position: absolute; top: 26px; left: -13.5%; color: #aaaab0; font: 16px/1.5 var(--font-geist-mono),monospace; white-space: nowrap; }
 .heroCopy h1 { position: relative; margin: 0; font-size: clamp(64px,9vw,128px); font-weight: 500; line-height: 1.08; letter-spacing: -.055em; overflow-wrap: anywhere; }
 .heroTag { position: relative; display: table; margin: 22px 0 0 auto; padding: 5px 9px; background: #c4c4c4; color: #17181b; font: 12px/1.5 var(--font-geist-mono),monospace; letter-spacing: .08em; }
 .heroBottom { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 26px; margin-left: 12%; }
@@ -78,9 +73,9 @@
 }
 @media (max-width: 700px) {
   .main { padding: 104px 6% 0; }.utility { margin-bottom: 16px; }.toolbar { gap: 4px; }.editStatus { font-size: 11px; }
-  .hero { padding: 18px 0 28px; margin-bottom: 24px; }.heroGrid { inset: 0 -2%; background-size: 14px 14px; }.heroGrid span:nth-child(1) { left: 4%; width: 49%; }.heroGrid span:nth-child(2) { top: 100px; left: 22%; width: 68%; }.heroGrid span:nth-child(3) { width: 30px; height: 38px; }
-  .heroTop { gap: 15px; }.archiveBadge { padding: 10px; gap: 5px 9px; font-size: 11px; }.archiveBadge>span:first-child { font-size: 10px; }.archiveBadge strong { font-size: 30px; }.eyebrow { font-size: 11px; letter-spacing: 0; }.signalStrip { width: 13%; height: 30px; gap: 4px; }.signalStrip i { width: 3px; }
-  .heroCopy { margin: 36px 0 24px 8%; padding-top: 25px; }.titleMarker { top: 0; left: -8.7%; font-size: 13px; }.heroCopy h1 { font-size: clamp(48px,12.5vw,82px); letter-spacing: -.045em; }.heroTag { margin-top: 18px; font-size: 10px; letter-spacing: .025em; padding: 4px 6px; }
+  .hero { padding: 18px 0 28px; margin-bottom: 24px; }.heroBackdrop { inset: -10px -3% 0; }.dotField { inset: 10% 0 0; background-size: 14px 14px; }.softCube { width: clamp(190px,57vw,280px); top: 28px; right: -20px; opacity: .32; }
+  .heroTop { gap: 15px; }.archiveBadge { padding: 10px; gap: 5px 9px; font-size: 11px; }.archiveBadge>span:first-child { font-size: 10px; }.archiveBadge strong { font-size: 30px; }.eyebrow { font-size: 11px; letter-spacing: 0; }
+  .heroCopy { margin: 36px 0 24px 8%; padding-top: 25px; }.heroCopy h1 { font-size: clamp(48px,12.5vw,82px); letter-spacing: -.045em; }.heroTag { margin-top: 18px; font-size: 10px; letter-spacing: .025em; padding: 4px 6px; }
   .heroBottom { margin-left: 8%; gap: 22px; }.description { font-size: 17px; }.mediaCounts { gap: 22px; font-size: 19px; }.mediaCounts small { font-size: 11px; }
   .contactSheet { padding-top: 16px; }.sheetMeta { font-size: 11px; gap: 18px; letter-spacing: .02em; margin-bottom: 28px; }.sheetMeta>span:last-child { max-width: 46%; text-align: right; }
   .photoGrid { grid-template-columns: minmax(0,1fr); row-gap: 35px; }.photoGrid .mediaItem { grid-column: auto; width: 100%; max-width: none; margin: 0; }.photoCaption { margin-top: 12px; gap: 15px; }.frameNumber { font-size: 11px; }.photoCaption p { font-size: 13px; }
