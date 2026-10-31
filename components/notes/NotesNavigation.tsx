@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { FiSearch, FiMenu, FiX, FiSliders } from 'react-icons/fi'
+import { FiSearch, FiMenu, FiX, FiSliders, FiFilter } from 'react-icons/fi'
 import AccountEntry from '@/components/account/AccountEntry'
 import styles from './notes-shell.module.css'
 
@@ -58,9 +58,9 @@ export default function NotesNavigation({ active, search, onSearch, filterCount,
       <nav className={styles.bar} aria-label="词库与记录导航">
         <Link href="/" className={styles.brand}>yuria</Link>
         <div className={styles.navItems}>
-          <button type="button" aria-label="搜索" aria-expanded={panel === 'search'} onClick={() => open('search')}><FiSearch size={18} /><span className={styles.searchLabel}>搜索</span>{search && <span className={styles.indicator} />}</button>
+          <button type="button" aria-label="搜索" aria-expanded={panel === 'search'} onClick={() => open('search')}><FiFilter size={18} /><span className={styles.searchLabel}>搜索</span>{search && <span className={styles.indicator} />}</button>
           {links}
-          <button type="button" aria-label="筛选" aria-expanded={panel === 'filter'} onClick={() => open('filter')}><FiSliders size={17} className={styles.filterIcon} /><span>筛选</span>{filterCount > 0 && <span className={styles.indicator} />}</button>
+          <button type="button" aria-label="筛选" aria-expanded={panel === 'filter'} onClick={() => open('filter')}><FiSliders size={17} /><span className={styles.filterLabel}>筛选</span>{filterCount > 0 && <span className={styles.indicator} />}</button>
           <span className={styles.desktopAccount}><AccountEntry placement="header" light /></span>
           <button type="button" className={styles.menuToggle} aria-label="打开侧边栏" aria-expanded={panel === 'menu'} onClick={() => open('menu')}><FiMenu size={20} /></button>
         </div>
@@ -71,7 +71,6 @@ export default function NotesNavigation({ active, search, onSearch, filterCount,
       {panel === 'menu' && <div className={styles.menuBody}>
         <div className={styles.profile}><AccountEntry placement="drawer" light onNavigate={close} /></div>
         <nav className={styles.drawerLinks} aria-label="侧边栏页面">{links}</nav>
-        <button type="button" className={styles.drawerFilter} aria-label="打开筛选" onClick={() => open('filter')}><FiSliders size={20} /></button>
       </div>}
       {panel === 'search' && <div className={styles.searchBody}>
         <label htmlFor="notes-search">{active === 'library' ? '搜索词库标题或内容' : '搜索记录标题、副标题或正文'}</label>
