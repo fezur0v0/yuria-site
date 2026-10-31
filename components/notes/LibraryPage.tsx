@@ -1,4 +1,7 @@
 'use client'
+import NotesNavigation from './NotesNavigation'
+import notesStyles from './notes-shell.module.css'
+import { FiPlus } from 'react-icons/fi'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -81,13 +84,13 @@ export default function Library() {
   const [selectedTags, setSelectedTags] = useState<Record<string, 'include' | 'exclude'>>({})
   const [allTags, setAllTags] = useState<string[]>([])
   const [tagsExpanded, setTagsExpanded] = useState(false)
+  const [tagSearch, setTagSearch] = useState('')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [relatedGroups, setRelatedGroups] = useState<Record<string, CharacterGroup[]>>({})
   const [expandedCharPerCard, setExpandedCharPerCard] = useState<Record<string, string | null>>({})
   const [copied, setCopied] = useState<string | null>(null)
-  const [filterOpen, setFilterOpen] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [newCard, setNewCard] = useState({ title: '', content: '', category: '', author: '', tags: [] as string[] })
   const [saving, setSaving] = useState(false)
@@ -211,134 +214,27 @@ export default function Library() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
-  const tagBtnStyle = (tag: string) => {
-    const s = selectedTags[tag]
-    return {
-      padding: '4px 10px', borderRadius: '6px', fontSize: '12px',
-      border: '1px solid', cursor: 'pointer', transition: 'all 0.15s',
-      background: s === 'include' ? '#1a1a1a' : '#f5f5f3',
-      color: s === 'include' ? '#fff' : '#999',
-      borderColor: s === 'include' ? '#1a1a1a' : '#e8e8e6',
-      textDecoration: s === 'exclude' ? 'line-through' : 'none',
-      opacity: s === 'exclude' ? 0.5 : 1,
-    } as React.CSSProperties
-  }
-
-  const FilterPanel = () => (
-    <div style={{ fontSize: '13px' }}>
-      <div style={{ color: '#aaa', fontSize: '11px', letterSpacing: '0.15em', marginBottom: '12px' }}>主要分类</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
-        {MAIN_CATEGORIES.map(c => <button key={c} onClick={() => toggleTag(c)} style={tagBtnStyle(c)}>{c}</button>)}
-      </div>
-      {allTags.length > 0 && <>
-        <div style={{ color: '#aaa', fontSize: '11px', letterSpacing: '0.15em', marginBottom: '12px' }}>其他标签</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          {(tagsExpanded ? allTags : allTags.slice(0, 6)).map(t => <button key={t} onClick={() => toggleTag(t)} style={tagBtnStyle(t)}>{t}</button>)}
-        </div>
-       {allTags.length > 6 && <button onClick={() => setTagsExpanded(v => !v)} style={{ marginTop: '8px', fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-  {tagsExpanded ? '收起' : `展开全部 (${allTags.length})`}
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-    style={{ transform: tagsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-    <path d="M6 9l6 6 6-6"/>
-  </svg>
-</button>}
-      </>}
-      {Object.keys(selectedTags).length > 0 && <button onClick={() => { setSelectedTags({}); setPage(1) }} style={{ marginTop: '16px', fontSize: '11px', color: '#aaa', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'block' }}>清空选中</button>}
-    </div>
-  )
+  const matchingTags = allTags.filter(tag => tag.toLocaleLowerCase().includes(tagSearch.trim().toLocaleLowerCase()))
+  const filterChip = (tag: string) => <button type="button" key={tag} data-state={selectedTags[tag]} aria-label={`${tag}：${selectedTags[tag] === 'include' ? '包含' : selectedTags[tag] === 'exclude' ? '排除' : '未筛选'}`} onClick={() => toggleTag(tag)}>{tag}</button>
+  const filterPanel = <>
+    <section className={notesStyles.filterSection}><h3>分类</h3><div className={notesStyles.chips}>{MAIN_CATEGORIES.map(filterChip)}</div></section>
+    <section className={notesStyles.filterSection}>
+      <div className={notesStyles.filterTitle}><h3>标签</h3><input className={notesStyles.filterInput} aria-label="搜索标签" type="search" value={tagSearch} onChange={e => setTagSearch(e.target.value)} placeholder="搜索标签…" /></div>
+      <div className={notesStyles.chips}>{(tagsExpanded || tagSearch ? matchingTags : matchingTags.slice(0, 8)).map(filterChip)}</div>
+      {matchingTags.length === 0 && <p className={notesStyles.filterHint}>{allTags.length ? '没有找到这个标签' : '还没有标签'}</p>}
+      {!tagSearch && matchingTags.length > 8 && <button type="button" className={notesStyles.more} onClick={() => setTagsExpanded(value => !value)}>{tagsExpanded ? '收起' : 'more'}</button>}
+    </section>
+    <p className={notesStyles.filterHint}>点击包含，再次点击排除，再次点击取消。</p>
+    {Object.keys(selectedTags).length > 0 && <button type="button" className={notesStyles.more} onClick={() => { setSelectedTags({}); setPage(1) }}>清空筛选</button>}
+  </>
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#fafaf8', fontFamily: 'Inter,sans-serif' }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto Serif SC:wght@300;400&family=Inter:wght@300;400;500&display=swap');
-        * { box-sizing: border-box; }
-        html, body {
-          margin: 0;
-          padding: 0;
-          overflow-x: hidden;
-          box-sizing: border-box;
-        }
-        .card-item {
-          transition: box-shadow 0.2s, transform 0.2s;
-          break-inside: avoid;
-          margin-bottom: 16px;
-        }
-        .card-item:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important; }
-        .sb-link { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#888;font-size:13px;text-decoration:none;transition:all 0.2s;background:transparent;border:none;width:100%;font-family:Inter,sans-serif; }
-        .sb-link:hover,.sb-link.active { color:#1a1a1a;background:#f0f0ee; }
-        .sb-link.active { font-weight:500; }
-        .sidebar-desktop { width: 260px !important; }
-        .main-content { margin-left: 260px !important; }
-        .cards-grid {
-          column-count: 3;
-          column-gap: 16px;
-        }
-        @media(max-width:768px){
-          .sidebar-desktop{display:none!important}
-          .mobile-nav{display:flex!important}
-          .main-content{
-            margin-left:0!important;
-            padding:16px!important;
-            padding-bottom:80px!important;
-            max-width:100% !important;
-          }
-          .cards-grid {
-            column-count: 1;
-            column-gap: 0;
-          }
-          .top-bar{flex-direction:column!important;align-items:flex-start!important;gap:12px!important}
-        }
-        @media(min-width:769px){
-          .mobile-nav{display:none!important}
-          .filter-float{display:none!important}
-        }
-        .card-item img {
-          max-width: 100%;
-          height: auto;
-        }
-      `}</style>
-
-      <aside className="sidebar-desktop" style={{ position: 'fixed', left: 0, top: 0, bottom: 0, width: '260px', background: '#fff', borderRight: '1px solid #f0f0ee', display: 'flex', flexDirection: 'column', padding: '32px 0', zIndex: 40 }}>
-        <div onClick={() => router.push('/')} style={{ padding: '0 24px 28px', fontFamily: 'Noto Serif SC,serif', fontSize: '20px', fontWeight: 300, letterSpacing: '0.2em', color: '#1a1a1a', cursor: 'pointer' }}>Yuria</div>
-        <nav style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <button className="sb-link active">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-            词库
-          </button>
-          <button className="sb-link" onClick={() => router.push('/notes/records')}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-            记录
-          </button>
-        </nav>
-        <div style={{ padding: '28px 20px 0', flex: 1, overflowY: 'auto' }}>
-          <div style={{ color: '#aaa', fontSize: '11px', letterSpacing: '0.2em', marginBottom: '16px' }}>分类筛选</div>
-          <FilterPanel />
-        </div>
-      </aside>
-
-      <div className="main-content" style={{
-        marginLeft: '260px',
-        flex: 1,
-        padding: '32px 40px',
-        paddingBottom: '60px',
-        maxWidth: 'calc(100% - 260px)',
-        overflowX: 'hidden',
-        width: '100%'
-      }}>
-        <div className="top-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-          <h1 style={{ fontFamily: 'Noto Serif SC,serif', fontSize: '24px', fontWeight: 300, letterSpacing: '0.1em', color: '#1a1a1a', margin: 0 }}>词库</h1>
-          <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1a1a1a', color: '#fff', border: 'none', borderRadius: '10px', padding: '9px 18px', fontSize: '13px', cursor: 'pointer' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            新增小剧场
-          </button>
-        </div>
-
-        <div style={{ position: 'relative', marginBottom: '24px' }}>
-          <svg style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="搜索标题、内容、标签..."
-            style={{ width: '100%', padding: '11px 14px 11px 40px', border: '1px solid #ebebeb', borderRadius: '12px', fontSize: '13px', color: '#333', background: '#fff', outline: 'none' }}
-            onFocus={e => e.target.style.borderColor = '#1a1a1a'}
-            onBlur={e => e.target.style.borderColor = '#ebebeb'} />
+    <div className={notesStyles.page}>
+      <NotesNavigation active="library" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={Object.keys(selectedTags).length} filterContent={filterPanel} />
+      <main className={notesStyles.main}>
+        <div className={notesStyles.heading}>
+          <h1>词库</h1>
+          <button type="button" className={notesStyles.addButton} aria-label="新增词库" onClick={() => setShowAdd(true)}><FiPlus size={23} /></button>
         </div>
 
         {loading ? (
@@ -346,7 +242,7 @@ export default function Library() {
         ) : cards.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无内容</div>
         ) : (
-          <div className="cards-grid">
+          <div className={notesStyles.cardGrid}>
             {cards.map(card => {
               const isExpanded = expandedId === card.id
               const groups = relatedGroups[card.id] || []
@@ -465,35 +361,10 @@ export default function Library() {
             </div>
           </div>
         )}
-      </div>
-
-      <nav className="mobile-nav" style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderTop: '0.5px solid #ebebeb', padding: '10px 0', paddingBottom: 'max(10px,env(safe-area-inset-bottom))', justifyContent: 'space-around', zIndex: 50 }}>
-        {[{ label: '主页', path: '/', active: false }, { label: '词库', path: '/notes/library', active: true }, { label: '记录', path: '/notes/records', active: false }].map(item => (
-          <button key={item.path} onClick={() => router.push(item.path)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', flex: 1, color: item.active ? '#1a1a1a' : '#bbb' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
-              {item.label === '词库' ? <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></> : <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></>}
-            </svg>
-            <span style={{ fontSize: '9px', letterSpacing: '0.1em' }}>{item.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      <button className="filter-float" onClick={() => setFilterOpen(v => !v)}
-        style={{ position: 'fixed', bottom: '80px', left: '16px', width: '44px', height: '44px', borderRadius: '50%', background: Object.keys(selectedTags).length > 0 ? '#1a1a1a' : '#fff', border: '1px solid #e8e8e6', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 40, color: Object.keys(selectedTags).length > 0 ? '#fff' : '#666' }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
-      </button>
-
-      {filterOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 45, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)' }} onClick={() => setFilterOpen(false)}>
-          <div style={{ position: 'absolute', bottom: '80px', left: '16px', background: '#fff', borderRadius: '16px', padding: '20px', width: 'min(280px,calc(100vw - 32px))', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }} onClick={e => e.stopPropagation()}>
-            <FilterPanel />
-          </div>
-        </div>
-      )}
+      </main>
 
       {showAdd && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowAdd(false)}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowAdd(false)}>
           <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(480px,100%)', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>新增小剧场</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -539,7 +410,7 @@ export default function Library() {
       )}
 
       {editCard && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setEditCard(null)}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setEditCard(null)}>
           <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(480px,100%)', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
               <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: 0 }}>编辑词库</h2>
