@@ -1,17 +1,6 @@
 .page { min-height: 100svh; background: #fafaf8; color: #222; font-family: var(--font-geist-sans),sans-serif; }
-.page *, .drawer *, .navigation * { box-sizing: border-box; }
+.page *, .drawer * { box-sizing: border-box; }
 .main { width: min(100%,1600px); margin-inline: auto; padding: 112px clamp(20px,4vw,64px) 80px; }
-.navigation { position: fixed; inset: 0 0 auto; z-index: 60; background: #fafaf8b3; backdrop-filter: blur(20px) saturate(125%); -webkit-backdrop-filter: blur(20px) saturate(125%); color: #333; }
-.bar { display: flex; align-items: center; gap: 24px; height: 64px; padding-inline: 32px; }
-.brand { margin-right: auto; font: 18px/1.4 Georgia,serif; letter-spacing: .025em; color: #222; text-decoration: none; }
-.navItems { display: flex; align-items: center; gap: 16px; }
-.searchLabel { display: none; }
-.navItems>a, .navItems>button { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 44px; min-height: 44px; padding: 0 12px; color: #74746f; text-decoration: none; font-size: 14px; background: transparent; border: 0; cursor: pointer; }
-.navItems>a[aria-current='page'] { color: #161616; }
-.navItems>a:hover, .navItems>button:hover { color: #111; }
-.navItems .menuToggle { display: none; }
-.desktopAccount { display: inline-flex; margin-left: 12px; }
-.indicator { position: absolute; top: 7px; right: 4px; width: 4px; height: 4px; border-radius: 50%; background: #222; }
 .heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
 .heading h1 { margin: 0; font: 300 26px/1.4 'Noto Serif SC',serif; letter-spacing: .1em; }
 .addButton { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #d7d7d2; border-radius: 50%; background: transparent; color: #222; cursor: pointer; transition: background .2s,transform .2s; }
@@ -29,11 +18,6 @@
 .drawer::backdrop { background: #15151550; backdrop-filter: blur(4px); }
 .drawerHeader { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; padding: max(16px,env(safe-area-inset-top)) 20px 12px 26px; font-size: 15px; }
 .drawerHeader button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: #444; cursor: pointer; }
-.menuBody { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 24px 28px max(28px,env(safe-area-inset-bottom)); }
-.profile { align-self: center; margin: 14px 0 50px; }
-.drawerLinks { display: grid; gap: 16px; }
-.drawerLinks a { display: flex; align-items: center; justify-content: center; min-height: 46px; border: 1px solid #bdbdb680; background: #ffffff60; border-radius: 7px; color: #666; text-decoration: none; font-size: 14px; }
-.drawerLinks a[aria-current='page'] { color: #171717; border-color: #7c7c74; }
 .filterBody { flex: 1; min-height: 0; overflow-y: auto; padding: 22px 26px max(32px,env(safe-area-inset-bottom)); }
 .filterSection { margin-bottom: 34px; }.filterSection h3 { margin: 0 0 16px; font-size: 14px; font-weight: 500; }
 .filterTitle { display: flex; align-items: center; gap: 15px; margin-bottom: 16px; }.filterTitle h3 { margin: 0; flex: none; }
@@ -47,13 +31,11 @@
 .characterList { display: grid; gap: 8px; }.characterList>button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 10px 12px; border: 1px solid #e3e3de; border-radius: 8px; background: #fff5; color: #555; font-size: 14px; text-align: left; cursor: pointer; }.characterList>button[aria-pressed='true'] { border-color: #777; color: #171717; background: #eaeae6; }
 .characterAvatar { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; background: #e5e5df; font-size: 13px; color: #888; }.characterAvatar img { width: 100%; height: 100%; object-fit: cover; }
 .characterForm { display: grid; gap: 16px; }.characterForm h3 { margin: 0; font-size: 16px; }.characterForm label { display: grid; gap: 8px; font-size: 13px; color: #777; }.characterForm input[type=file] { max-width: 100%; font-size: 12px; }.formActions { display: flex; gap: 10px; }.formActions button { flex: 1; min-height: 44px; border: 1px solid #d0d0cb; border-radius: 7px; background: #fff; color: #333; cursor: pointer; }.formActions button:last-child { background: #222; color: #fff; border-color: #222; }.formActions button:disabled { opacity: .4; cursor: default; }
-.searchBody { padding: 28px; }.searchBody label { display: block; font-size: 14px; color: #777; margin-bottom: 16px; }.searchField { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #aaa; padding: 10px 0; }.searchField input { width: 100%; min-width: 0; height: 42px; border: 0; background: transparent; outline: none; font-size: 16px; color: #222; }.searchActions { display: flex; justify-content: space-between; margin-top: 24px; }.searchActions button { min-height: 44px; padding: 8px 14px; background: transparent; border: 0; cursor: pointer; color: #555; font-size: 14px; }.searchActions button:disabled { opacity: .3; }
-.page button:focus-visible, .navigation a:focus-visible, .navigation button:focus-visible, .drawer button:focus-visible, .drawer a:focus-visible, .drawer input:focus-visible { outline: 2px solid #555; outline-offset: 3px; }
+.page button:focus-visible, .drawer button:focus-visible, .drawer a:focus-visible, .drawer input:focus-visible { outline: 2px solid #555; outline-offset: 3px; }
 @keyframes drawer-reveal { from { opacity: .3; transform: translateX(25px); } to { opacity: 1; transform: none; } }
 @media (max-width: 1023px) { .cardGrid { columns: 2; } }
 @media (max-width: 768px) {
-  .bar { padding-left: 24px; padding-right: 12px; }.navItems { gap: 4px; }.navItems>button { min-width: 44px; padding-inline: 0; }.navItems>a,.filterLabel,.desktopAccount { display: none; }.navItems .menuToggle { display: inline-flex; }
   .main { padding: 92px 20px 80px; }.heading { margin-bottom: 22px; }.heading h1 { font-size: 24px; }.cardGrid { columns: 1; }
-  .searchDrawer { width: 100%; }.drawer { padding-bottom: env(safe-area-inset-bottom); }
+  .drawer { padding-bottom: env(safe-area-inset-bottom); }
 }
 @media (prefers-reduced-motion: reduce) { .drawer[open] { animation: none; }.addButton { transition: none; } }

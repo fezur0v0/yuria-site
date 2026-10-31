@@ -32,12 +32,17 @@ function highlight(text: string, query: string) {
   );
 }
 
-export default function PortfolioSearch({ theme = 'default', textOnly = false, overlay = false }: { theme?: 'default' | 'light'; textOnly?: boolean; overlay?: boolean }) {
+type SearchScope = { value: string; onChange: (value: string) => void; label: string; placeholder: string };
+
+export default function PortfolioSearch({ theme = 'default', textOnly = false, overlay = false, scope }: { theme?: 'default' | 'light'; textOnly?: boolean; overlay?: boolean; scope?: SearchScope }) {
   const [expanded, setExpanded] = useState(false);
-  const [query, setQuery] = useState('');
+  const [localQuery, setLocalQuery] = useState('');
+  const query = scope?.value ?? localQuery;
+  const isScoped = Boolean(scope);
   const [items, setItems] = useState<Item[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
     const isLight = theme === 'light';
   const pillBg = isLight
     ? (expanded ? 'bg-black/5 border-black/10' : 'bg-transparent border-transparent')
@@ -47,23 +52,24 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false, o
 
 
   useEffect(() => {
+    if (isScoped) return;
     const supabase = createClient();
     supabase
       .from('portfolio_items')
       .select('id, title, content')
       .then(({ data }) => setItems(data ?? []));
-  }, []);
+  }, [isScoped]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setExpanded(false);
-        setQuery('');
+        if (!isScoped) setLocalQuery('');
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isScoped]);
 
   const handleOpen = () => {
     setExpanded(true);
@@ -85,6 +91,14 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false, o
     <div
       ref={containerRef}
       onMouseEnter={handleOpen}
+      onKeyDown={event => {
+        if (event.key === 'Escape' || (isScoped && event.key === 'Enter')) {
+          event.preventDefault();
+          event.stopPropagation();
+          setExpanded(false);
+          buttonRef.current?.focus();
+        }
+      }}
       className={`relative flex items-center justify-center ${overlay ? 'w-11 h-11 shrink-0' : ''}`}
     >
       {/* 搜索框胶囊容器：收起时使用 500ms + cubic-bezier(0.25, 1, 0.5, 1) 柔和缓出 */}
@@ -96,7 +110,7 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false, o
             : `${overlay ? 'w-11 h-11' : textOnly ? 'w-8 h-9' : 'w-9 h-9'} p-0 ${pillBg} justify-center duration-500`
         }`}
         style={{
-          maxWidth: overlay ? 'calc(100vw - 136px)' : undefined,
+          maxWidth: overlay ? isScoped ? 'calc(100vw - 184px)' : 'calc(100vw - 136px)' : undefined,
           transitionProperty: 'width, padding, background-color, border-color, box-shadow',
           transitionTimingFunction: expanded
             ? 'cubic-bezier(0.16, 1, 0.3, 1)'
@@ -104,7 +118,7 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false, o
         }}
       >
         {/* 图标 */}
-        <button type="button" aria-label="搜索随笔" aria-expanded={expanded} onClick={handleOpen}
+        <button ref={buttonRef} type="button" aria-label={isScoped ? '搜索' : '搜索随笔'} aria-expanded={expanded} onClick={handleOpen}
           className={`shrink-0 flex items-center justify-center text-sm ${iconColor} ${expanded ? 'w-5 h-5 mr-2' : 'w-full h-full'}`}>
           {textOnly ? '搜索' : <FiSearch size={overlay ? 20 : 16} aria-hidden="true" />}
         </button>
@@ -120,9 +134,9 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false, o
           <input
             ref={inputRef}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索"
-            aria-label="搜索内容"
+            onChange={(e) => scope ? scope.onChange(e.target.value) : setLocalQuery(e.target.value)}
+            placeholder={scope?.placeholder ?? '搜索'}
+            aria-label={scope?.label ?? '搜索内容'}
             tabIndex={expanded ? 0 : -1}
                        className={`w-full bg-transparent text-sm outline-none border-none p-0 focus:ring-0 ${inputTextColor}`}
           />
@@ -130,7 +144,7 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false, o
       </div>
 
       {/* 搜索结果弹窗：中心轴对齐 + 响应式定位 */}
-      {expanded && q && (
+      {expanded && q && !isScoped && (
         <div
           className={`${overlay
             ? 'fixed left-1/2 -translate-x-1/2 top-20 mt-2 w-[calc(100vw-32px)] max-w-sm'
@@ -163,7 +177,7 @@ export default function PortfolioSearch({ theme = 'default', textOnly = false, o
                   href={`/portfolio/${item.id}`}
                   onClick={() => {
                     setExpanded(false);
-                    setQuery('');
+                    setLocalQuery('');
                   }}
                   className="group block p-3 sm:p-2.5 rounded-xl hover:bg-black/5 active:scale-[0.98] transition-all duration-200"
                 >
