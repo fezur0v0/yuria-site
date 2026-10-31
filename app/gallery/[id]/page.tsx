@@ -159,18 +159,6 @@ export default function AlbumDetailPage() {
     <div inert={openIndex !== null}>
       <PortfolioNav showSections />
       <main className={detailStyles.main}>
-        {isOwner && album && <div className={detailStyles.utility}>
-          <div className={detailStyles.toolbar} aria-label="相册编辑工具" data-editing={editMode}>
-            <input ref={fileInputRef} type="file" accept="image/*,video/*" className={detailStyles.hiddenInput} onChange={handleUpload} />
-            {!editMode ? <button type="button" onClick={() => setEditMode(true)} className={detailStyles.toolButton} aria-label="进入编辑模式"><MdOutlineEdit size={19} /></button> : <>
-              <span className={detailStyles.editStatus}>{selected.size ? `${selected.size} SELECTED` : 'EDIT MODE'}</span>
-              <button type="button" onClick={() => fileInputRef.current?.click()} className={detailStyles.toolButton} aria-label={uploading ? '文件上传中' : '添加图片或视频'} aria-busy={uploading} disabled={busy}>{uploading ? <span className={detailStyles.busySpinner} /> : <MdOutlineAdd size={21} />}</button>
-              {selected.size > 0 && <button type="button" onClick={deleteSelected} className={detailStyles.toolButton} aria-label={`删除已选中的 ${selected.size} 张图片`} disabled={busy}><MdOutlineDelete size={19} /></button>}
-              <button type="button" onClick={() => { setEditMode(false); setSelected(new Set()); }} className={`${detailStyles.toolButton} ${detailStyles.doneButton}`} aria-label="完成编辑" disabled={busy}><MdOutlineCheck size={21} /></button>
-            </>}
-          </div>
-        </div>}
-
         {loading ? <div className={detailStyles.loading} role="status"><span className={detailStyles.skeleton} aria-hidden="true" /><span>LOADING THE ARCHIVE…</span></div> : loadError ? <div className={detailStyles.message} role="alert"><p>{loadError}</p><button type="button" onClick={() => { setLoading(true); void fetchData(); }}>重试</button></div> : !album ? <div className={detailStyles.message}><h1>相册未找到</h1><p>这个相册暂时无法访问。</p></div> : <>
           <header className={detailStyles.hero}>
             <AlbumAtmosphere />
@@ -189,13 +177,24 @@ export default function AlbumDetailPage() {
           </header>
 
           <section className={detailStyles.contactSheet} aria-label="相册照片与视频">
-            <div className={detailStyles.sheetMeta}><span>THE CONTACT SHEET</span><span>{editMode ? '点击选择 · 拖动调整顺序' : 'SELECT A FRAME TO EXPLORE'}</span></div>
+            <div className={detailStyles.sheetMeta}>
+              <span>THE CONTACT SHEET</span>
+              {isOwner ? <div className={detailStyles.toolbar} aria-label="相册编辑工具" data-editing={editMode}>
+                <input ref={fileInputRef} type="file" accept="image/*,video/*" className={detailStyles.hiddenInput} onChange={handleUpload} />
+                {!editMode ? <button type="button" onClick={() => setEditMode(true)} className={`${detailStyles.toolButton} ${detailStyles.labeledTool} ${detailStyles.entryButton}`} aria-label="进入编辑模式"><MdOutlineEdit size={18} /><span>EDIT</span></button> : <>
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className={`${detailStyles.toolButton} ${detailStyles.labeledTool}`} aria-label={uploading ? '文件上传中' : '添加图片或视频'} aria-busy={uploading} disabled={busy}>{uploading ? <span className={detailStyles.busySpinner} /> : <MdOutlineAdd size={20} />}<span>ADD</span></button>
+                  {selected.size > 0 && <button type="button" onClick={deleteSelected} className={`${detailStyles.toolButton} ${detailStyles.labeledTool}`} aria-label={`删除已选中的 ${selected.size} 张图片`} disabled={busy}><MdOutlineDelete size={18} /><span>DELETE ({selected.size})</span></button>}
+                  <button type="button" onClick={() => { setEditMode(false); setSelected(new Set()); }} className={`${detailStyles.toolButton} ${detailStyles.labeledTool} ${detailStyles.doneButton}`} aria-label="完成编辑" disabled={busy}><MdOutlineCheck size={20} /><span>DONE</span></button>
+                </>}
+              </div> : <span>SELECT A FRAME TO EXPLORE</span>}
+            </div>
+            {isOwner && editMode && <p className={detailStyles.editHint}>点击选择 · 拖动调整顺序{selected.size > 0 ? ` · 已选 ${selected.size} 项` : ''}</p>}
             {notice && <p className={detailStyles.notice} role="alert">{notice}</p>}
             {busy && <p className={detailStyles.workStatus} role="status">{uploading ? '文件上传中…' : '正在保存…'}</p>}
             {images.length === 0 ? <div className={detailStyles.empty}><span aria-hidden="true">[ — ]</span><p>这个相册还没有影像</p>{isOwner && <button type="button" onClick={() => { setEditMode(true); fileInputRef.current?.click(); }}>添加第一份影像</button>}</div> : <div className={detailStyles.photoGrid} data-editing={editMode}>
               {images.map((img, i) => {
                 const isSelected = selected.has(img.id), isVideo = isVideoUrl(img.image_url);
-                return <figure className={detailStyles.mediaItem} key={img.id} data-slot={i % 6} onDragOver={e => { if (editMode) e.preventDefault(); }} onDrop={() => void handleDrop(i)}>
+                return <figure className={detailStyles.mediaItem} key={img.id} onDragOver={e => { if (editMode) e.preventDefault(); }} onDrop={() => void handleDrop(i)}>
                   <button type="button" className={detailStyles.photoCard} draggable={editMode && !busy} onDragStart={() => { dragIndexRef.current = i; }} onDragEnd={() => { dragIndexRef.current = null; }} data-selected={editMode && isSelected} aria-label={editMode ? `${isSelected ? '取消选择' : '选择'}第 ${i + 1} 个文件` : `打开第 ${i + 1} 个文件`} aria-pressed={editMode ? isSelected : undefined} onClick={event => {
                     if (editMode) { const next = new Set(selected); if (isSelected) next.delete(img.id); else next.add(img.id); setSelected(next); }
                     else { viewerTrigger.current = event.currentTarget; setOpenIndex(i); }
@@ -206,7 +205,7 @@ export default function AlbumDetailPage() {
                       {editMode && isSelected ? <span className={detailStyles.selectionSticker} aria-hidden="true"><MdOutlineCheck size={22} /></span> : <span className={detailStyles.viewMark} aria-hidden="true">{editMode ? 'SELECT' : 'VIEW'} <span>+</span></span>}
                     </span>
                   </button>
-                  <figcaption className={detailStyles.photoCaption}><span className={detailStyles.frameNumber}>{String(i + 1).padStart(2, '0')} / {isVideo ? 'MOTION' : 'IMAGE'}</span>{img.caption && <p>{img.caption}</p>}</figcaption>
+                  {img.caption && <figcaption className={detailStyles.photoCaption}><p>{img.caption}</p></figcaption>}
                 </figure>;
               })}
             </div>}
