@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/utils/content/client';
 import PortfolioNav from '@/components/PortfolioNav';
@@ -17,16 +16,6 @@ import { isVideoUrl } from '@/utils/media';
 
 interface Album { id: string; title: string; description: string | null; }
 interface GalleryImage { id: string; image_url: string; caption: string | null; sort_order: number; }
-
-function ArchiveGraphic() {
-  return <svg className={detailStyles.archiveGraphic} viewBox="0 0 500 72" fill="currentColor" aria-hidden="true" focusable="false">
-    <path d="M14 8h66L69 20H22v13h42L53 45H22v19H4V20Z" />
-    <path fillRule="evenodd" d="M96 8h62l10 12v18l-14 10 20 16h-26l-23-20h-11v20H96Zm18 12v12h33l4-4v-8Z" />
-    <path fillRule="evenodd" d="M222 8h25l31 56h-22l-6-12h-35l-7 12h-22Zm3 32h18l-9-18Z" />
-    <path d="M296 64V8h20l24 28 24-28h20v56h-18V32l-26 27-26-27v32Z" />
-    <path d="M410 8h76l-10 12h-48v12h48l-12 12h-36v8h58l-10 12h-66Z" />
-  </svg>;
-}
 
 export default function AlbumDetailPage() {
   const params = useParams();
@@ -143,9 +132,8 @@ export default function AlbumDetailPage() {
     <div inert={openIndex !== null}>
       <PortfolioNav showSections />
       <main className={detailStyles.main}>
-        <div className={detailStyles.utility}>
-          <Link href="/gallery" className={detailStyles.returnLink}>all albums</Link>
-          {isOwner && album && <div className={detailStyles.toolbar} aria-label="相册编辑工具" data-editing={editMode}>
+        {isOwner && album && <div className={detailStyles.utility}>
+          <div className={detailStyles.toolbar} aria-label="相册编辑工具" data-editing={editMode}>
             <input ref={fileInputRef} type="file" accept="image/*,video/*" className={detailStyles.hiddenInput} onChange={handleUpload} />
             {!editMode ? <button type="button" onClick={() => setEditMode(true)} className={detailStyles.toolButton} aria-label="进入编辑模式"><MdOutlineEdit size={19} /></button> : <>
               <span className={detailStyles.editStatus}>{selected.size ? `${selected.size} SELECTED` : 'EDIT MODE'}</span>
@@ -153,23 +141,25 @@ export default function AlbumDetailPage() {
               {selected.size > 0 && <button type="button" onClick={deleteSelected} className={detailStyles.toolButton} aria-label={`删除已选中的 ${selected.size} 张图片`} disabled={busy}><MdOutlineDelete size={19} /></button>}
               <button type="button" onClick={() => { setEditMode(false); setSelected(new Set()); }} className={`${detailStyles.toolButton} ${detailStyles.doneButton}`} aria-label="完成编辑" disabled={busy}><MdOutlineCheck size={21} /></button>
             </>}
-          </div>}
-        </div>
+          </div>
+        </div>}
 
         {loading ? <div className={detailStyles.loading} role="status"><span className={detailStyles.skeleton} aria-hidden="true" /><span>LOADING THE ARCHIVE…</span></div> : loadError ? <div className={detailStyles.message} role="alert"><p>{loadError}</p><button type="button" onClick={() => { setLoading(true); void fetchData(); }}>重试</button></div> : !album ? <div className={detailStyles.message}><h1>相册未找到</h1><p>这个相册暂时无法访问。</p></div> : <>
           <header className={detailStyles.hero}>
-            <div className={detailStyles.heroGrid} aria-hidden="true" />
+            <div className={detailStyles.heroGrid} aria-hidden="true"><span /><span /><span /></div>
+            <div className={detailStyles.heroTop}>
+              <div className={detailStyles.archiveBadge}><span>ARCHIVE</span><strong>{String(images.length).padStart(2, '0')}</strong><span>FILES</span></div>
+              <p className={detailStyles.eyebrow}>YURIA<br />VISUAL COLLECTION</p>
+              <div className={detailStyles.signalStrip} aria-hidden="true"><span /><i /><i /></div>
+            </div>
             <div className={detailStyles.heroCopy}>
-              <p className={detailStyles.eyebrow}><span className={detailStyles.registrationMark} aria-hidden="true" />YURIA / VISUAL ARCHIVE</p>
+              <span className={detailStyles.titleMarker} aria-hidden="true">[ + ]</span>
               <h1>{album.title}</h1>
-              {album.description && <p className={detailStyles.description}>{album.description}</p>}
               <span className={detailStyles.heroTag}>A COLLECTION OF MOMENTS</span>
             </div>
-            <div className={detailStyles.heroIndex}>
-              <ArchiveGraphic />
-              <div className={detailStyles.frameCount}><span>{String(images.length).padStart(2, '0')}</span><small>FILES IN THIS COLLECTION</small></div>
-              <p className={detailStyles.mediaCounts}><span>{images.length - videos} IMAGES</span><span>{videos} MOTION</span></p>
-              <div className={detailStyles.slantCode} aria-hidden="true" />
+            <div className={detailStyles.heroBottom}>
+              {album.description && <p className={detailStyles.description}>{album.description}</p>}
+              <p className={detailStyles.mediaCounts}><span>{String(images.length - videos).padStart(2, '0')} <small>IMAGES</small></span><span>{String(videos).padStart(2, '0')} <small>MOTION</small></span></p>
             </div>
           </header>
 
@@ -196,7 +186,7 @@ export default function AlbumDetailPage() {
               })}
             </div>}
           </section>
-          <footer className={detailStyles.footer}><span>YURIA / VISUAL ARCHIVE</span><Link href="/gallery" className={detailStyles.returnLink}>all albums</Link><span>END OF COLLECTION</span></footer>
+          <footer className={detailStyles.footer}><span>YURIA / VISUAL ARCHIVE</span><span>END OF COLLECTION</span></footer>
         </>}
       </main>
     </div>
