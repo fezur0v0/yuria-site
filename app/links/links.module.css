@@ -12,25 +12,27 @@
 .hero { padding-top: 22px; }
 .heroMeta { display: flex; justify-content: space-between; gap: 24px; font: 12px/1.6 var(--font-geist-mono), monospace; letter-spacing: .1em; color: #a7a7a7; }
 .heroTitle { position: relative; isolation: isolate; display: grid; place-items: center; aspect-ratio: 1000 / 360; margin-top: 32px; }
-.heroTitle h1 { position: relative; z-index: 1; margin: 0; font: 400 clamp(120px, 24vw, 326px)/1.06 var(--font-friends-display), Impact, sans-serif; letter-spacing: -.015em; color: transparent; -webkit-text-stroke: 1.5px #cecece; }
+.heroTitle h1 { position: relative; z-index: 1; margin: 0; font: 400 clamp(120px, 24vw, 326px)/1.06 var(--font-friends-display), Impact, sans-serif; letter-spacing: -.015em; color: transparent; -webkit-text-stroke: 2.2px #cecece; }
 .signalBackdrop { position: absolute; inset: 0; color: #fff; pointer-events: none; }
 .signalBackdrop svg { display: block; width: 100%; height: 100%; font-family: var(--font-geist-mono), monospace; }
-.signalTrace { stroke: #fff; }
-.signalHeart { transform-box: fill-box; transform-origin: center; animation: signal-heart 3.6s ease-in-out infinite; }
-.signalSweep { filter: drop-shadow(0 0 3px #fff9); animation: signal-sweep 3.6s linear infinite; }
-.signalTail { animation: signal-tail 3.6s linear infinite; }
-.signalNumber { animation: signal-number 3.6s ease-in-out infinite; }
-@keyframes signal-heart { 0%, 16%, 34%, 100% { transform: scale(1); } 7% { transform: scale(1.14); } 24% { transform: scale(1.08); } }
-@keyframes signal-sweep { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
-@keyframes signal-tail { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -44; } }
-@keyframes signal-number { 0%, 36%, 100% { opacity: .8; } 9%, 24% { opacity: 1; } }
+.signalBackdrop { --signal-cycle: 5s; }
+.signalTrace, .signalTail { stroke: #fff; opacity: .32; }
+.signalHeart { transform-box: fill-box; transform-origin: center; animation: signal-heart var(--signal-cycle) ease-in-out infinite; }
+.signalScan { animation: signal-scan var(--signal-cycle) linear infinite; }
+.signalSweep { filter: drop-shadow(0 0 2px #fffa); }
+.signalNumber { animation: signal-number var(--signal-cycle) ease-in-out infinite; }
+.checkerBand { opacity: .85; }
+@keyframes signal-heart { 0%, 19%, 30%, 43%, 100% { transform: scale(1); } 25% { transform: scale(1.14); } 36% { transform: scale(1.08); } }
+@keyframes signal-scan { from { transform: translateX(0); } to { transform: translateX(1550px); } }
+@keyframes signal-number { 0%, 46%, 100% { opacity: .85; } 25%, 36% { opacity: 1; } }
 .signalLabel { position: absolute; z-index: 2; right: 3%; bottom: 6%; font: 500 clamp(20px, 2vw, 28px)/1.4 var(--font-friends-kr), serif; letter-spacing: .04em; color: #bbb; white-space: nowrap; }
 .heroFoot { margin: 26px 0 0; font: 12px/1.6 var(--font-geist-mono), monospace; letter-spacing: .14em; color: #929292; }
 .directory { padding-top: 76px; }
-.sectionTop { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; margin-bottom: 40px; }
-.sectionTop h2 { font: 500 17px/1.5 var(--font-geist-mono), monospace; letter-spacing: .07em; margin: 0; }
-.sectionTop p { margin: 9px 0 0; font: 11px/1.6 var(--font-geist-mono), monospace; letter-spacing: .06em; color: #9b9b9b; }
-.sectionTop>span { font: 12px/1.6 var(--font-geist-mono), monospace; letter-spacing: .05em; color: #aaa; padding-top: 3px; }
+.sectionTop { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 48px; }
+.sectionTop h2 { max-width: 24ch; margin: 0; font: 400 clamp(30px, 4.3vw, 60px)/1.08 Georgia, 'Times New Roman', serif; letter-spacing: -.045em; }
+.sectionTop h2>span, .sectionTop h2>em { display: block; text-wrap: balance; }
+.sectionTop h2>em { margin-top: .16em; font-weight: 400; color: #aaa; }
+.sectionTop>span { flex: none; font: 12px/1.6 var(--font-geist-mono), monospace; letter-spacing: .05em; color: #aaa; padding-bottom: 4px; }
 .friendList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px 30px; list-style: none; padding: 0; margin: 0; }
 .friend { position: relative; min-width: 0; width: 100%; }
 .friend:only-child { grid-column: 1 / -1; width: min(100%, 720px); justify-self: center; }
@@ -53,13 +55,10 @@
 .visitIcon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border: 1px solid #707070; border-radius: 50%; }
 .visitIcon svg { transition: transform .4s; }.friendCard:hover .visitIcon svg { transform: rotate(90deg); }
 .footer { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 90px; padding: 22px 0 110px; color: #999; font: 11px/1.8 var(--font-geist-mono), monospace; letter-spacing: .04em; }
-.footer a { position: relative; color: #ccc; text-decoration: none; padding: 10px; font-size: 14px; }
-.footer a::after { position: absolute; content: ''; left: 10px; right: 10px; bottom: 5px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .3s; }.footer a:hover::after { transform: scaleX(1); }
-.footer a:focus-visible { outline: 2px solid #eee; outline-offset: 5px; }
 @media (max-width: 1000px) {
   .main { padding-top: 100px; }
   .heroMeta { font-size: 11px; }
-  .heroTitle h1 { font-size: 24vw; -webkit-text-stroke-width: 1px; }
+  .heroTitle h1 { font-size: 24vw; -webkit-text-stroke-width: 1.5px; }
   .friendList { grid-template-columns: minmax(0, 1fr); gap: 36px; }
   .friend { width: min(100%, 720px); justify-self: center; }
   .friend:only-child { grid-column: auto; }
@@ -74,10 +73,9 @@
   .signalLabel { font-size: 15px; bottom: 5%; }
   .heroFoot { margin-top: 18px; font-size: 10px; max-width: 52%; letter-spacing: .08em; }
   .directory { padding-top: 45px; }
-  .sectionTop { margin-bottom: 30px; gap: 16px; }
-  .sectionTop h2 { font-size: 14px; }
-  .sectionTop p { font-size: 9px; letter-spacing: 0; }
-  .sectionTop>span { font-size: 10px; letter-spacing: 0; padding-top: 2px; }
+  .sectionTop { flex-direction: column; align-items: stretch; margin-bottom: 30px; gap: 24px; }
+  .sectionTop h2 { max-width: none; font-size: clamp(27px, 7.4vw, 40px); }
+  .sectionTop>span { align-self: flex-end; font-size: 10px; letter-spacing: 0; padding-bottom: 0; }
   .friendList { gap: 34px; }
   .friendCard { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); padding: 6px; }
   .friendInfo { padding: 20px 12px; }
@@ -91,18 +89,16 @@
   .photoCorner { width: 14px; height: 14px; right: 8px; bottom: 11px; }
   .footer { font-size: 9px; margin-top: 48px; gap: 18px; padding-bottom: 105px; }
   .footer>span:last-child { display: none; }
-  .footer a { font-size: 12px; }
 }
 @media (max-width: 360px) {
   .signalLabel { font-size: 13px; }
-  .sectionTop h2 { font-size: 12px; }.sectionTop>span { font-size: 9px; }
-  .sectionTop p { font-size: 8px; }
+  .sectionTop h2 { font-size: 26px; }.sectionTop>span { font-size: 9px; }
   .friendInfo { padding: 18px 10px; }.friendName { font-size: 30px; }
   .friendDescription { font-size: 12px; }.visit { font-size: 9px; }.host { font-size: 9px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .friendCard, .photoImage, .visitIcon svg, .footer a::after { transition: none; }
-  .signalHeart, .signalSweep, .signalTail, .signalNumber { animation: none; }
+  .friendCard, .photoImage, .visitIcon svg { transition: none; }
+  .signalHeart, .signalScan, .signalNumber { animation: none; }
   .signalSweep { display: none; }
-  .signalNumber { opacity: 1; }
+  .signalTrace, .signalTail, .signalNumber { opacity: 1; }
 }
