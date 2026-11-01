@@ -35,7 +35,7 @@
   padding: 32px 0;
 }
 .eyebrow { font-family: var(--font-geist-mono), monospace; font-size: 11px; line-height: 1.6; letter-spacing: .16em; color: var(--muted); }
-.mobileNav { display: none; }
+.mobileControls { display: none; }
 .profile { min-width: 0; height: min(840px, calc(100svh - 64px)); max-height: 100%; }
 .phone {
   position: relative;
@@ -64,9 +64,9 @@
 .avatarWindow { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; }
 .avatarWindow img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .identity h1 { margin: 0; font: 35px/1.15 Georgia, 'Times New Roman', serif; letter-spacing: .04em; }
-.identity p { margin: 6px 0; font-family: 'Yu Mincho', 'Songti SC', 'Noto Serif CJK SC', serif; font-size: 19px; letter-spacing: .14em; }
+.identity p { margin: 6px 0; font-family: var(--font-me-mincho), 'Yu Mincho', 'Songti SC', serif; font-size: 19px; letter-spacing: .14em; }
 .bio { padding: 22px 25px 12px; }
-.quote { font: 20px/1.9 'Songti SC', 'STSong', 'Noto Serif CJK SC', serif; letter-spacing: .05em; margin: 0; }
+.quote { font: 20px/1.9 var(--font-me-mincho), 'Songti SC', 'STSong', serif; letter-spacing: .05em; margin: 0; }
 .quote span { display: block; }
 .bioLine { font-size: 14px; color: #777983; line-height: 1.9; margin: 10px 0 15px; }
 .tags { list-style: none; display: flex; flex-wrap: wrap; gap: 7px; margin: 0; padding: 0; }
@@ -89,7 +89,7 @@
 .poemTile > span { color: #767985; font: 10px/1.2 var(--font-geist-mono), monospace; letter-spacing: .04em; }
 .poemTile p { font: 16px/1.8 'Songti SC', 'STSong', serif; letter-spacing: .1em; margin: 4px 0; }
 .profileText { min-height: 160px; padding: 10px 25px 0; font-size: 13px; line-height: 1.9; }
-.profileText h2 { font-family: 'Songti SC', 'STSong', serif; font-size: 19px; font-weight: 400; margin: 8px 0; }
+.profileText h2 { font-family: var(--font-me-mincho), 'Songti SC', serif; font-size: 19px; font-weight: 400; margin: 8px 0; }
 .profileText p { margin: 7px 0; color: #626570; }
 .note { display: flex; flex-direction: column; gap: 13px; margin: 25px 20px 0; padding: 0; }
 .note p { align-self: flex-start; max-width: 90%; margin: 0; padding: 12px 15px; border-radius: 18px 18px 18px 5px; background: #eceef2; color: #4a4e58; font-size: 14px; line-height: 1.9; overflow-wrap: anywhere; }
@@ -122,6 +122,7 @@
 .dialogueActions button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 0 2px 0 12px; font: 12px/1.5 var(--font-geist-mono), monospace; letter-spacing: .13em; color: #515563; border: 0; background: transparent; }
 .dialogueActions button:not(:disabled):hover { color: var(--ink); }
 .dialogueActions button:disabled { opacity: .35; }
+.choices button, .dialogueText, .nameplate, .dialogueActions button { font-family: var(--font-me-mincho), 'Yu Mincho', 'Songti SC', serif; font-weight: 400; }
 .nextIcon { transform: rotate(180deg); }
 @keyframes reveal { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
@@ -144,24 +145,32 @@
   .dialogue { padding: 30px 23px 10px; }
 }
 @media (max-width: 1023px) {
-  .page { height: 100dvh; min-height: 0; overflow: hidden; }
+  .page { height: auto; min-height: 100svh; overflow: visible; }
   .page[data-view='dialogue'] { height: 100dvh; min-height: 0; overflow: hidden; }
   .page[data-view='dialogue'] .main { height: 100dvh; min-height: 0; }
-  .mobileNav { display: block; }
-  .profile, .phone { height: 100%; max-height: 100%; }
-  .main { display: block; width: 100%; height: 100dvh; min-height: 0; padding: 64px 0 0; }
+  .mobileControls { position: fixed; right: 20px; bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); z-index: 50; display: flex; align-items: center; gap: 2px; padding: 4px; border: 1px solid #ffffffb3; border-radius: 30px; background: #f4f6fbd4; box-shadow: 0 6px 25px #32394d1a, inset 0 1px 0 #fff; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+  .mobileControls button { min-width: 42px; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 10px; border: 0; border-radius: 24px; background: transparent; color: #535b6a; }
+  .mobileControls .viewSwitch { padding-inline: 13px; font-size: 12px; }
+  .profile, .phone { height: auto; max-height: none; }
+  .phoneContent { overflow: visible; flex: none; }
+  .profileBottom { max-height: none; }
+  .profileBottom .note { overflow: visible; }
+  .main { display: block; width: 100%; height: auto; min-height: 100svh; padding: 0; }
   .page[data-view='profile'] .stage, .page[data-view='dialogue'] .profile { display: none; }
-  .phone { max-width: 580px; margin: 0 auto; border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: 24px 0 max(22px, env(safe-area-inset-bottom)); }
-  .profileTop { display: none; }
-  .identity { padding: 12px 26px 0; gap: 24px; }
-  .avatar { width: 104px; height: 104px; flex-basis: 104px; }
-  .identity h1 { font-size: 36px; }
-  .identity p { font-size: 21px; }
-  .bio { padding: 24px 26px 16px; }
-  .quote { font-size: 21px; }
-  .bioLine { font-size: 14px; margin-top: 12px; }
-  .tags { gap: 9px; }
-  .tags li { font-size: 13px; padding: 5px 13px; }
+  .phone { max-width: 580px; margin: 0 auto; border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: max(24px, calc(env(safe-area-inset-top) + 14px)) 0 calc(104px + env(safe-area-inset-bottom)); }
+  .profileTop { padding: 0 24px 24px; }
+  .profileTop > a { font-size: 18px; }
+  .profileTop > .settingsLink { font-size: 9px; }
+  .profileTop .editActions { display: none; }
+  .identity { padding: 5px 24px 0; gap: 20px; }
+  .avatar { width: 88px; height: 88px; flex-basis: 88px; }
+  .identity h1 { font-size: 30px; }
+  .identity p { font-size: 18px; }
+  .bio { padding: 20px 24px 12px; }
+  .quote { font-size: 18px; }
+  .bioLine { font-size: 13px; margin-top: 10px; }
+  .tags { gap: 7px; }
+  .tags li { font-size: 12px; padding: 4px 10px; }
   .profileTabs { margin-top: 8px; padding-inline: 26px; }
   .profileTabs button { min-height: 48px; }
   .moments { padding-inline: 0; }
@@ -169,38 +178,38 @@
   .poemTile { padding: 12px 4px; }
   .poemTile p { font-size: clamp(17px, 4vw, 24px); }
   .poemTile > span { font-size: 9px; }
-  .profileText { font-size: 15px; padding: 15px 26px; }
-  .profileText h2 { font-size: 22px; }
-  .note { margin: 28px 26px 0; }
+  .profileText { font-size: 14px; padding: 12px 24px; }
+  .profileText h2 { font-size: 18px; }
+  .note { margin: 24px 24px 0; }
   .eyebrow { font-size: 11px; }
-  .note p { font-size: 15px; line-height: 1.9; }
-  .noteReply { font-size: 13px; }
-  .profileFoot { padding: 25px 27px 0; font-size: 10px; }
-  .stage { --dialogue-height: clamp(180px, 28dvh, 240px); --dialogue-bottom: max(24px, calc(env(safe-area-inset-bottom) + 12px)); --choices-height: clamp(156px, 22dvh, 186px); position: fixed; inset: 64px 0 0; width: 100%; max-width: 680px; margin: 0 auto; max-height: none; height: calc(100dvh - 64px); min-height: 0; padding: 0 20px; display: block; overflow: hidden; }
-  .stageHeading { position: absolute; top: 21px; left: 20px; padding-top: 0; }
+  .note p { font-size: 13px; line-height: 1.9; }
+  .noteReply { font-size: 12px; }
+  .profileFoot { padding: 23px 25px 0; font-size: 9px; }
+  .stage { --dialogue-height: clamp(180px, 28dvh, 240px); --dialogue-bottom: max(84px, calc(env(safe-area-inset-bottom) + 72px)); --choices-height: clamp(156px, 22dvh, 186px); position: fixed; inset: 0; width: 100%; max-width: 680px; margin: 0 auto; max-height: none; height: 100dvh; min-height: 0; padding: 0 20px; display: block; overflow: hidden; }
+  .stageHeading { position: absolute; top: max(26px, calc(env(safe-area-inset-top) + 16px)); left: 20px; padding-top: 0; }
   .stageHeading > .eyebrow { font-size: 10px; letter-spacing: .09em; }
-  .stageHeading h2 { font-size: 23px; max-width: 130px; line-height: 1.2; margin-top: 14px; }
+  .stageHeading h2 { font-size: 21px; max-width: 130px; line-height: 1.2; margin-top: 14px; }
   .hatch { width: 33px; height: 4px; }
-  .portrait { right: 0; top: 14px; bottom: auto; width: 88%; height: calc(100% - var(--dialogue-bottom)); overflow: hidden; }
+  .portrait { right: 0; top: max(14px, env(safe-area-inset-top)); bottom: auto; width: 88%; height: calc(100% - var(--dialogue-bottom)); overflow: hidden; }
   .portrait img { object-position: center top; }
   .stage::before { right: 15px; top: 20px; }
   .stage::after { bottom: 100px; left: 10px; }
   .choices { position: absolute; left: 20px; right: 20px; bottom: calc(var(--dialogue-bottom) + var(--dialogue-height) + 32px); width: auto; height: var(--choices-height); max-height: none; gap: 9px; padding: 0; justify-content: flex-start; }
-  .choices button { flex-shrink: 0; min-height: 46px; font-size: 14px; padding: 11px 20px; border-radius: 20px; }
+  .choices button { flex-shrink: 0; min-height: 46px; font-size: 13px; padding: 11px 20px; border-radius: 20px; }
   .choices button:hover, .choices button:focus-visible { transform: none; }
   .dialogue { position: absolute; left: 20px; right: 20px; bottom: var(--dialogue-bottom); height: var(--dialogue-height); min-height: 0; padding: 28px 20px 10px; }
-  .dialogueText { font-size: 16px; line-height: 1.9; min-height: 0; }
-  .nameplate { left: 17px; font-size: 16px; padding: 8px 20px; }
+  .dialogueText { font-size: 15px; line-height: 1.9; min-height: 0; }
+  .nameplate { left: 17px; font-size: 15px; padding: 8px 20px; }
   .dialogueActions { gap: 10px; }
-  .dialogueActions button { font-size: 12px; }
+  .dialogueActions button { font-size: 11px; }
 }
 @media (max-width: 359px) {
   .identity { gap: 19px; padding-inline: 21px; }
-  .avatar { width: 86px; height: 86px; flex-basis: 86px; }
-  .identity h1 { font-size: 32px; }
-  .identity p { font-size: 19px; }
+  .avatar { width: 80px; height: 80px; flex-basis: 80px; }
+  .identity h1 { font-size: 28px; }
+  .identity p { font-size: 17px; }
   .bio { padding-inline: 21px; }
-  .quote { font-size: 20px; }
+  .quote { font-size: 17px; }
   .tags li { padding-inline: 10px; font-size: 12px; }
   .note { margin-inline: 21px; }
   .stage { padding-inline: 16px; }
@@ -212,7 +221,7 @@
   .dialogueActions { flex-wrap: wrap; gap: 0 10px; }
 }
 @media (max-width: 1023px) and (max-height: 560px) {
-  .stage { --dialogue-height: clamp(132px, 30dvh, 170px); --choices-height: clamp(90px, 22dvh, 120px); --dialogue-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .stage { --dialogue-height: clamp(132px, 30dvh, 170px); --choices-height: clamp(90px, 22dvh, 120px); }
   .stageHeading { top: 12px; }
   .stageHeading h2 { font-size: 19px; }
   .dialogue { padding-top: 23px; }
@@ -232,14 +241,9 @@
 .editing .portrait { pointer-events: auto; }
 .editActions { display: flex; align-items: center; gap: 2px; margin: -10px -10px -10px 0; }
 .editActions button { display: grid; place-items: center; width: 38px; min-height: 44px; color: #31333c; background: transparent; border: 0; border-radius: 8px; }
-.editActions button:disabled, .editorMobileNav button:disabled { opacity: .35; }
+.editActions button:disabled, .mobileControls button:disabled { opacity: .35; }
 .addMoment { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 7px; border: 0; background: #f5f6fa; color: #787c8b; font-size: 12px; }
 .editBackground { display: inline-flex; align-items: center; justify-content: center; position: absolute; top: 4px; right: 0; z-index: 3; width: 44px; min-height: 44px; padding: 0; border: 1px solid #cdd1dd; border-radius: 10px; color: #5f6371; background: #ffffffb3; backdrop-filter: blur(12px); font-size: 13px; }
-.editorMobileNav { position: fixed; top: 0; left: 0; z-index: 50; width: 100%; height: 64px; padding: 0 12px 0 22px; display: flex; align-items: center; justify-content: space-between; background: #ffffffa8; backdrop-filter: blur(20px); color: var(--ink); }
-.editorMobileNav > a { font: 19px Georgia, serif; letter-spacing: .04em; }
-.editorMobileNav > div { display: flex; gap: 0; }
-.editorMobileNav button { width: 42px; min-height: 44px; display: grid; place-items: center; background: transparent; border: 0; }
-.editorMobileNav button[aria-pressed='false'] { opacity: .4; }
 .editSpinner { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 1023px) { .editBackground { top: 16px; right: 20px; } }
