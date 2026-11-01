@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/content/client';
 import { SortableList } from '@/components/admin/SortableList';
+import AdminLoading from './AdminLoading';
 import {
   MdOutlineEdit,
   MdOutlineVisibility,
@@ -41,9 +42,7 @@ export default function AdminPortfolioPage() {
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    fetchItems();
-    fetchHero();
-    fetchHeroLines();
+    void Promise.all([fetchItems(), fetchHero(), fetchHeroLines()]).finally(() => setLoading(false));
   }, []);
 
   async function fetchItems() {
@@ -52,7 +51,6 @@ export default function AdminPortfolioPage() {
       .select('id, title, category, date, cover_url, sort_order, is_visible')
       .order('sort_order', { ascending: true, nullsFirst: false });
     setItems(data ?? []);
-    setLoading(false);
   }
 
   async function handleReorder(newOrder: PortfolioItem[]) {
@@ -113,6 +111,8 @@ export default function AdminPortfolioPage() {
     setTimeout(() => setMsg(''), 2500);
   }
 
+  if (loading) return <AdminLoading />;
+
   return (
     <div className="max-w-2xl space-y-14">
       {msg && <div className="text-xs text-green-600 bg-green-50 px-4 py-2 rounded-xl">{msg}</div>}
@@ -134,9 +134,7 @@ export default function AdminPortfolioPage() {
           </Link>
         </div>
 
-        {loading ? (
-          <p className="text-sm text-black/35">加载中…</p>
-        ) : items.length === 0 ? (
+        {items.length === 0 ? (
           <p className="text-sm text-black/35">还没有作品，点右上角新建一个吧~</p>
         ) : (
           <SortableList

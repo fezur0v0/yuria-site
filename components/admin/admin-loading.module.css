@@ -1,0 +1,14 @@
+.loading {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at 55% 38%, #fff, #f6f7f9 75%);
+  color: #656872;
+  font: 16px/1.6 Georgia, 'Times New Roman', serif;
+  letter-spacing: .12em;
+}
+.loading span { animation: breathe 2s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .loading span { animation: none; } }

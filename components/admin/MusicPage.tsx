@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/content/client';
 import { SortableList } from '@/components/admin/SortableList';
+import AdminLoading from './AdminLoading';
 import { MdOutlineDelete } from 'react-icons/md';
 
 const supabase = createClient();
@@ -9,12 +10,13 @@ const supabase = createClient();
 type Track = { id: number; title: string; artist: string; src: string; cover_url: string; sort_order: number };
 
 export default function AdminMusicPage() {
+  const [loading, setLoading] = useState(true);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [newTrack, setNewTrack] = useState({ title: '', artist: '', src: '', cover_url: '' });
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    fetchTracks();
+    void fetchTracks().finally(() => setLoading(false));
   }, []);
 
   async function fetchTracks() {
@@ -46,6 +48,8 @@ export default function AdminMusicPage() {
     setMsg(text);
     setTimeout(() => setMsg(''), 2500);
   }
+
+  if (loading) return <AdminLoading />;
 
   return (
     <section className="max-w-lg space-y-6">

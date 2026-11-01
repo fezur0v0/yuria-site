@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/content/client';
+import AdminLoading from './AdminLoading';
 
 const supabase = createClient();
 
 export default function AdminBasicPage() {
+  const [loading, setLoading] = useState(true);
   const [coverUrl, setCoverUrl] = useState('');
   const [signature, setSignature] = useState('');
   const [saving, setSaving] = useState(false);
@@ -17,8 +19,7 @@ export default function AdminBasicPage() {
   const [profileSaving, setProfileSaving] = useState(false);
 
   useEffect(() => {
-    fetchConfig();
-    fetchProfile();
+    void Promise.all([fetchConfig(), fetchProfile()]).finally(() => setLoading(false));
   }, []);
 
   async function fetchConfig() {
@@ -59,6 +60,8 @@ export default function AdminBasicPage() {
     setMsg(text);
     setTimeout(() => setMsg(''), 2500);
   }
+
+  if (loading) return <AdminLoading />;
 
   return (
     <div className="max-w-lg space-y-14">

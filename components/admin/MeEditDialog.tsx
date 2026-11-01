@@ -94,7 +94,7 @@ export default function MeEditDialog({ content, target, onClose, onApply }: {
           <label>{topic ? `第 ${page + 1} 页对白` : '开场对白'}<textarea rows={6} maxLength={topic ? 404 : 904} value={(topic ? topic.pages[page] : pending.greeting).join('\n')} onChange={event => { const lines = event.target.value.split('\n'); setPending(previous => topic ? { ...previous, topics: previous.topics.map(item => item.id === topic.id ? { ...item, pages: item.pages.map((value, i) => i === page ? lines : value) } : item) } : { ...previous, greeting: lines }); }} /></label>
         </>}
       </fieldset>
-      <footer className={styles.dialogFooter}>{error && <p role="alert" className={styles.error}>{error}</p>}<p>{uploading ? '正在上传图片…' : '应用后预览，点击主页顶部 ✓ 保存。'}</p><div><button type="button" disabled={uploading} onClick={close}>取消</button><button type="submit" disabled={uploading} className={styles.apply}>应用</button></div></footer>
+      <footer className={styles.dialogFooter}>{error && <p role="alert" className={styles.error}>{error}</p>}<p>{uploading ? 'Loading...' : '应用后预览，点击主页顶部 ✓ 保存。'}</p><div><button type="button" disabled={uploading} onClick={close}>取消</button><button type="submit" disabled={uploading} className={styles.apply}>应用</button></div></footer>
     </form>
   </dialog>;
 }

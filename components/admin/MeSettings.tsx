@@ -8,6 +8,7 @@ import MePage from '@/components/me/MePage';
 import { defaultMeContent, ME_CONFIG_KEY, parseMeContent, type MeContent } from '@/components/me/content';
 import type { DialoguePosition, MeEditTarget } from '@/components/me/editing';
 import MeEditDialog from './MeEditDialog';
+import AdminLoading from './AdminLoading';
 import styles from './me-settings.module.css';
 
 export default function MeSettings() {
@@ -61,7 +62,8 @@ export default function MeSettings() {
     setTarget(next);
   }
 
-  if (loading || loadError) return <div className={styles.loadState}><Link href="/admin">返回设置</Link><h1>编辑主页</h1>{loading ? <p role="status">正在读取内容…</p> : <><p role="alert">读取未完成，请重试后再编辑。</p><button type="button" onClick={() => { setLoading(true); setAttempt(value => value + 1); }}>重新读取</button></>}</div>;
+  if (loading) return <AdminLoading />;
+  if (loadError) return <div className={styles.loadState}><p role="alert">Unable to load.</p><button type="button" onClick={() => { setLoading(true); setAttempt(value => value + 1); }}>Retry</button><Link href="/admin">Back</Link></div>;
 
   return <>
     <MePage content={draft} editor={{ busy: saving, dirty, dialogue, onEdit: edit, onPreviewDialogue: setDialogue, onSave: () => { void save(); }, onCancel: () => router.push('/admin') }} />

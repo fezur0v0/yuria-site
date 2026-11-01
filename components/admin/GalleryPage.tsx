@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/content/client';
 import { SortableList } from '@/components/admin/SortableList';
+import AdminLoading from './AdminLoading';
 import { MdOutlineDelete, MdOutlineVisibility, MdOutlineVisibilityOff, MdOutlineEdit, MdOutlineStar, MdOutlineStarOutline, MdOutlineTune } from 'react-icons/md';
 
 const supabase = createClient();
@@ -18,13 +19,14 @@ type Album = {
 };
 
 export default function AdminGalleryPage() {
+  const [loading, setLoading] = useState(true);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [newAlbum, setNewAlbum] = useState({ title: '', cover_image_url: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState({ title: '', cover_image_url: '' });
   const [msg, setMsg] = useState('');
 
-  useEffect(() => { fetchAlbums(); }, []);
+  useEffect(() => { void fetchAlbums().finally(() => setLoading(false)); }, []);
 
   async function fetchAlbums() {
     const { data } = await supabase.from('gallery_albums').select('*').order('sort_order');
@@ -82,6 +84,8 @@ export default function AdminGalleryPage() {
     fetchAlbums();
     showMsg('已更新 ✓');
   }
+
+  if (loading) return <AdminLoading />;
 
   return (
     <section className="max-w-lg space-y-6">

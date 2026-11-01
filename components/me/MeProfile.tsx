@@ -28,7 +28,7 @@ export default function MeProfile({ content, editor }: { content: MeContent; edi
       <div className={styles.phoneContent}>
       <header className={styles.identity}>
         <img className={styles.avatar} src={siteAsset(content.avatarUrl)} alt={`${profile.alias}的头像`} width={112} height={112} fetchPriority="high" {...editable(editor, { kind: 'image', field: 'avatarUrl' }, '头像')} />
-        <div><h1 id="me-name" {...editable(editor, { kind: 'text', field: 'name' }, '名字')}>{profile.name}</h1><p lang="ja" {...editable(editor, { kind: 'text', field: 'alias' }, '称呼')}>{profile.alias}</p><span>@yuria</span></div>
+        <div><h1 id="me-name" {...editable(editor, { kind: 'text', field: 'name' }, '名字')}>{profile.name}</h1><p lang="ja" {...editable(editor, { kind: 'text', field: 'alias' }, '称呼')}>{profile.alias}</p></div>
       </header>
       <div className={styles.bio}>
         <p className={styles.quote} {...editable(editor, { kind: 'text', field: 'quote' }, '诗句')}>{profile.quote.map((line, i) => <span key={i}>{line}</span>)}</p>
@@ -52,12 +52,12 @@ export default function MeProfile({ content, editor }: { content: MeContent; edi
           {meMoments(content).map((item, index) => item.kind === 'image' ? <img key={index} src={siteAsset(item.value)} alt={`相册影像 ${index + 1}`} width={280} height={280} className={item.value === content.portraitUrl ? styles.momentPortrait : undefined} {...editable(editor, { kind: 'album', index }, `相册第 ${index + 1} 项`)} /> : <div key={index} className={styles.poemTile} {...editable(editor, { kind: 'album', index }, `相册第 ${index + 1} 项`)}><span>WORDS / ME</span><p>{item.value}</p><span>IN MY OWN TIME.</span></div>)}
           {editor && meMoments(content).length === 0 && <button type="button" className={styles.addMoment} aria-label="编辑相册" onClick={() => editor.onEdit({ kind: 'album' })}><FiPlus size={22} /><span>相册</span></button>}
         </div> : id === 'favorites' ? <div className={styles.profileText}>
-          <span className={styles.eyebrow}>LITTLE THINGS I LOVE</span><h2>偏爱</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'favorites' }, '偏爱')}>{profile.favorites || (editor ? '点击填写偏爱' : '')}</p>
+          <h2>偏爱</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'favorites' }, '偏爱')}>{profile.favorites || (editor ? '点击填写偏爱' : '')}</p>
         </div> : <div className={styles.profileText}>
-          <span className={styles.eyebrow}>A LITTLE ABOUT ME</span><h2>你好，我是{profile.alias}。</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'about' }, '关于')}>{profile.about || (editor ? '点击填写自我介绍' : '')}</p>
+          <h2>你好，我是{profile.alias}。</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'about' }, '关于')}>{profile.about || (editor ? '点击填写自我介绍' : '')}</p>
         </div>}
       </div>)}
-      <aside className={styles.note} aria-label="给来访者的一封短信"><span className={styles.eyebrow}>A NOTE FOR YOU</span><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'note' }, '给来访者的短信')}>{profile.note || (editor ? '点击填写短信' : '')}</p><span className={styles.noteReply} {...editable(editor, { kind: 'text', field: 'noteReply' }, '小句子')}>{profile.noteReply || (editor ? '点击填写小句子' : '')}</span></aside>
+      <aside className={styles.note} aria-label="一段小对话"><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'note' }, '给来访者的短信')}>{profile.note || (editor ? '点击填写短信' : '')}</p><span className={styles.noteReply} {...editable(editor, { kind: 'text', field: 'noteReply' }, '小句子')}>{profile.noteReply || (editor ? '点击填写小句子' : '')}</span></aside>
       <div className={styles.profileFoot} aria-hidden="true"><span>YURIA / PERSONAL SPACE</span><i /></div>
       </div>
     </div>
