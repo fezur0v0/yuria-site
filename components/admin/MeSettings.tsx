@@ -66,7 +66,7 @@ export default function MeSettings() {
   if (loadError) return <div className={styles.loadState}><p role="alert">Unable to load.</p><button type="button" onClick={() => { setLoading(true); setAttempt(value => value + 1); }}>Retry</button><Link href="/admin">Back</Link></div>;
 
   return <>
-    <MePage content={draft} editor={{ busy: saving, dirty, dialogue, onEdit: edit, onPreviewDialogue: setDialogue, onMovePhoto: (from, to) => setDraft(previous => moveMePhoto(previous, from, to)), onSave: () => { void save(); }, onCancel: () => router.push('/admin') }} />
+    <div className={styles.editorPreview} data-modal-open={Boolean(target)} inert={Boolean(target)}><MePage content={draft} editor={{ busy: saving, dirty, dialogue, onEdit: edit, onPreviewDialogue: setDialogue, onMovePhoto: (from, to) => setDraft(previous => moveMePhoto(previous, from, to)), onSave: () => { void save(); }, onCancel: () => router.push('/admin') }} /></div>
     {target && <MeEditDialog key={JSON.stringify(target)} content={draft} target={target} onClose={() => setTarget(null)} onApply={(content, position) => { setDraft(content); if (position) setDialogue(position); setTarget(null); setMessage('预览已更新，点击顶部 ✓ 保存。'); }} />}
     {(error || message) && <div className={`${styles.toast}${error ? ` ${styles.toastError}` : ''}`} role={error ? 'alert' : 'status'}>{error || message}{error && <button type="button" aria-label="关闭提示" onClick={() => setError('')}>×</button>}</div>}
   </>;

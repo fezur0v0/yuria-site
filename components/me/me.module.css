@@ -162,6 +162,8 @@
   .profileTop > a { font-size: 18px; }
   .profileTop > .settingsLink { font-size: 9px; }
   .profileTop .editActions { display: none; }
+  .editing .profileTop { display: none; }
+  .editing .phone { padding-top: max(12px, env(safe-area-inset-top)); }
   .identity { padding: 5px 24px 0; gap: 20px; }
   .avatar { width: 88px; height: 88px; flex-basis: 88px; }
   .identity h1 { font-size: 30px; }
@@ -186,11 +188,11 @@
   .noteReply { font-size: 12px; }
   .profileFoot { padding: 23px 25px 0; font-size: 9px; }
   .stage { --dialogue-height: clamp(180px, 28dvh, 240px); --dialogue-bottom: max(84px, calc(env(safe-area-inset-bottom) + 72px)); --choices-height: clamp(156px, 22dvh, 186px); position: fixed; inset: 0; width: 100%; max-width: 680px; margin: 0 auto; max-height: none; height: 100dvh; min-height: 0; padding: 0 20px; display: block; overflow: hidden; }
-  .stageHeading { position: absolute; top: max(26px, calc(env(safe-area-inset-top) + 16px)); left: 20px; padding-top: 0; }
+  .stageHeading { display: none; }
   .stageHeading > .eyebrow { font-size: 10px; letter-spacing: .09em; }
   .stageHeading h2 { font-size: 21px; max-width: 130px; line-height: 1.2; margin-top: 14px; }
   .hatch { width: 33px; height: 4px; }
-  .portrait { right: 0; top: max(14px, env(safe-area-inset-top)); bottom: auto; width: 88%; height: calc(100% - var(--dialogue-bottom)); overflow: hidden; }
+  .portrait { right: 0; top: 0; bottom: auto; width: 88%; height: calc(100% - var(--dialogue-bottom)); overflow: hidden; }
   .portrait img { object-position: center top; }
   .stage::before { right: 15px; top: 20px; }
   .stage::after { bottom: 100px; left: 10px; }
