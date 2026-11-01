@@ -300,7 +300,8 @@ export default function Records() {
     <div className={social.page}>
       <NotesNavigation active="records" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={activeChar ? 1 : 0} filterContent={characterPanel} />
       <main className={social.main}>
-        <RecordsProfile character={selectedCharacter} />
+        <aside className={social.profileRail}><RecordsProfile character={selectedCharacter} /></aside>
+        <div className={social.recordsContent}>
         <div className={social.tabs} role="tablist" aria-label="记录与角色" onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
           event.preventDefault()
@@ -309,8 +310,8 @@ export default function Records() {
           if (next === 'characters') { setActiveChar(null); setPage(1) }
           document.getElementById(next === 'records' ? 'records-feed-tab' : 'records-characters-tab')?.focus()
         }}>
-          <button id="records-feed-tab" type="button" role="tab" aria-label="记录" aria-controls="records-panel" tabIndex={view === 'records' ? 0 : -1} aria-selected={view === 'records'} onClick={() => setView('records')}><FiFileText size={23} /></button>
-          <button id="records-characters-tab" type="button" role="tab" aria-label="角色列表" aria-controls="records-panel" tabIndex={view === 'characters' ? 0 : -1} aria-selected={view === 'characters'} onClick={() => { setView('characters'); setActiveChar(null); setPage(1) }}><FiUsers size={23} /></button>
+          <button id="records-feed-tab" type="button" role="tab" aria-label="记录" aria-controls="records-panel" tabIndex={view === 'records' ? 0 : -1} aria-selected={view === 'records'} onClick={() => setView('records')}><FiFileText size={23} /><span>记录</span></button>
+          <button id="records-characters-tab" type="button" role="tab" aria-label="角色列表" aria-controls="records-panel" tabIndex={view === 'characters' ? 0 : -1} aria-selected={view === 'characters'} onClick={() => { setView('characters'); setActiveChar(null); setPage(1) }}><FiUsers size={23} /><span>角色</span></button>
         </div>
         <section id="records-panel" role="tabpanel" aria-labelledby={view === 'records' ? 'records-feed-tab' : 'records-characters-tab'}>
         <div className={social.feedTools}>{activeChar ? <button type="button" className={social.backToAll} onClick={() => selectChar(null)}><FiChevronLeft size={15} />全部记录</button> : <span>{view === 'records' ? `${total} notes` : `${characters.length} characters`}</span>}<button type="button" aria-label={view === 'records' ? '新增记录' : '新增角色'} onClick={() => { if (view === 'records') { setNewRecord(previous => ({ ...previous, character_id: activeChar ?? previous.character_id })); setShowAdd(true) } else { setAddingCharacter(true); setNewCharError('') } }}><FiPlus size={23} /></button></div>
@@ -324,6 +325,7 @@ export default function Records() {
           </div></Link>)}</div>}
         {view === 'records' && <NotesPagination page={page} totalPages={totalPages} onChange={setPage} />}
         </section>
+        </div>
       </main>
 
       {/* 新增记录弹窗 */}

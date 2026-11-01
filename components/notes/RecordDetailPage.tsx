@@ -2,6 +2,7 @@
 import { uploadPrivateImage } from '@/utils/content/privateUpload'
 import { FiChevronLeft, FiEdit2, FiTrash2, FiUser } from 'react-icons/fi'
 import social from './records-social.module.css'
+import RecordsProfile from './RecordsProfile'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
 import CharacterSelect from './CharacterSelect'
 import RecordToolbar from './RecordToolbar'
@@ -65,6 +66,7 @@ export default function RecordDetail() {
   const id = params?.id as string
 
   const [record, setRecord] = useState<RecordDetail | null>(null)
+  const [profileCharacterId, setProfileCharacterId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
@@ -87,6 +89,7 @@ export default function RecordDetail() {
   const [showTableBuilder, setShowTableBuilder] = useState(false)
 
   useEffect(() => {
+    setProfileCharacterId(new URLSearchParams(window.location.search).get('character'))
     fetchRecord()
     fetchCharacters()
     fetchCardOptions()
@@ -228,7 +231,9 @@ export default function RecordDetail() {
 
   return (
     <div className={social.page}>
-      <main className={social.detail}>
+      <main className={`${social.main} ${social.detailLayout}`}>
+        <aside className={`${social.profileRail} ${social.detailProfile}`}><RecordsProfile character={characters.find(character => character.id === profileCharacterId)} /></aside>
+        <div className={social.detail}>
         <nav className={social.detailNav} aria-label="记录操作">
           <button type="button" aria-label="返回记录列表" onClick={() => { const character = new URLSearchParams(window.location.search).get('character'); router.push(`/notes/records${character ? `?character=${encodeURIComponent(character)}` : ''}`) }}><FiChevronLeft size={25} /></button>
           <div className={social.detailActions}><button type="button" aria-label="编辑记录" onClick={openEdit}><FiEdit2 size={18} /></button><button type="button" aria-label="删除记录" onClick={deleteRecord}><FiTrash2 size={17} /></button></div>
@@ -251,6 +256,7 @@ export default function RecordDetail() {
             </div>
           )}
         </article>
+        </div>
       </main>
 
       {/* 灯箱 */}
