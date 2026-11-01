@@ -16,6 +16,10 @@ export default function MePage({ content, editor }: { content: MeContent; editor
   const scrollPositions = useRef<Record<View, number>>({ profile: 0, dialogue: 0 });
   const swipe = useRef<{ x: number; y: number; time: number } | null>(null);
   function changeView(next: View) {
+    if (window.matchMedia('(min-width: 1024px)').matches) {
+      document.getElementById(next === 'dialogue' ? 'me-dialogue' : 'me-profile')?.focus({ preventScroll: true });
+      return;
+    }
     if (next === view) return;
     scrollPositions.current[view] = window.scrollY;
     setView(next);

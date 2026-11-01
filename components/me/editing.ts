@@ -4,7 +4,7 @@ import type { MeContent } from './content';
 export type DialoguePosition = { topicId?: string; pageIndex: number };
 export type MeEditTarget =
   | { kind: 'text'; field: keyof MeContent['profile'] }
-  | { kind: 'image'; field: 'avatarUrl' | 'portraitUrl' | 'backgroundUrl' }
+  | { kind: 'image'; field: 'avatarUrl' | 'portraitUrl' | 'backgroundUrl' | 'coverUrl' }
   | { kind: 'album'; index?: number }
   | ({ kind: 'dialogue' } & DialoguePosition);
 

@@ -121,3 +121,17 @@ test('Enter-style tag additions trim, deduplicate, and enforce profile limits', 
   assert.throws(() => addMeTag([], 'a'.repeat(25)));
   assert.throws(() => addMeTag(Array.from({ length: 8 }, (_, i) => String(i)), 'more'));
 });
+
+
+test('profile cover remains independent from the scene background through saves', () => {
+  const input = structuredClone(defaultMeContent);
+  input.coverUrl = 'https://images.example/cover.webp';
+  input.backgroundUrl = 'https://images.example/scene.webp';
+  input.frames = { coverUrl: { x: 0, y: .2, zoom: 1.2 } };
+  const saved = parseMeContent(JSON.stringify(input));
+  assert.equal(saved.coverUrl, input.coverUrl);
+  assert.equal(saved.backgroundUrl, input.backgroundUrl);
+  assert.deepEqual(saved.frames.coverUrl, input.frames.coverUrl);
+  assert.throws(() => parseMeContent({ ...input, coverUrl: 'javascript:alert(1)' }));
+  assert.throws(() => parseMeContent({ ...input, frames: { coverUrl: { x: 0, y: 0, zoom: Infinity } } }));
+});

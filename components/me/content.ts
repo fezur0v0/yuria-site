@@ -45,8 +45,9 @@ export type MeContent = {
   avatarUrl: string;
   portraitUrl: string;
   backgroundUrl?: string;
+  coverUrl?: string;
   moments?: ({ kind: 'image'; value: string } | { kind: 'quote'; value: string })[];
-  frames?: { avatarUrl?: MeImageFrame; portraitUrl?: MeImageFrame; backgroundUrl?: MeImageFrame; photos?: MeImageFrame[] };
+  frames?: { avatarUrl?: MeImageFrame; portraitUrl?: MeImageFrame; backgroundUrl?: MeImageFrame; coverUrl?: MeImageFrame; photos?: MeImageFrame[] };
   greeting: string[];
   topics: { id: string; label: string; pages: string[][] }[];
 };
@@ -91,6 +92,7 @@ export function parseMeContent(raw: unknown): MeContent {
     }
     ids.add(topic.id);
   }
+  if (value.coverUrl !== undefined && value.coverUrl !== '' && !imageUrl(value.coverUrl)) throw new Error('封面图片请使用 HTTPS 地址或站内路径');
   if (value.backgroundUrl !== undefined && value.backgroundUrl !== '' && !imageUrl(value.backgroundUrl)) throw new Error('背景图片请使用 HTTPS 地址或站内路径');
   if (value.moments !== undefined && (!Array.isArray(value.moments) || value.moments.length > 12 || value.moments.some(item => !record(item) ||
     (item.kind === 'image' ? item.value !== '' && !imageUrl(item.value) : item.kind === 'quote' ? !text(item.value, 120) : true)))) throw new Error('相册最多放置 12 项，请检查图片地址和文字卡片');
@@ -98,7 +100,7 @@ export function parseMeContent(raw: unknown): MeContent {
     const validFrame = (frame: unknown) => record(frame) && ['x', 'y', 'zoom'].every(key => typeof frame[key] === 'number' && Number.isFinite(frame[key])) &&
       (frame.x as number) >= -1 && (frame.x as number) <= 1 && (frame.y as number) >= -1 && (frame.y as number) <= 1 && (frame.zoom as number) >= 1 && (frame.zoom as number) <= 3;
     const frames = value.frames;
-    if (!record(frames) || ['avatarUrl', 'portraitUrl', 'backgroundUrl'].some(key => frames[key] !== undefined && !validFrame(frames[key])) ||
+    if (!record(frames) || ['avatarUrl', 'portraitUrl', 'backgroundUrl', 'coverUrl'].some(key => frames[key] !== undefined && !validFrame(frames[key])) ||
       (frames.photos !== undefined && (!Array.isArray(frames.photos) || frames.photos.length > 3 || !frames.photos.every(validFrame)))) throw new Error('请检查图片的缩放和显示区域');
   }
   return structuredClone(value) as MeContent;
