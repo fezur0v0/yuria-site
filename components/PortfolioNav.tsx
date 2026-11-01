@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { FiMenu, FiFilter } from 'react-icons/fi';
+import { FiMenu, FiFilter, FiUser, FiMessageCircle } from 'react-icons/fi';
 import PortfolioSearch from '@/components/PortfolioSearch';
 import AccountEntry from '@/components/account/AccountEntry';
 import { usePathname } from 'next/navigation';
@@ -14,6 +14,7 @@ const sections = [
   { href: '/notes', label: 'AIRP' },
 ];
 const extraLinks = [
+  { href: '/me', label: '关于我' },
   { href: '/guestbook', label: '留言板' },
   { href: '/links', label: '链接' },
 ];
@@ -37,7 +38,12 @@ const notesLinks = [
   { href: '/notes/records', label: '记录' },
 ];
 
-export default function PortfolioNav({ homeHref = '/', theme = 'default', showSections = false, mode = 'site', notesControls }: { homeHref?: string; theme?: 'default' | 'light'; showSections?: boolean; mode?: 'site' | 'admin' | 'notes'; notesControls?: NotesControls }) {
+type MeControls = {
+  view: 'profile' | 'dialogue';
+  onViewChange: (view: 'profile' | 'dialogue') => void;
+};
+
+export default function PortfolioNav({ homeHref = '/', theme = 'default', showSections = false, mode = 'site', notesControls, meControls }: { homeHref?: string; theme?: 'default' | 'light'; showSections?: boolean; mode?: 'site' | 'admin' | 'notes'; notesControls?: NotesControls; meControls?: MeControls }) {
   const pathname = usePathname();
   const [visible, setVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
@@ -88,8 +94,8 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
   }, [drawerOpen]);
 
   return <>
-    <nav aria-label={isNotes ? '词库与记录导航' : isAdmin ? '管理面板顶部导航' : '顶部导航'} className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${visible ? 'translate-y-0' : '-translate-y-full'}`}>
-      <div className={`transition-colors duration-300 ${scrolled ? isLight ? 'bg-white/50 backdrop-blur-md' : 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
+    <nav aria-label={isNotes ? '词库与记录导航' : isAdmin ? '管理面板顶部导航' : '顶部导航'} className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${visible || meControls ? 'translate-y-0' : '-translate-y-full'}`}>
+      <div className={`transition-colors duration-300 ${scrolled || meControls ? isLight ? 'bg-white/50 backdrop-blur-md' : 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
         <div className="pl-6 pr-3 sm:px-8 h-16 flex items-center justify-between gap-6">
           <Link href={homeHref} className={`${isLight ? 'text-[#1a1a1a]' : 'text-white'} font-serif text-lg tracking-wide`}>yuria</Link>
           <div className="hidden lg:flex items-center gap-6">
@@ -100,9 +106,14 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
             <AccountEntry placement="header" light={isLight} />
           </div>
           <div className={`flex lg:hidden shrink-0 items-center gap-1 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>
+            {meControls ? <>
+              <button type="button" aria-label="个人简介" title="个人简介" aria-pressed={meControls.view === 'profile'} aria-controls="me-profile" onClick={() => meControls.onViewChange('profile')} className="me-nav-view grid place-items-center shrink-0 w-11 h-11"><FiUser size={20} aria-hidden="true" /></button>
+              <button type="button" aria-label="和我聊聊" title="和我聊聊" aria-pressed={meControls.view === 'dialogue'} aria-controls="me-dialogue" onClick={() => meControls.onViewChange('dialogue')} className="me-nav-view grid place-items-center shrink-0 w-11 h-11"><FiMessageCircle size={20} aria-hidden="true" /></button>
+            </> : <>
             <PortfolioSearch theme={theme} overlay scope={searchScope} />
             {isNotes && notesControls && <button type="button" aria-label="筛选" aria-expanded={notesControls.filterOpen} onClick={notesControls.onFilter} className="relative grid place-items-center shrink-0 w-11 h-11"><FiFilter size={20} aria-hidden="true" />{notesControls.filterCount > 0 && <span className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-current" aria-hidden="true" />}</button>}
             <button ref={menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏" aria-expanded={drawerOpen} aria-controls={drawerId} className="grid place-items-center shrink-0 w-11 h-11"><FiMenu size={20} aria-hidden="true" /></button>
+            </>}
           </div>
         </div>
       </div>

@@ -16,3 +16,7 @@
 @media(prefers-reduced-motion:reduce){.site-drawer-layer,.site-drawer,.site-drawer-links a{transition:none}}
 
 .site-drawer-links a[aria-current="page"]{background:#ffffff1a;border-color:#ffffff50}
+.me-nav-view{position:relative;opacity:.45;transition:opacity .2s ease}
+.me-nav-view[aria-pressed="true"],.me-nav-view:hover{opacity:1}
+.me-nav-view[aria-pressed="true"]::after{content:"";position:absolute;bottom:3px;width:3px;height:3px;border-radius:50%;background:currentColor}
+.me-nav-view:focus-visible{outline:2px solid currentColor;outline-offset:-4px;border-radius:10px}

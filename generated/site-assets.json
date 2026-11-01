@@ -61,6 +61,18 @@
       "bytes": 36625,
       "type": "image/jpeg"
     },
+    "/images/me/yuria-avatar.webp": {
+      "key": "site-assets/1cc13c521a6385ca6cb84a74f5fc96fb028d402019ac768a2fd4492059a4e7da/yuria-avatar.webp",
+      "sha256": "1cc13c521a6385ca6cb84a74f5fc96fb028d402019ac768a2fd4492059a4e7da",
+      "bytes": 71584,
+      "type": "image/webp"
+    },
+    "/images/me/yuria-portrait.webp": {
+      "key": "site-assets/7505842637f5cfea60683dde204f57fb6fe971381fa603e7b8eeea4ea9ddb207/yuria-portrait.webp",
+      "sha256": "7505842637f5cfea60683dde204f57fb6fe971381fa603e7b8eeea4ea9ddb207",
+      "bytes": 165458,
+      "type": "image/webp"
+    },
     "/images/social/bilibili.svg": {
       "key": "site-assets/738110a50808ff3f7f309a2459a5d32453356e358d2888edefdbbaaaf860a82b/bilibili.svg",
       "sha256": "738110a50808ff3f7f309a2459a5d32453356e358d2888edefdbbaaaf860a82b",
