@@ -2,7 +2,7 @@
 
 import { lazy, Suspense, useState } from 'react';
 import Link from 'next/link';
-import { FiCheck, FiGrid, FiHeart, FiLoader, FiUser, FiX } from 'react-icons/fi';
+import { FiCheck, FiGrid, FiHeart, FiLoader, FiMessageCircle, FiPlus, FiUser, FiX } from 'react-icons/fi';
 import { siteAsset } from '@/utils/siteAssets';
 import { meFrameStyle, mePhotoSlots, type MeContent } from './content';
 import { editable, type MeEditor } from './editing';
@@ -16,7 +16,7 @@ const tabs = [
 type TabId = typeof tabs[number]['id'];
 const PhotoWallEditor = lazy(() => import('@/components/admin/MePhotoWallEditor'));
 
-export default function MeProfile({ content, editor }: { content: MeContent; editor?: MeEditor }) {
+export default function MeProfile({ content, editor, onDialogue }: { content: MeContent; editor?: MeEditor; onDialogue: () => void }) {
   const [tab, setTab] = useState<TabId>('moments');
   const { profile } = content;
   const photoWall = <div className={styles.moments}>{mePhotoSlots(content).map((url, index) => <div key={index} className={url ? styles.photoCell : styles.emptyMoment} aria-hidden={url ? undefined : true}>{url && <img src={siteAsset(url)} alt={`相册影像 ${index + 1}`} width={280} height={280} style={meFrameStyle(content.frames?.photos?.[index])} className={url === content.portraitUrl ? styles.momentPortrait : undefined} />}</div>)}</div>;
@@ -29,8 +29,9 @@ export default function MeProfile({ content, editor }: { content: MeContent; edi
       </div> : <Link href="/admin/me" className={styles.settingsLink} aria-label="PERSONAL PAGE，编辑主页">PERSONAL PAGE</Link>}</div>
       <div className={styles.phoneContent}>
       <header className={styles.identity}>
-        <div className={styles.avatar} {...editable(editor, { kind: 'image', field: 'avatarUrl' }, '头像')}><div className={styles.avatarWindow}><img src={siteAsset(content.avatarUrl)} alt={`${profile.alias}的头像`} width={112} height={112} fetchPriority="high" style={meFrameStyle(content.frames?.avatarUrl)} /></div></div>
-        <div><h1 id="me-name" {...editable(editor, { kind: 'text', field: 'name' }, '名字')}>{profile.name}</h1><p lang="ja" {...editable(editor, { kind: 'text', field: 'alias' }, '称呼')}>{profile.alias}</p></div>
+        <div className={styles.avatarGroup}><div className={styles.avatar} {...editable(editor, { kind: 'image', field: 'avatarUrl' }, '头像')}><div className={styles.avatarWindow}><img src={siteAsset(content.avatarUrl)} alt={`${profile.alias}的头像`} width={112} height={112} fetchPriority="high" style={meFrameStyle(content.frames?.avatarUrl)} /></div></div>{!editor && <Link href="/admin/me" className={styles.avatarEdit} aria-label="编辑主页"><FiPlus size={18} aria-hidden="true" /></Link>}</div>
+        <div className={styles.identityNames}><h1 id="me-name" {...editable(editor, { kind: 'text', field: 'name' }, '名字')}>{profile.name}</h1><p lang="ja" {...editable(editor, { kind: 'text', field: 'alias' }, '称呼')}>{profile.alias}</p></div>
+        <button type="button" className={styles.messageEntry} aria-label="进入对话" disabled={editor?.busy} onClick={onDialogue}><FiMessageCircle size={23} aria-hidden="true" /></button>
       </header>
       <div className={styles.bio}>
         <p className={styles.quote} {...editable(editor, { kind: 'text', field: 'quote' }, '个性签名')}>{profile.quote.map((line, i) => <span key={i}>{line}</span>)}</p>

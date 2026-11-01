@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useSyncExternalStore, type Ref } from 'react';
-import { BsEjectFill } from 'react-icons/bs';
+import { BsEjectFill, BsCaretLeftFill } from 'react-icons/bs';
 import { FiImage } from 'react-icons/fi';
 import { siteAsset } from '@/utils/siteAssets';
 import { meFrameStyle, type MeContent } from './content';
@@ -62,7 +62,7 @@ function DialogueMessage({ lines, active, canAdvance, onAdvance, nextRef }: {
   </>;
 }
 
-export default function MeDialogue({ content, view, editor }: { content: MeContent; view: 'profile' | 'dialogue'; editor?: MeEditor }) {
+export default function MeDialogue({ content, view, editor, onBack }: { onBack: () => void; content: MeContent; view: 'profile' | 'dialogue'; editor?: MeEditor }) {
   const [topicId, setTopicId] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const nextButton = useRef<HTMLButtonElement>(null);
@@ -93,6 +93,7 @@ export default function MeDialogue({ content, view, editor }: { content: MeConte
   }
 
   return <section id="me-dialogue" className={styles.stage} aria-label={`和${content.profile.alias}聊聊`}>
+    <button type="button" className={styles.sceneBack} aria-label="返回个人主页" disabled={editor?.busy} onClick={onBack}><BsCaretLeftFill size={28} aria-hidden="true" /></button>
     {content.backgroundUrl && <div className={styles.sceneBackground} aria-hidden="true"><img src={siteAsset(content.backgroundUrl)} alt="" style={meFrameStyle(content.frames?.backgroundUrl)} /></div>}
     {editor && <button type="button" className={styles.editBackground} aria-label="编辑背景" title="编辑背景" onClick={() => editor.onEdit({ kind: 'image', field: 'backgroundUrl' })} disabled={editor.busy}><FiImage size={18} aria-hidden="true" /></button>}
     <header className={styles.stageHeading}><span className={styles.eyebrow}>ABOUT ME</span><h2>Nice to meet you.</h2><span className={styles.hatch} aria-hidden="true" /></header>

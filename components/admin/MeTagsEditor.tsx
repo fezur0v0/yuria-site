@@ -3,22 +3,21 @@
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FiMove, FiX } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 import { addMeTag } from '@/components/me/content';
 import styles from './me-settings.module.css';
 
 function Tag({ tag, remove }: { tag: string; remove: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: tag });
   return <span ref={setNodeRef} className={styles.tagChip} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? .5 : 1 }}>
-    <button type="button" className={styles.tagHandle} {...attributes} {...listeners} aria-label={`移动标签「${tag}」`}><FiMove size={13} aria-hidden="true" /></button>
-    <span>{tag}</span><button type="button" className={styles.tagRemove} aria-label={`删除标签「${tag}」`} onClick={remove}><FiX size={14} aria-hidden="true" /></button>
+    <button type="button" className={styles.tagHandle} {...attributes} {...listeners} aria-label={`移动标签「${tag}」`}>{tag}</button><button type="button" className={styles.tagRemove} aria-label={`删除标签「${tag}」`} onClick={remove}><FiX size={14} aria-hidden="true" /></button>
   </span>;
 }
 
 export default function MeTagsEditor({ tags, input, onInput, onChange, onError }: {
   tags: string[]; input: string; onInput: (value: string) => void; onChange: (tags: string[]) => void; onError: (message: string) => void;
 }) {
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { delay: 180, tolerance: 6 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   function add() {
     try { onChange(addMeTag(tags, input)); onInput(''); onError(''); }
     catch (error) { onError(error instanceof Error ? error.message : '请检查标签'); }

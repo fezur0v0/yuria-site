@@ -5,7 +5,7 @@ import MeProfile from './MeProfile';
 import MeDialogue from './MeDialogue';
 import type { MeContent } from './content';
 import type { MeEditor } from './editing';
-import { FiCheck, FiLoader, FiMessageCircle, FiUser, FiX } from 'react-icons/fi';
+import { FiCheck, FiLoader, FiX } from 'react-icons/fi';
 import { meMincho } from '@/components/me/fonts';
 import styles from './me.module.css';
 
@@ -35,13 +35,10 @@ export default function MePage({ content, editor }: { content: MeContent; editor
     if (view === 'profile' && dx < 0) changeView('dialogue');
     else if (view === 'dialogue' && dx > 0) changeView('profile');
   }}>
-    <nav className={styles.mobileControls} aria-label="简介与对话切换">
-      <button type="button" className={styles.viewSwitch} aria-label={view === 'profile' ? '进入对话' : '查看简介'} aria-controls={view === 'profile' ? 'me-dialogue' : 'me-profile'} disabled={editor?.busy} onClick={() => changeView(view === 'profile' ? 'dialogue' : 'profile')}>{view === 'profile' ? <FiMessageCircle size={18} /> : <FiUser size={18} />}<span>{view === 'profile' ? '对话' : '简介'}</span></button>
-      {editor && <><button type="button" aria-label="取消编辑" title="取消编辑" disabled={editor.busy} onClick={editor.onCancel}><FiX size={19} /></button><button type="button" aria-label="保存主页" title="保存主页" disabled={editor.busy || !editor.dirty} onClick={editor.onSave}>{editor.busy ? <FiLoader size={19} className={styles.editSpinner} /> : <FiCheck size={19} />}</button></>}
-    </nav>
+      {editor && <nav className={styles.mobileControls} aria-label="编辑操作"><button type="button" aria-label="取消编辑" title="取消编辑" disabled={editor.busy} onClick={editor.onCancel}><FiX size={19} /></button><button type="button" aria-label="保存主页" title="保存主页" disabled={editor.busy || !editor.dirty} onClick={editor.onSave}>{editor.busy ? <FiLoader size={19} className={styles.editSpinner} /> : <FiCheck size={19} />}</button></nav>}
     <main className={styles.main} aria-label="关于 yuria">
-      <MeProfile content={content} editor={editor} />
-      <MeDialogue content={content} view={view} editor={editor} />
+      <MeProfile content={content} editor={editor} onDialogue={() => changeView('dialogue')} />
+      <MeDialogue content={content} view={view} editor={editor} onBack={() => changeView('profile')} />
     </main>
   </div>;
 }

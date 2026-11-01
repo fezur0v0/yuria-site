@@ -59,7 +59,7 @@
 .profileTop { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 25px 23px; }
 .profileTop > a { text-decoration: none; font-family: Georgia, 'Times New Roman', serif; font-size: 20px; letter-spacing: .04em; }
 .profileTop > .settingsLink { font-family: var(--font-geist-mono), monospace; font-size: 10px; letter-spacing: .09em; color: var(--muted); }
-.identity { display: flex; align-items: center; gap: 23px; padding: 0 25px; }
+.identity { display: flex; align-items: center; gap: 23px; padding: 12px 25px 0; }
 .avatar { width: 94px; height: 94px; flex: 0 0 94px; border-radius: 50%; object-fit: cover; border: 1px solid #bfc2cf; padding: 4px; background: #fff; }
 .avatarWindow { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; }
 .avatarWindow img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -148,7 +148,7 @@
   .page { height: auto; min-height: 100svh; overflow: visible; }
   .page[data-view='dialogue'] { height: 100dvh; min-height: 0; overflow: hidden; }
   .page[data-view='dialogue'] .main { height: 100dvh; min-height: 0; }
-  .mobileControls { position: fixed; right: 20px; bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px)); z-index: 50; display: flex; align-items: center; gap: 2px; padding: 4px; border: 1px solid #ffffffb3; border-radius: 30px; background: #f4f6fbd4; box-shadow: 0 6px 25px #32394d1a, inset 0 1px 0 #fff; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+  .mobileControls { position: fixed; right: 20px; top: max(12px, env(safe-area-inset-top)); bottom: auto; z-index: 50; display: flex; align-items: center; gap: 2px; padding: 4px; border: 1px solid #ffffffb3; border-radius: 30px; background: #f4f6fbd4; box-shadow: 0 6px 25px #32394d1a, inset 0 1px 0 #fff; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
   .mobileControls button { min-width: 42px; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 10px; border: 0; border-radius: 24px; background: transparent; color: #535b6a; }
   .mobileControls .viewSwitch { padding-inline: 13px; font-size: 12px; }
   .profile, .phone { height: auto; max-height: none; }
@@ -157,14 +157,14 @@
   .profileBottom .note { overflow: visible; }
   .main { display: block; width: 100%; height: auto; min-height: 100svh; padding: 0; }
   .page[data-view='profile'] .stage, .page[data-view='dialogue'] .profile { display: none; }
-  .phone { max-width: 580px; margin: 0 auto; border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: max(24px, calc(env(safe-area-inset-top) + 14px)) 0 calc(104px + env(safe-area-inset-bottom)); }
+  .phone { max-width: 580px; margin: 0 auto; border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: max(24px, calc(env(safe-area-inset-top) + 14px)) 0 calc(32px + env(safe-area-inset-bottom)); }
   .profileTop { padding: 0 24px 24px; }
   .profileTop > a { font-size: 18px; }
   .profileTop > .settingsLink { font-size: 9px; }
   .profileTop .editActions { display: none; }
   .editing .profileTop { display: none; }
-  .editing .phone { padding-top: max(12px, env(safe-area-inset-top)); }
-  .identity { padding: 5px 24px 0; gap: 20px; }
+  .editing .phone { padding-top: max(60px, calc(env(safe-area-inset-top) + 48px)); }
+  .identity { padding: 22px 24px 0; gap: 20px; }
   .avatar { width: 88px; height: 88px; flex-basis: 88px; }
   .identity h1 { font-size: 30px; }
   .identity p { font-size: 18px; }
@@ -250,3 +250,15 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 1023px) { .editBackground { top: 16px; right: 20px; } }
 @media (prefers-reduced-motion: reduce) { .editSpinner { animation: none; } }
+
+.avatarGroup{position:relative;flex-shrink:0}
+.avatarEdit{position:absolute;right:-2px;bottom:0;width:28px;height:28px;display:grid;place-items:center;border:3px solid #fafbfc;border-radius:50%;background:#343743;color:white;text-decoration:none}
+.identityNames{min-width:0;flex:1}
+.messageEntry,.sceneBack{display:none}
+@media(max-width:1023px){
+ .profileTop>.settingsLink{display:none}
+ .identity{gap:16px}
+ .messageEntry{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;padding:0;border:0;background:transparent;color:#424650;cursor:pointer}
+ .sceneBack{display:grid;place-items:center;position:absolute;z-index:10;left:16px;top:max(16px,env(safe-area-inset-top));width:44px;height:44px;border:0;padding:0;background:transparent;color:#3c4049;cursor:pointer;filter:drop-shadow(0 1px 2px #fff)}
+ .identity h1{font-size:28px;overflow-wrap:anywhere}
+}
