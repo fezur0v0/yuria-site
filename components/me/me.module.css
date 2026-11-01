@@ -135,6 +135,8 @@
 }
 @media (max-width: 1023px) {
   .page { height: auto; min-height: 100svh; overflow: visible; }
+  .page[data-view='dialogue'] { height: 100dvh; min-height: 0; overflow: hidden; }
+  .page[data-view='dialogue'] .main { height: 100dvh; min-height: 0; }
   .mobileNav { display: block; }
   .profile, .phone { height: auto; max-height: none; }
   .phoneContent { overflow: visible; flex: auto; }
@@ -166,19 +168,19 @@
   .note p { font-size: 15px; line-height: 1.9; }
   .noteReply { font-size: 13px; }
   .profileFoot { padding: 25px 27px 0; font-size: 10px; }
-  .stage { max-width: 680px; margin: 0 auto; max-height: none; height: auto; min-height: calc(100svh - 64px); padding: 0 20px calc(82px + env(safe-area-inset-bottom)); display: grid; grid-template-rows: minmax(245px, 34svh) auto 230px; }
-  .stageHeading { padding-top: 21px; }
+  .stage { --dialogue-height: clamp(180px, 28dvh, 240px); --dialogue-bottom: max(24px, calc(env(safe-area-inset-bottom) + 12px)); --choices-height: clamp(156px, 22dvh, 186px); position: fixed; inset: 64px 0 0; width: 100%; max-width: 680px; margin: 0 auto; max-height: none; height: calc(100dvh - 64px); min-height: 0; padding: 0 20px; display: block; overflow: hidden; }
+  .stageHeading { position: absolute; top: 21px; left: 20px; padding-top: 0; }
   .stageHeading > .eyebrow { font-size: 10px; letter-spacing: .09em; }
   .stageHeading h2 { font-size: 23px; max-width: 130px; line-height: 1.2; margin-top: 14px; }
   .hatch { width: 33px; height: 4px; }
-  .portrait { right: 0; top: 14px; bottom: auto; width: 88%; height: clamp(470px, 75svh, 720px); overflow: hidden; }
+  .portrait { right: 0; top: 14px; bottom: auto; width: 88%; height: calc(100% - var(--dialogue-bottom)); overflow: hidden; }
   .portrait img { object-position: center top; }
   .stage::before { right: 15px; top: 20px; }
   .stage::after { bottom: 100px; left: 10px; }
-  .choices { width: 100%; gap: 9px; padding: 0 0 38px; justify-content: start; }
-  .choices button { min-height: 46px; font-size: 14px; padding: 11px 16px; border-radius: 5px 13px 5px 13px; background: #f9fafbe8; }
+  .choices { position: absolute; left: 20px; right: 20px; bottom: calc(var(--dialogue-bottom) + var(--dialogue-height) + 32px); width: auto; height: var(--choices-height); max-height: none; gap: 9px; padding: 0; justify-content: flex-start; }
+  .choices button { flex-shrink: 0; min-height: 46px; font-size: 14px; padding: 11px 16px; border-radius: 5px 13px 5px 13px; background: #f9fafbe8; }
   .choices button:hover, .choices button:focus-visible { transform: none; }
-  .dialogue { height: 230px; min-height: 0; padding: 28px 20px 10px; align-self: start; }
+  .dialogue { position: absolute; left: 20px; right: 20px; bottom: var(--dialogue-bottom); height: var(--dialogue-height); min-height: 0; padding: 28px 20px 10px; }
   .dialogueText { font-size: 16px; line-height: 1.9; min-height: 0; }
   .nameplate { left: 17px; font-size: 16px; padding: 8px 20px; }
   .dialogueActions { gap: 10px; }
@@ -193,11 +195,22 @@
   .quote { font-size: 20px; }
   .tags li { padding-inline: 10px; font-size: 12px; }
   .note { margin-inline: 17px; padding: 15px; }
-  .stage { padding-inline: 16px; grid-template-rows: minmax(235px, 34svh) auto 250px; }
+  .stage { padding-inline: 16px; }
+  .stageHeading { left: 16px; }
   .stageHeading h2 { font-size: 21px; max-width: 110px; }
   .stageHeading > .eyebrow { font-size: 9px; }
-  .dialogue { height: 250px; padding-inline: 17px; }
+  .choices, .dialogue { left: 16px; right: 16px; }
+  .dialogue { padding-inline: 17px; }
   .dialogueActions { flex-wrap: wrap; gap: 0 10px; }
+}
+@media (max-width: 1023px) and (max-height: 560px) {
+  .stage { --dialogue-height: clamp(132px, 30dvh, 170px); --choices-height: clamp(90px, 22dvh, 120px); --dialogue-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .stageHeading { top: 12px; }
+  .stageHeading h2 { font-size: 19px; }
+  .dialogue { padding-top: 23px; }
+}
+@media (max-width: 1023px) and (max-height: 440px) {
+  .stageHeading { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .portrait img, .dialogueText { animation: none; }

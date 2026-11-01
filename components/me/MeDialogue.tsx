@@ -87,7 +87,7 @@ export default function MeDialogue({ content, view }: { content: MeContent; view
   }
 
   return <section id="me-dialogue" className={styles.stage} aria-label={`和${content.profile.alias}聊聊`}>
-    <header className={styles.stageHeading}><span className={styles.eyebrow}>ABOUT ME / CHAPTER 01</span><h2>Nice to meet you.</h2><span className={styles.hatch} aria-hidden="true" /></header>
+    <header className={styles.stageHeading}><span className={styles.eyebrow}>ABOUT ME</span><h2>Nice to meet you.</h2><span className={styles.hatch} aria-hidden="true" /></header>
     <div className={styles.portrait} aria-hidden="true"><img src={siteAsset(content.portraitUrl)} alt="" width={661} height={1504} fetchPriority="high" /></div>
     <div className={styles.choices} aria-label="选择想聊的话题" hidden={topic !== undefined}>
       {content.topics.map((item, index) => <button key={item.id} ref={index === 0 ? firstChoice : undefined} type="button" onClick={() => choose(item.id)}><span className={styles.diamond} aria-hidden="true" /><span>{item.label}</span></button>)}
