@@ -11,7 +11,7 @@ import styles from './me.module.css';
 const tabs = [
   { id: 'moments', label: '影像', icon: FiGrid },
   { id: 'favorites', label: 'likes', icon: FiHeart },
-  { id: 'about', label: 'ABOUT ME', icon: FiUser },
+  { id: 'about', label: 'About me', icon: FiUser },
 ] as const;
 type TabId = typeof tabs[number]['id'];
 
@@ -53,7 +53,7 @@ export default function MeProfile({ content, editor }: { content: MeContent; edi
         </div> : id === 'favorites' ? <div className={styles.profileText}>
           <h2>likes</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'favorites' }, 'likes')}>{profile.favorites || (editor ? '点击填写 likes' : '')}</p>
         </div> : <div className={styles.profileText}>
-          <h2>ABOUT ME</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'about' }, 'ABOUT ME')}>{profile.about || (editor ? '点击填写自我介绍' : '')}</p>
+          <h2>About me</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'about' }, 'About me')}>{profile.about || (editor ? '点击填写自我介绍' : '')}</p>
         </div>}
       </div>)}
       </div>

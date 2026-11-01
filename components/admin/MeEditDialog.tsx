@@ -8,7 +8,7 @@ import { mePhotoSlots, parseMeContent, type MeContent } from '@/components/me/co
 import type { DialoguePosition, MeEditTarget } from '@/components/me/editing';
 import styles from './me-settings.module.css';
 
-const textLabels: Record<keyof MeContent['profile'], string> = { name: '名字', alias: '称呼', quote: '个性签名', bio: '装饰', tags: '标签', note: '祂说', noteReply: '祂说', favorites: 'likes', about: 'ABOUT ME' };
+const textLabels: Record<keyof MeContent['profile'], string> = { name: '名字', alias: '称呼', quote: '个性签名', bio: '装饰', tags: '标签', note: '祂说', noteReply: '祂说', favorites: 'likes', about: 'About me' };
 const limits: Record<keyof MeContent['profile'], number> = { name: 60, alias: 60, quote: 403, bio: 200, tags: 200, note: 600, noteReply: 100, favorites: 1500, about: 1500 };
 
 function ImageField({ value, label, onChange, onUpload }: { value: string; label: string; onChange: (value: string) => void; onUpload: (file: File) => void }) {
