@@ -1,5 +1,7 @@
 'use client'
 import { uploadPrivateImage } from '@/utils/content/privateUpload'
+import { FiChevronLeft, FiEdit2, FiTrash2, FiUser } from 'react-icons/fi'
+import social from './records-social.module.css'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
 import CharacterSelect from './CharacterSelect'
 import RecordToolbar from './RecordToolbar'
@@ -71,6 +73,7 @@ export default function RecordDetail() {
   const [characters, setCharacters] = useState<Character[]>([])
   const [cardOptions, setCardOptions] = useState<CardOption[]>([])
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [editForm, setEditForm] = useState({ character_id: '', card_id: '', title: '', extra_tag: '', content: '' })
   const [draftImages, setDraftImages] = useState<DraftImage[]>([])
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null)
@@ -189,7 +192,8 @@ export default function RecordDetail() {
     if (!editForm.title || !editForm.character_id || !record) return
     setSaving(true)
     const images = draftImages.filter(img => !img.uploading && img.url).map(img => ({ url: img.url, caption: img.caption || '' }))
-    await supabase.from('theater_records').update({
+    setSaveError('')
+    const { error } = await supabase.from('theater_records').update({
       character_id: editForm.character_id,
       card_id: editForm.card_id || null,
       title: editForm.title,
@@ -199,6 +203,7 @@ export default function RecordDetail() {
       updated_at: new Date().toISOString(),
     }).eq('id', record.id)
     setSaving(false)
+    if (error) { setSaveError('保存未完成，请稍后重试。'); return }
     setShowEdit(false)
     fetchRecord()
   }
@@ -222,45 +227,17 @@ export default function RecordDetail() {
   if (!record) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc', fontSize: '13px', background: '#fafaf8' }}>未找到该记录</div>
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fafaf8', fontFamily: 'Inter,sans-serif' }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=Inter:wght@300;400;500&display=swap');
-        * { box-sizing: border-box; }
-        .thumb { transition: transform 0.2s; }
-        .thumb:hover { transform: scale(1.02); }
-        .scroll-hide::-webkit-scrollbar { display: none; }
-        .scroll-hide { scrollbar-width: none; -ms-overflow-style: none; }
-      `}</style>
-
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 24px 80px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
-          <button onClick={() => router.push('/notes/records')}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#999', fontSize: '13px', padding: 0 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            返回记录列表
-          </button>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={openEdit}
-              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#f5f5f3', border: '1px solid #ebebeb', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              编辑
-            </button>
-            <button onClick={deleteRecord}
-              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'none', border: '1px solid #fca5a5', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', color: '#ef4444', cursor: 'pointer' }}>
-              删除
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-          {record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#e8e8e6' }} />}
-          <span style={{ fontSize: '14px', color: '#666' }}>{record.characters?.name || '未命名'}</span>
-        </div>
-
-        <h1 style={{ fontFamily: 'Noto Serif SC,serif', fontSize: '26px', fontWeight: 400, color: '#1a1a1a', margin: '0 0 6px', lineHeight: 1.4 }}>{record.title}</h1>
-        {record.extra_tag && <div style={{ fontSize: '13px', color: '#aaa', marginBottom: '24px' }}>{record.extra_tag}</div>}
-
-        <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f0f0ee', padding: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+    <div className={social.page}>
+      <main className={social.detail}>
+        <nav className={social.detailNav} aria-label="记录操作">
+          <button type="button" aria-label="返回记录列表" onClick={() => { const character = new URLSearchParams(window.location.search).get('character'); router.push(`/notes/records${character ? `?character=${encodeURIComponent(character)}` : ''}`) }}><FiChevronLeft size={25} /></button>
+          <div className={social.detailActions}><button type="button" aria-label="编辑记录" onClick={openEdit}><FiEdit2 size={18} /></button><button type="button" aria-label="删除记录" onClick={deleteRecord}><FiTrash2 size={17} /></button></div>
+        </nav>
+        <header className={social.detailHeader}>
+          <span className={social.postAvatar}>{record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" /> : <FiUser size={28} />}</span>
+          <div><div className={social.detailIdentity}><strong>{record.characters?.name || '未命名'}</strong><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time></div><h1>{record.title}</h1>{record.extra_tag && <div className={social.extraTag}>{record.extra_tag}</div>}</div>
+        </header>
+        <article className={social.detailContent}>
           {record.content && <MarkdownContent content={record.content} />}
           {images.length > 0 && (
             <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #f0f0ee' }}>
@@ -273,10 +250,8 @@ export default function RecordDetail() {
               </div>
             </div>
           )}
-        </div>
-
-        <div style={{ fontSize: '12px', color: '#bbb', marginTop: '20px', textAlign: 'center' }}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</div>
-      </div>
+        </article>
+      </main>
 
       {/* 灯箱 */}
       {lightboxIndex !== null && (
@@ -315,6 +290,7 @@ export default function RecordDetail() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
           onClick={() => { setShowEdit(false); setCharDropdownOpen(false); setCardDropdownOpen(false) }}>
           <div role="dialog" aria-modal="true" aria-label="编辑记录" style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+            {saveError && <p role="alert" className={social.error}>{saveError}</p>}
             <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>编辑记录</h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -357,8 +333,8 @@ export default function RecordDetail() {
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
               </div>
               <div>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>副标题</label>
-                <input value={editForm.extra_tag} onChange={e => setEditForm(p => ({ ...p, extra_tag: e.target.value }))} placeholder="副标题"
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标签</label>
+                <input value={editForm.extra_tag} onChange={e => setEditForm(p => ({ ...p, extra_tag: e.target.value }))} placeholder="标签"
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
               </div>
 

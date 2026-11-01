@@ -1,9 +1,12 @@
 'use client'
 import { uploadPrivateImage } from '@/utils/content/privateUpload'
+import Link from 'next/link'
 import NotesNavigation from './NotesNavigation'
+import RecordsProfile from './RecordsProfile'
+import social from './records-social.module.css'
 import NotesPagination from './NotesPagination'
 import notesStyles from './notes-shell.module.css'
-import { FiPlus, FiCheck } from 'react-icons/fi'
+import { FiPlus, FiCheck, FiUser, FiFileText, FiUsers, FiChevronLeft } from 'react-icons/fi'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
 import CharacterSelect from './CharacterSelect'
 import RecordToolbar from './RecordToolbar'
@@ -56,6 +59,10 @@ function stripMarkdown(text: string) {
 
 export default function Records() {
   const router = useRouter()
+  const [view, setView] = useState<'records' | 'characters'>('records')
+  const [characterCounts, setCharacterCounts] = useState<Record<string, number | null>>({})
+  const [readError, setReadError] = useState('')
+  const [saveError, setSaveError] = useState('')
   const [records, setRecords] = useState<RecordRow[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
   const [loading, setLoading] = useState(true)
@@ -98,6 +105,8 @@ export default function Records() {
   const [showTableBuilder, setShowTableBuilder] = useState(false)
 
   useEffect(() => {
+    const character = new URLSearchParams(window.location.search).get('character')
+    if (character) setActiveChar(character)
     fetchCharacters()
     fetchCardOptions()
   }, [])
@@ -109,6 +118,10 @@ export default function Records() {
   async function fetchCharacters() {
     const { data } = await supabase.from('characters').select('*').order('created_at', { ascending: true })
     setCharacters(data || [])
+    if (data) {
+      const counts = await Promise.all(data.map(async character => { const result = await supabase.from('theater_records').select('id', { count: 'exact', head: true }).eq('character_id', character.id); return [character.id, result.error ? null : result.count ?? 0] as const }))
+      setCharacterCounts(Object.fromEntries(counts))
+    }
   }
 
   async function fetchCardOptions() {
@@ -122,8 +135,10 @@ export default function Records() {
     let query = supabase.from('theater_records').select('*, characters(id,name,avatar)', { count: 'exact' })
     if (search) query = query.or(`title.ilike.%${search}%,extra_tag.ilike.%${search}%,content.ilike.%${search}%`)
     if (activeChar) query = query.eq('character_id', activeChar)
-    const { data, count } = await query.order('created_at', { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
+    const { data, count, error } = await query.order('created_at', { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
     if (read !== latestRead.current) return
+    if (error) { setReadError('记录读取失败，请刷新重试。'); setLoading(false); return }
+    setReadError('')
     setTotal(count || 0)
     const lastPage = Math.max(1, Math.ceil((count || 0) / PAGE_SIZE))
     if (page > lastPage) { setPage(lastPage); return }
@@ -131,7 +146,7 @@ export default function Records() {
     setLoading(false)
   }
 
-  function selectChar(id: string | null) { setActiveChar(id); setPage(1) }
+  function selectChar(id: string | null) { setActiveChar(id); setPage(1); setView('records') }
 
   // ---------- 图片上传 / 排序 ----------
   async function handleImageUpload(files: FileList | null) {
@@ -195,6 +210,7 @@ export default function Records() {
       const { data, error } = await supabase.from('characters').insert({ name: newCharName.trim(), avatar: newCharAvatar || null }).select().single()
       if (error || !data) throw error || new Error('Unable to save character')
       setCharacters(prev => [...prev, data as Character])
+      setCharacterCounts(previous => ({ ...previous, [data.id]: 0 }))
       setNewRecord(prev => ({ ...prev, character_id: data.id }))
       setCharacterSearch('')
       setNewCharName(''); setNewCharAvatar(''); setCharDropdownOpen(false); setAddingCharacter(false)
@@ -236,10 +252,11 @@ export default function Records() {
   }
 
   async function saveRecord() {
-    if (!newRecord.title || !newRecord.character_id) return
+    if (!newRecord.title.trim() || !newRecord.character_id || saving) return
     setSaving(true)
     const images = draftImages.filter(img => !img.uploading && img.url).map(img => ({ url: img.url, caption: img.caption || '' }))
-    await supabase.from('theater_records').insert({
+    setSaveError('')
+    const { error } = await supabase.from('theater_records').insert({
       character_id: newRecord.character_id,
       card_id: newRecord.card_id || null,
       title: newRecord.title,
@@ -247,12 +264,14 @@ export default function Records() {
       content: newRecord.content || null,
       images,
     })
+    if (error) { setSaveError('记录未保存，请稍后重试。'); setSaving(false); return }
     setNewRecord({ character_id: '', card_id: '', title: '', extra_tag: '', content: '' })
     setDraftImages([])
     setCardSearch('')
     setShowAdd(false)
     setSaving(false)
     fetchRecords()
+    fetchCharacters()
     fetchCardOptions()
   }
 
@@ -276,65 +295,35 @@ export default function Records() {
     {matchingCharacters.length === 0 && <p className={notesStyles.filterHint}>没有找到角色</p>}
   </>
 
-  function ThumbGrid({ images, recordId }: { images: ImageItem[]; recordId: string }) {
-    if (!images || images.length === 0) return null
-    const shown = images.slice(0, 3)
-    const remaining = images.length - 3
-    return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '6px', marginTop: '12px' }}>
-        {shown.map((img, i) => {
-          const isLast = i === 2 && remaining > 0
-          return (
-            <div key={i} onClick={e => { e.stopPropagation(); router.push(`/notes/records/${recordId}`) }}
-              style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', background: '#f0f0ee' }}>
-              <PrivateTheaterImage src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              {isLast && (
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '14px', fontWeight: 500 }}>+{remaining}</div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
-
+  const selectedCharacter = characters.find(character => character.id === activeChar)
   return (
-    <div className={notesStyles.page}>
+    <div className={social.page}>
       <NotesNavigation active="records" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={activeChar ? 1 : 0} filterContent={characterPanel} />
-      <main className={notesStyles.main}>
-        <div className={notesStyles.heading}>
-          <h1>记录</h1>
-          <button type="button" className={notesStyles.addButton} aria-label="新增记录" onClick={() => setShowAdd(true)}><FiPlus size={23} /></button>
+      <main className={social.main}>
+        <RecordsProfile character={selectedCharacter} />
+        <div className={social.tabs} role="tablist" aria-label="记录与角色" onKeyDown={event => {
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+          event.preventDefault()
+          const next = event.key === 'Home' ? 'records' : event.key === 'End' ? 'characters' : view === 'records' ? 'characters' : 'records'
+          setView(next)
+          if (next === 'characters') { setActiveChar(null); setPage(1) }
+          document.getElementById(next === 'records' ? 'records-feed-tab' : 'records-characters-tab')?.focus()
+        }}>
+          <button id="records-feed-tab" type="button" role="tab" aria-label="记录" aria-controls="records-panel" tabIndex={view === 'records' ? 0 : -1} aria-selected={view === 'records'} onClick={() => setView('records')}><FiFileText size={23} /></button>
+          <button id="records-characters-tab" type="button" role="tab" aria-label="角色列表" aria-controls="records-panel" tabIndex={view === 'characters' ? 0 : -1} aria-selected={view === 'characters'} onClick={() => { setView('characters'); setActiveChar(null); setPage(1) }}><FiUsers size={23} /></button>
         </div>
-
-        {loading ? (
-          <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>加载中...</div>
-        ) : records.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#ccc', padding: '60px 0', fontSize: '13px' }}>暂无记录</div>
-        ) : (
-          <div className={notesStyles.cardGrid}>
-            {records.map(r => (
-              <div key={r.id} className="card-item" onClick={() => router.push(`/notes/records/${r.id}`)}
-                style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f0f0ee', padding: '20px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', breakInside: 'avoid', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  {r.characters?.avatar ? <PrivateTheaterImage src={r.characters.avatar} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} /> : <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#e8e8e6' }} />}
-                  <span style={{ fontSize: '13px', color: '#666' }}>{r.characters?.name || '未命名'}</span>
-                </div>
-                <div style={{ fontSize: '15px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px' }}>{r.title}</div>
-                {r.extra_tag && <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>{r.extra_tag}</div>}
-                {r.content && (
-                  <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, overflow: 'hidden', maxHeight: '48px', maskImage: 'linear-gradient(to bottom,black 50%,transparent)', WebkitMaskImage: 'linear-gradient(to bottom,black 50%,transparent)' }}>
-                    {stripMarkdown(r.content)}
-                  </div>
-                )}
-                <ThumbGrid images={r.images || []} recordId={r.id} />
-                <div style={{ fontSize: '11px', color: '#bbb', marginTop: '12px' }}>{new Date(r.created_at).toLocaleDateString('zh-CN')}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <NotesPagination page={page} totalPages={totalPages} onChange={setPage} />
+        <section id="records-panel" role="tabpanel" aria-labelledby={view === 'records' ? 'records-feed-tab' : 'records-characters-tab'}>
+        <div className={social.feedTools}>{activeChar ? <button type="button" className={social.backToAll} onClick={() => selectChar(null)}><FiChevronLeft size={15} />全部记录</button> : <span>{view === 'records' ? `${total} notes` : `${characters.length} characters`}</span>}<button type="button" aria-label={view === 'records' ? '新增记录' : '新增角色'} onClick={() => { if (view === 'records') { setNewRecord(previous => ({ ...previous, character_id: activeChar ?? previous.character_id })); setShowAdd(true) } else { setAddingCharacter(true); setNewCharError('') } }}><FiPlus size={23} /></button></div>
+        {view === 'characters' ? <>
+          {addingCharacter ? <div style={{ padding: '0 24px 24px' }}>{characterPanel}</div> : <div className={social.characterList}>{characters.filter(character => character.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())).map(character => <button type="button" className={social.characterRow} key={character.id} onClick={() => selectChar(character.id)}><span className={social.postAvatar}>{character.avatar ? <PrivateTheaterImage src={character.avatar} alt="" /> : <FiUser size={20} />}</span><strong>{character.name}</strong><small>{characterCounts[character.id] ?? '—'} notes</small></button>)}</div>}
+          {characters.length === 0 && !addingCharacter && <p className={social.empty}>还没有角色，点击 + 添加</p>}
+        </> : readError ? <p role="alert" className={social.empty}>{readError}</p> : loading ? <p role="status" className={social.empty}>Loading...</p> : records.length === 0 ? <p className={social.empty}>还没有记录</p> : <div className={social.feed}>{records.map(record => <Link href={`/notes/records/${record.id}${activeChar ? `?character=${encodeURIComponent(activeChar)}` : ''}`} className={social.post} key={record.id}>
+          <span className={social.postAvatar}>{record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" /> : <FiUser size={20} />}</span>
+          <div><div className={social.postHead}><strong>{record.characters?.name || '未命名'}</strong><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time></div><h2>{record.title}</h2>{record.extra_tag && <div className={social.extraTag}>{record.extra_tag}</div>}{record.content && <p>{stripMarkdown(record.content)}</p>}
+          {Boolean(record.images?.length) && <div className={social.thumbnails}>{record.images!.slice(0,3).map((image,i) => <div key={i}><PrivateTheaterImage src={image.url} alt={image.caption || `记录图片 ${i+1}`} />{i === 2 && record.images!.length > 3 && <span>+{record.images!.length-3}</span>}</div>)}</div>}
+          </div></Link>)}</div>}
+        {view === 'records' && <NotesPagination page={page} totalPages={totalPages} onChange={setPage} />}
+        </section>
       </main>
 
       {/* 新增记录弹窗 */}
@@ -389,8 +378,8 @@ export default function Records() {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>副标题</label>
-                <input value={newRecord.extra_tag} onChange={e => setNewRecord(p => ({ ...p, extra_tag: e.target.value }))} placeholder="副标题"
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标签</label>
+                <input value={newRecord.extra_tag} onChange={e => setNewRecord(p => ({ ...p, extra_tag: e.target.value }))} placeholder="标签"
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
               </div>
 
@@ -446,6 +435,7 @@ export default function Records() {
               </div>
             </div>
 
+            {saveError && <p role="alert" className={social.error}>{saveError}</p>}
             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
               <button onClick={() => { setShowAdd(false); setCharDropdownOpen(false); setCardDropdownOpen(false); setDraftImages([]) }}
                 style={{ flex: 1, padding: '11px', borderRadius: '10px', border: '1px solid #ebebeb', background: '#fff', color: '#666', fontSize: '13px', cursor: 'pointer' }}>取消</button>
