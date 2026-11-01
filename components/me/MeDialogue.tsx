@@ -98,7 +98,7 @@ export default function MeDialogue({ content, view, editor }: { content: MeConte
     <header className={styles.stageHeading}><span className={styles.eyebrow}>ABOUT ME</span><h2>Nice to meet you.</h2><span className={styles.hatch} aria-hidden="true" /></header>
     <div className={styles.portrait} aria-hidden={editor ? undefined : true} {...editable(editor, { kind: 'image', field: 'portraitUrl' }, '立绘')}><img src={siteAsset(content.portraitUrl)} alt="" width={661} height={1504} fetchPriority="high" /></div>
     <div className={styles.choices} aria-label="选择想聊的话题" hidden={topic !== undefined}>
-      {content.topics.map((item, index) => <button key={item.id} ref={index === 0 ? firstChoice : undefined} type="button" onClick={() => choose(item.id)}><span className={styles.diamond} aria-hidden="true" /><span>{item.label}</span></button>)}
+      {content.topics.map((item, index) => <button key={item.id} ref={index === 0 ? firstChoice : undefined} type="button" onClick={() => choose(item.id)}><span>{item.label}</span></button>)}
     </div>
     <div className={styles.dialogue}>
       <span className={styles.nameplate} lang="ja">{content.profile.alias}</span>

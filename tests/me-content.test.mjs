@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaultMeContent, meMoments, parseMeContent, ME_CONFIG_KEY } from '../components/me/content.ts';
+import { defaultMeContent, meMoments, mePhotoSlots, parseMeContent, ME_CONFIG_KEY } from '../components/me/content.ts';
 import { CONTENT_TABLES } from '../utils/migration/backup.ts';
 import { queryContent, mutateContent } from '../utils/migration/query.ts';
 
@@ -80,4 +80,16 @@ test('new image settings reject unsafe URLs and oversized albums without changin
     { moments: Array.from({ length: 13 }, () => ({ kind: 'quote', value: 'x' })) },
   ]) assert.throws(() => parseMeContent({ ...structuredClone(defaultMeContent), ...change }));
   assert.equal(Object.hasOwn(defaultMeContent, 'moments'), false);
+});
+
+test('photo wall keeps three independent slots and empty slots survive saving without avatar substitution', () => {
+  const content = structuredClone(defaultMeContent);
+  content.moments = [{ kind: 'image', value: '/photos/first.webp' }, { kind: 'image', value: '' }, { kind: 'image', value: '/photos/third.webp' }];
+  const saved = parseMeContent(JSON.stringify(content));
+  assert.deepEqual(mePhotoSlots(saved), ['/photos/first.webp', '', '/photos/third.webp']);
+  saved.moments = [];
+  assert.deepEqual(mePhotoSlots(parseMeContent(saved)), ['', '', '']);
+  saved.moments = Array.from({ length: 4 }, (_, i) => ({ kind: 'image', value: `/photos/${i}.webp` }));
+  assert.deepEqual(mePhotoSlots(saved), ['/photos/0.webp', '/photos/1.webp', '/photos/2.webp']);
+  assert.equal(saved.moments.length, 4);
 });

@@ -2,7 +2,7 @@
 .loadState h1{font-size:25px;font-weight:400}.loadState a{color:#7b7e89;font-size:13px;text-decoration:underline;text-underline-offset:5px}
 .loadState button{min-height:44px;padding:8px 20px;border:1px solid #d0d3dc;border-radius:9px;cursor:pointer}
 .dialog{position:fixed;inset:0;margin:auto;width:min(460px,calc(100% - 32px));max-height:calc(100dvh - 40px);padding:0;border:1px solid #ffffffa6;border-radius:26px;background:#f8f9fbbd;color:#343641;box-shadow:0 24px 90px #292d4326,inset 0 1px 0 #ffffffd9;backdrop-filter:blur(28px) saturate(.85);-webkit-backdrop-filter:blur(28px) saturate(.85);font-family:var(--font-geist-sans),'PingFang SC','Microsoft YaHei',sans-serif}
-.dialog::backdrop{background:#292d3e24;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.dialog::backdrop{background:#e7e9f1a6;backdrop-filter:blur(42px) saturate(.55);-webkit-backdrop-filter:blur(42px) saturate(.55)}
 .dialog form{display:flex;flex-direction:column;max-height:calc(100dvh - 42px)}
 .dialogHeader{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:18px 18px 8px 24px;flex-shrink:0}
 .dialogHeader h2{font-size:18px;font-weight:400;letter-spacing:.06em}
