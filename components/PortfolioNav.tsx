@@ -20,6 +20,7 @@ const extraLinks = [
 ];
 const adminLinks = [
   { href: '/admin', label: '基本设置' },
+  { href: '/admin/me', label: '关于我' },
   { href: '/admin/music', label: '音乐' },
   { href: '/admin/portfolio', label: '作品集' },
   { href: '/admin/gallery', label: '图集' },

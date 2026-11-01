@@ -34,4 +34,56 @@ export const topics = [
   },
 ] as const;
 
-export type TopicId = typeof topics[number]['id'];
+export type MeContent = {
+  profile: {
+    name: string; alias: string; quote: string[]; bio: string; tags: string[];
+    note: string; noteReply: string; favorites: string; about: string;
+  };
+  avatarUrl: string;
+  portraitUrl: string;
+  greeting: string[];
+  topics: { id: string; label: string; pages: string[][] }[];
+};
+
+export const ME_CONFIG_KEY = 'me_page';
+export const defaultMeContent: MeContent = {
+  profile: { ...profile, noteReply: '收藏喜欢，也记录自己。',
+    favorites: '故事、音乐、角色与创作。\n让人惦记很久的世界，和偶尔冒出来的一点灵感。',
+    about: '想按自己的步调生活，也想好好保存那些喜欢的瞬间。\n关于我的故事，还在慢慢补完。' },
+  avatarUrl: '/images/me/yuria-avatar.webp', portraitUrl: '/images/me/yuria-portrait.webp',
+  greeting: [...greeting], topics: topics.map(topic => ({ ...topic, pages: topic.pages.map(page => [...page]) })),
+};
+
+const record = (value: unknown): value is Record<string, unknown> => Boolean(value && typeof value === 'object' && !Array.isArray(value));
+const text = (value: unknown, max: number): value is string => typeof value === 'string' && value.length <= max;
+const lines = (value: unknown, max: number, length: number): value is string[] => Array.isArray(value) && value.length <= max && value.every(item => text(item, length));
+function imageUrl(value: unknown): value is string {
+  if (!text(value, 2048)) return false;
+  if (/^\/(?!\/)[^\\\s]*$/.test(value)) return true;
+  try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password; } catch { return false; }
+}
+
+export function parseMeContent(raw: unknown): MeContent {
+  if (raw == null) return structuredClone(defaultMeContent);
+  let value: unknown = raw;
+  if (typeof value === 'string') value = JSON.parse(value);
+  if (!record(value) || !record(value.profile)) throw new Error('关于我内容格式无效');
+  const p = value.profile;
+  if (!text(p.name, 60) || !p.name.trim() || !text(p.alias, 60) || !p.alias.trim() ||
+    !lines(p.quote, 4, 100) || !text(p.bio, 200) || !lines(p.tags, 8, 24) ||
+    !text(p.note, 600) || !text(p.noteReply, 100) || !text(p.favorites, 1500) || !text(p.about, 1500) ||
+    !imageUrl(value.avatarUrl) || !imageUrl(value.portraitUrl) || !lines(value.greeting, 5, 180) || !value.greeting.some(line => line.trim())) {
+    throw new Error('请检查名称、文字长度和图片地址（使用 HTTPS 或站内路径）');
+  }
+  if (!Array.isArray(value.topics) || value.topics.length > 8) throw new Error('最多设置 8 个话题');
+  const ids = new Set<string>();
+  for (const topic of value.topics) {
+    if (!record(topic) || !text(topic.id, 80) || !topic.id || ids.has(topic.id) || !text(topic.label, 80) || !topic.label.trim() ||
+      !Array.isArray(topic.pages) || topic.pages.length < 1 || topic.pages.length > 8 ||
+      topic.pages.some(page => !lines(page, 5, 180) || !page.some(line => line.trim()) || page.join('').length > 400)) {
+      throw new Error('每个话题需要标题和 1–8 页对白，每页最多 400 字');
+    }
+    ids.add(topic.id);
+  }
+  return structuredClone(value) as MeContent;
+}

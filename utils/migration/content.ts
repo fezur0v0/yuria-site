@@ -38,7 +38,7 @@ export function visibleContent(document: ContentDocument, owner: boolean): Conte
   copy.tables.theater_cards = [];
   copy.tables.theater_records = [];
   copy.tables.characters = [];
-  copy.tables.site_config = copy.tables.site_config.filter(row => ['cover_url', 'signature'].includes(String(row.key)));
+  copy.tables.site_config = copy.tables.site_config.filter(row => ['cover_url', 'signature', 'me_page'].includes(String(row.key)));
   return copy;
 }
 

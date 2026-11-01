@@ -1,60 +1,100 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { FiArrowDown, FiClock, FiCornerUpLeft, FiX } from 'react-icons/fi';
+import { useEffect, useRef, useState, useSyncExternalStore, type Ref } from 'react';
+import { BsEjectFill } from 'react-icons/bs';
 import { siteAsset } from '@/utils/siteAssets';
-import { greeting, topics, type TopicId } from './content';
+import type { MeContent } from './content';
 import styles from './me.module.css';
 
-type Entry = { topic: string; lines: readonly string[] };
+const desktopQuery = '(min-width: 1024px)';
+function subscribeDesktop(update: () => void) {
+  const media = window.matchMedia(desktopQuery);
+  media.addEventListener('change', update);
+  return () => media.removeEventListener('change', update);
+}
+const isDesktop = () => window.matchMedia(desktopQuery).matches;
+const serverDesktop = () => false;
 
-export default function MeDialogue() {
-  const [topicId, setTopicId] = useState<TopicId | null>(null);
+function DialogueMessage({ lines, active, canAdvance, onAdvance, nextRef }: {
+  lines: string[]; active: boolean; canAdvance: boolean; onAdvance: () => void; nextRef: Ref<HTMLButtonElement>;
+}) {
+  const characters = Array.from(lines.join('\n'));
+  const total = characters.length;
+  const [visible, setVisible] = useState(0);
+  const finished = useRef(false);
+  const body = useRef<HTMLButtonElement>(null);
+  const typing = visible < total;
+
+  useEffect(() => {
+    if (!active) return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frame = 0;
+    const complete = () => { finished.current = true; cancelAnimationFrame(frame); setVisible(total); };
+    const onMotion = () => { if (media.matches) complete(); };
+    if (media.matches) complete();
+    else {
+      const start = performance.now();
+      const tick = (now: number) => {
+        if (finished.current) return;
+        const count = Math.min(total, Math.floor((now - start) / 32));
+        setVisible(count);
+        if (count < total) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }
+    media.addEventListener('change', onMotion);
+    return () => { cancelAnimationFrame(frame); media.removeEventListener('change', onMotion); };
+  }, [active, total]);
+
+  function next() {
+    if (typing) { finished.current = true; setVisible(total); }
+    else if (canAdvance) { onAdvance(); body.current?.scrollTo({ top: 0 }); }
+  }
+
+  return <>
+    <button ref={body} type="button" className={styles.dialogueText} onClick={next} aria-label={typing ? '点击显示完整对白' : '当前对白；点击继续'} disabled={!typing && !canAdvance}>
+      <span aria-hidden="true" className={styles.typewriterText}><span>{characters.slice(0, visible).join('')}</span><span className={styles.unrevealed}>{characters.slice(visible).join('')}</span></span>
+      <span className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{typing ? '' : lines.join('\n')}</span>
+    </button>
+    <div className={styles.dialogueActions}><button type="button" ref={nextRef} onClick={next} disabled={!typing && !canAdvance} aria-label={typing ? '显示完整对白' : '下一步对话'}><span>NEXT</span><BsEjectFill className={styles.nextIcon} size={20} aria-hidden="true" /></button></div>
+  </>;
+}
+
+export default function MeDialogue({ content, view }: { content: MeContent; view: 'profile' | 'dialogue' }) {
+  const [topicId, setTopicId] = useState<string | null>(null);
   const [step, setStep] = useState(0);
-  const [history, setHistory] = useState<Entry[]>([{ topic: '初次见面', lines: greeting }]);
-  const dialog = useRef<HTMLDialogElement>(null);
-  const historyButton = useRef<HTMLButtonElement>(null);
-  const dialogueButton = useRef<HTMLButtonElement>(null);
+  const nextButton = useRef<HTMLButtonElement>(null);
   const firstChoice = useRef<HTMLButtonElement>(null);
-  const topic = topics.find(item => item.id === topicId);
-  const lines = topic ? topic.pages[step] : greeting;
-  const hasNext = topic ? step < topic.pages.length - 1 : false;
+  const desktop = useSyncExternalStore(subscribeDesktop, isDesktop, serverDesktop);
+  const active = desktop || view === 'dialogue';
+  const topic = content.topics.find(item => item.id === topicId);
+  const lines = topic ? topic.pages[step] : content.greeting;
 
-  function choose(id: TopicId) {
-    const selected = topics.find(item => item.id === id)!;
+  function choose(id: string) {
     setTopicId(id); setStep(0);
-    setHistory(previous => [...previous, { topic: selected.label, lines: selected.pages[0] }]);
-    requestAnimationFrame(() => dialogueButton.current?.focus({ preventScroll: true }));
+    requestAnimationFrame(() => nextButton.current?.focus({ preventScroll: true }));
   }
 
   function advance() {
-    if (topic && hasNext) {
-      const next = step + 1;
-      setStep(next);
-      setHistory(previous => [...previous, { topic: topic.label, lines: topic.pages[next] }]);
-    } else {
+    if (topic && step < topic.pages.length - 1) {
+      setStep(previous => previous + 1);
+      requestAnimationFrame(() => nextButton.current?.focus({ preventScroll: true }));
+    }
+    else {
       setTopicId(null); setStep(0);
       requestAnimationFrame(() => firstChoice.current?.focus({ preventScroll: true }));
     }
   }
 
-  return <section id="me-dialogue" className={styles.stage} aria-label="和悠里亜聊聊">
+  return <section id="me-dialogue" className={styles.stage} aria-label={`和${content.profile.alias}聊聊`}>
     <header className={styles.stageHeading}><span className={styles.eyebrow}>ABOUT ME / CHAPTER 01</span><h2>Nice to meet you.</h2><span className={styles.hatch} aria-hidden="true" /></header>
-    <div className={styles.portrait} aria-hidden="true"><img src={siteAsset('/images/me/yuria-portrait.webp')} alt="" width={661} height={1504} fetchPriority="high" /></div>
+    <div className={styles.portrait} aria-hidden="true"><img src={siteAsset(content.portraitUrl)} alt="" width={661} height={1504} fetchPriority="high" /></div>
     <div className={styles.choices} aria-label="选择想聊的话题" hidden={topic !== undefined}>
-      {topics.map((item, index) => <button key={item.id} ref={index === 0 ? firstChoice : undefined} type="button" onClick={() => choose(item.id)}><span className={styles.diamond} aria-hidden="true" /><span>{item.label}</span></button>)}
+      {content.topics.map((item, index) => <button key={item.id} ref={index === 0 ? firstChoice : undefined} type="button" onClick={() => choose(item.id)}><span className={styles.diamond} aria-hidden="true" /><span>{item.label}</span></button>)}
     </div>
     <div className={styles.dialogue}>
-      <span className={styles.nameplate} lang="ja">悠里亜</span>
-      <div key={`${topicId}-${step}`} className={styles.dialogueText} role="status" aria-live="polite" aria-atomic="true">{lines.map(line => <p key={line}>{line}</p>)}</div>
-      <div className={styles.dialogueActions}>
-        <button type="button" ref={historyButton} onClick={() => dialog.current?.showModal()} aria-label="查看对话记录"><FiClock size={15} aria-hidden="true" /><span>对话记录</span></button>
-        <button type="button" ref={dialogueButton} onClick={advance} disabled={!topic} aria-label={hasNext ? '继续对话' : '返回话题'}>{topic ? <><span>{hasNext ? '继续' : '再聊点别的'}</span>{hasNext ? <FiArrowDown size={17} aria-hidden="true" /> : <FiCornerUpLeft size={17} aria-hidden="true" />}</> : <span className={styles.chooseHint}>选择话题，慢慢认识我。</span>}</button>
-      </div>
+      <span className={styles.nameplate} lang="ja">{content.profile.alias}</span>
+      <DialogueMessage key={`${topicId}-${step}-${active}`} lines={lines} active={active} canAdvance={Boolean(topic)} onAdvance={advance} nextRef={nextButton} />
     </div>
-    <dialog ref={dialog} className={styles.history} aria-labelledby="me-history-title" onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }} onClose={() => historyButton.current?.focus({ preventScroll: true })}>
-      <div className={styles.historyHeading}><h2 id="me-history-title">对话记录</h2><button type="button" aria-label="关闭对话记录" onClick={() => dialog.current?.close()} autoFocus><FiX size={20} aria-hidden="true" /></button></div>
-      <div className={styles.historyBody}>{history.map((entry, index) => <article key={index}><span>{entry.topic}</span><strong lang="ja">悠里亜</strong>{entry.lines.map(line => <p key={line}>{line}</p>)}</article>)}</div>
-    </dialog>
   </section>;
 }

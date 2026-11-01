@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
 import MePage from '@/components/me/MePage';
+import { createClient } from '@/utils/content/server';
+import { defaultMeContent, ME_CONFIG_KEY, parseMeContent } from '@/components/me/content';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'me · yuria / 悠里亜',
@@ -7,6 +11,12 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://www.yuria.xin/me' },
 };
 
-export default function Page() {
-  return <MePage />;
+export default async function Page() {
+  let content = defaultMeContent;
+  try {
+    const client = await createClient();
+    const { data, error } = await client.from('site_config').select('value').eq('key', ME_CONFIG_KEY).limit(1);
+    if (!error) content = parseMeContent(data?.[0]?.value);
+  } catch { /* Keep the introduction available if saved content cannot be read. */ }
+  return <MePage content={content} />;
 }
