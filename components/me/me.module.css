@@ -303,3 +303,39 @@
  .choices{left:50%;right:auto;transform:translateX(-50%);width:min(78%,300px)}
  .choices button{width:100%;padding-inline:14px;text-align:center;justify-content:center}
 }
+
+/* Keep the cover seam opaque and the social profile compact. */
+.phone{background:#fff;box-shadow:0 0 0 3px #c2c3c780,0 0 0 5px #e5e5e980,0 22px 52px -28px #33364e44}
+.phoneContent,.profileSheet{background:#fff}
+.profileSheet{border-radius:24px 24px 0 0}
+.avatar{border-color:#fff;background:#fff}
+.avatarEdit{border-color:#fff}
+.bio{padding:13px 24px 0;text-align:center}
+.quote{font-size:14px;line-height:1.75;letter-spacing:.02em}
+.bioLine{font-size:12px;line-height:1.7;margin:9px 0}
+.tags{justify-content:center;gap:6px}
+.tags li{font-size:11px;padding:3px 9px;background:#fff;border-color:#e3e3e3}
+.profileActions{gap:8px;padding:18px 24px 22px}
+.profileActions>a,.profileActions>button{max-width:none;min-height:34px;border:0;border-radius:8px;background:#efefef;color:#171717;font-size:13px;font-weight:600;gap:7px}
+.profileActions>a:hover,.profileActions>button:hover{background:#e3e3e3}
+.profileText{min-height:0;padding:14px 24px 0;font-size:13px;line-height:1.8}
+.profileText h2{font-size:17px;margin:0 0 6px}
+.profileText p{margin:0}
+.profileBottom{padding-top:18px}
+.coverEditIcon,.editBackground{position:absolute;left:14px;right:auto;top:14px;display:grid;place-items:center;width:40px;height:40px;min-height:40px;padding:0;border:1px solid #ffffffb3;border-radius:10px;background:#ffffffc9;backdrop-filter:blur(12px);color:#5f6371;box-sizing:border-box}
+.coverEditIcon{pointer-events:none}
+.editBackground{top:68px;z-index:10}
+.portrait{overflow:visible}
+.sceneBackground{mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent),linear-gradient(to bottom,transparent,#000 12%,#000 88%,transparent);mask-composite:intersect;-webkit-mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent),linear-gradient(to bottom,transparent,#000 12%,#000 88%,transparent);-webkit-mask-composite:source-in}
+@media(min-width:1024px){.choices{margin-left:26px}}
+@media(max-width:1023px){
+ .phone{background:transparent;box-shadow:none}
+ .profileText{padding:14px 24px 0;font-size:13px}
+ .profileText h2{font-size:17px}
+ .profileBottom{padding-top:18px}
+ .profileActions{padding:18px 24px 22px}
+ .quote{font-size:14px}
+ .bio{padding:13px 24px 0}
+ .portrait{overflow:visible}
+ .editBackground{left:18px;right:auto;top:max(68px,calc(env(safe-area-inset-top) + 64px))}
+}
