@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type Ref } from 'react';
 import { BsEjectFill } from 'react-icons/bs';
+import { FiImage } from 'react-icons/fi';
 import { siteAsset } from '@/utils/siteAssets';
 import type { MeContent } from './content';
+import { editable, type MeEditor } from './editing';
 import styles from './me.module.css';
 
 const desktopQuery = '(min-width: 1024px)';
@@ -60,22 +62,26 @@ function DialogueMessage({ lines, active, canAdvance, onAdvance, nextRef }: {
   </>;
 }
 
-export default function MeDialogue({ content, view }: { content: MeContent; view: 'profile' | 'dialogue' }) {
+export default function MeDialogue({ content, view, editor }: { content: MeContent; view: 'profile' | 'dialogue'; editor?: MeEditor }) {
   const [topicId, setTopicId] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const nextButton = useRef<HTMLButtonElement>(null);
   const firstChoice = useRef<HTMLButtonElement>(null);
   const desktop = useSyncExternalStore(subscribeDesktop, isDesktop, serverDesktop);
   const active = desktop || view === 'dialogue';
-  const topic = content.topics.find(item => item.id === topicId);
-  const lines = topic ? topic.pages[step] : content.greeting;
+  const selectedId = editor ? editor.dialogue.topicId : topicId;
+  const topic = content.topics.find(item => item.id === selectedId);
+  const pageIndex = Math.min(editor ? editor.dialogue.pageIndex : step, topic ? topic.pages.length - 1 : 0);
+  const lines = topic ? topic.pages[pageIndex] : content.greeting;
 
   function choose(id: string) {
+    if (editor) { editor.onEdit({ kind: 'dialogue', topicId: id, pageIndex: 0 }); return; }
     setTopicId(id); setStep(0);
     requestAnimationFrame(() => nextButton.current?.focus({ preventScroll: true }));
   }
 
   function advance() {
+    if (editor) { editor.onPreviewDialogue(topic && pageIndex < topic.pages.length - 1 ? { topicId: topic.id, pageIndex: pageIndex + 1 } : { pageIndex: 0 }); return; }
     if (topic && step < topic.pages.length - 1) {
       setStep(previous => previous + 1);
       requestAnimationFrame(() => nextButton.current?.focus({ preventScroll: true }));
@@ -87,14 +93,16 @@ export default function MeDialogue({ content, view }: { content: MeContent; view
   }
 
   return <section id="me-dialogue" className={styles.stage} aria-label={`和${content.profile.alias}聊聊`}>
+    {content.backgroundUrl && <div className={styles.sceneBackground} aria-hidden="true" style={{ backgroundImage: `url(${JSON.stringify(siteAsset(content.backgroundUrl))})` }} />}
+    {editor && <button type="button" className={styles.editBackground} onClick={() => editor.onEdit({ kind: 'image', field: 'backgroundUrl' })} disabled={editor.busy}><FiImage size={16} aria-hidden="true" /><span>背景</span></button>}
     <header className={styles.stageHeading}><span className={styles.eyebrow}>ABOUT ME</span><h2>Nice to meet you.</h2><span className={styles.hatch} aria-hidden="true" /></header>
-    <div className={styles.portrait} aria-hidden="true"><img src={siteAsset(content.portraitUrl)} alt="" width={661} height={1504} fetchPriority="high" /></div>
+    <div className={styles.portrait} aria-hidden={editor ? undefined : true} {...editable(editor, { kind: 'image', field: 'portraitUrl' }, '立绘')}><img src={siteAsset(content.portraitUrl)} alt="" width={661} height={1504} fetchPriority="high" /></div>
     <div className={styles.choices} aria-label="选择想聊的话题" hidden={topic !== undefined}>
       {content.topics.map((item, index) => <button key={item.id} ref={index === 0 ? firstChoice : undefined} type="button" onClick={() => choose(item.id)}><span className={styles.diamond} aria-hidden="true" /><span>{item.label}</span></button>)}
     </div>
     <div className={styles.dialogue}>
       <span className={styles.nameplate} lang="ja">{content.profile.alias}</span>
-      <DialogueMessage key={`${topicId}-${step}-${active}`} lines={lines} active={active} canAdvance={Boolean(topic)} onAdvance={advance} nextRef={nextButton} />
+      {editor ? <><div className={styles.dialogueText} {...editable(editor, { kind: 'dialogue', topicId: topic?.id, pageIndex }, '对白')}><span className={styles.typewriterText}>{lines.join('\n')}</span></div><div className={styles.dialogueActions}><button type="button" onClick={advance} disabled={!topic} aria-label="预览下一页对白"><span>NEXT</span><BsEjectFill className={styles.nextIcon} size={20} aria-hidden="true" /></button></div></> : <DialogueMessage key={`${topicId}-${step}-${active}`} lines={lines} active={active} canAdvance={Boolean(topic)} onAdvance={advance} nextRef={nextButton} />}
     </div>
   </section>;
 }

@@ -7,7 +7,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isAuthPage = pathname === '/admin/login' || pathname === '/admin/unauthorized';
   const isEditorPage = /^\/admin\/portfolio\/(new|.+\/edit)$/.test(pathname);
 
-  if (isAuthPage || isEditorPage) return <>{children}</>;
+  if (isAuthPage || isEditorPage || pathname === '/admin/me') return <>{children}</>;
 
   return <div className="min-h-screen bg-[#fafaf8]">
     <AdminNav key={pathname} />

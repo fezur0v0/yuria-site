@@ -216,3 +216,21 @@
   .portrait img, .dialogueText { animation: none; }
   .choices button { transition: none; }
 }
+.sceneBackground { position: absolute; inset: 0; z-index: -3; pointer-events: none; background-size: cover; background-position: center; opacity: .4; mask-image: radial-gradient(ellipse at center, #000 35%, transparent 77%); }
+.editing [data-me-edit] { cursor: pointer; outline: 1px dashed #767a972e; outline-offset: 4px; min-height: 20px; }
+.editing [data-me-edit]:hover, .editing [data-me-edit]:focus-visible { outline: 1px solid #6c709fa6; background-color: #73799d08; }
+.editing .portrait { pointer-events: auto; }
+.editActions { display: flex; align-items: center; gap: 2px; margin: -10px -10px -10px 0; }
+.editActions button { display: grid; place-items: center; width: 38px; min-height: 44px; color: #31333c; background: transparent; border: 0; border-radius: 8px; }
+.editActions button:disabled, .editorMobileNav button:disabled { opacity: .35; }
+.addMoment { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 7px; border: 1px dashed #c1c5d2; background: #f5f6fa; color: #787c8b; font-size: 12px; }
+.editBackground { display: inline-flex; align-items: center; gap: 7px; position: absolute; top: 4px; right: 0; z-index: 3; min-height: 44px; padding: 8px 12px; border: 1px solid #cdd1dd; border-radius: 10px; color: #5f6371; background: #ffffffb3; backdrop-filter: blur(12px); font-size: 13px; }
+.editorMobileNav { position: fixed; top: 0; left: 0; z-index: 50; width: 100%; height: 64px; padding: 0 12px 0 22px; display: flex; align-items: center; justify-content: space-between; background: #ffffffa8; backdrop-filter: blur(20px); color: var(--ink); }
+.editorMobileNav > a { font: 19px Georgia, serif; letter-spacing: .04em; }
+.editorMobileNav > div { display: flex; gap: 0; }
+.editorMobileNav button { width: 42px; min-height: 44px; display: grid; place-items: center; background: transparent; border: 0; }
+.editorMobileNav button[aria-pressed='false'] { opacity: .4; }
+.editSpinner { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 1023px) { .editBackground { top: 16px; right: 20px; } }
+@media (prefers-reduced-motion: reduce) { .editSpinner { animation: none; } }

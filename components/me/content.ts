@@ -41,6 +41,8 @@ export type MeContent = {
   };
   avatarUrl: string;
   portraitUrl: string;
+  backgroundUrl?: string;
+  moments?: ({ kind: 'image'; value: string } | { kind: 'quote'; value: string })[];
   greeting: string[];
   topics: { id: string; label: string; pages: string[][] }[];
 };
@@ -85,5 +87,16 @@ export function parseMeContent(raw: unknown): MeContent {
     }
     ids.add(topic.id);
   }
+  if (value.backgroundUrl !== undefined && value.backgroundUrl !== '' && !imageUrl(value.backgroundUrl)) throw new Error('背景图片请使用 HTTPS 地址或站内路径');
+  if (value.moments !== undefined && (!Array.isArray(value.moments) || value.moments.length > 12 || value.moments.some(item => !record(item) ||
+    (item.kind === 'image' ? !imageUrl(item.value) : item.kind === 'quote' ? !text(item.value, 120) : true)))) throw new Error('相册最多放置 12 项，请检查图片地址和文字卡片');
   return structuredClone(value) as MeContent;
+}
+
+export function meMoments(content: MeContent): NonNullable<MeContent['moments']> {
+  return content.moments ?? [
+    { kind: 'image', value: content.avatarUrl },
+    { kind: 'quote', value: content.profile.quote.at(-1) ?? '' },
+    { kind: 'image', value: content.portraitUrl },
+  ];
 }

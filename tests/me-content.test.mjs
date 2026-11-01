@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaultMeContent, parseMeContent, ME_CONFIG_KEY } from '../components/me/content.ts';
+import { defaultMeContent, meMoments, parseMeContent, ME_CONFIG_KEY } from '../components/me/content.ts';
 import { CONTENT_TABLES } from '../utils/migration/backup.ts';
 import { queryContent, mutateContent } from '../utils/migration/query.ts';
 
@@ -46,4 +46,38 @@ test('optional introduction sections can be empty and topics can be removed', ()
   const content = structuredClone(defaultMeContent);
   content.profile.quote = []; content.profile.tags = []; content.profile.about = ''; content.topics = [];
   assert.deepEqual(parseMeContent(JSON.stringify(content)), content);
+});
+
+test('old saved introductions keep their content and derive the same three album tiles', () => {
+  const old = JSON.parse(JSON.stringify(defaultMeContent));
+  const parsed = parseMeContent(old);
+  assert.deepEqual(parsed, old);
+  assert.equal(Object.hasOwn(parsed, 'moments'), false);
+  assert.equal(Object.hasOwn(parsed, 'backgroundUrl'), false);
+  assert.deepEqual(meMoments(parsed), [
+    { kind: 'image', value: old.avatarUrl },
+    { kind: 'quote', value: old.profile.quote.at(-1) },
+    { kind: 'image', value: old.portraitUrl },
+  ]);
+});
+
+test('independent album items and scene background survive saves; removing all items stays empty', () => {
+  const content = structuredClone(defaultMeContent);
+  content.backgroundUrl = 'https://images.example/scene.webp';
+  content.moments = [{ kind: 'image', value: 'https://images.example/photo.jpg' }, { kind: 'quote', value: '自己的文字' }];
+  const saved = parseMeContent(JSON.stringify(content));
+  assert.deepEqual(saved, content);
+  assert.deepEqual(meMoments(saved), content.moments);
+  saved.moments = [];
+  assert.deepEqual(meMoments(parseMeContent(saved)), []);
+});
+
+test('new image settings reject unsafe URLs and oversized albums without changing the source', () => {
+  for (const change of [
+    { backgroundUrl: 'javascript:alert(1)' },
+    { moments: [{ kind: 'image', value: '//other.example/image.jpg' }] },
+    { moments: [{ kind: 'quote', value: 'x'.repeat(121) }] },
+    { moments: Array.from({ length: 13 }, () => ({ kind: 'quote', value: 'x' })) },
+  ]) assert.throws(() => parseMeContent({ ...structuredClone(defaultMeContent), ...change }));
+  assert.equal(Object.hasOwn(defaultMeContent, 'moments'), false);
 });
