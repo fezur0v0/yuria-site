@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { startAuth } from '@/utils/auth/flow'
+import NotesAccessNotice from './NotesAccessNotice'
 
 type Particle = {
   x: number
@@ -19,6 +20,8 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
   const [opacity, setOpacity] = useState(0)
   const [isOwner, setIsOwner] = useState(false)
   const [checked, setChecked] = useState(false)
+  const [checkFailed, setCheckFailed] = useState(false)
+  const [loginRequested, setLoginRequested] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [particles, setParticles] = useState<Particle[]>([])
@@ -45,9 +48,10 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
         })
         if (!response.ok) throw new Error('Identity check failed')
         const data = await response.json() as { isOwner?: boolean }
-        if (!cancelled) setIsOwner(data.isOwner === true)
+        if (typeof data.isOwner !== 'boolean') throw new Error('Invalid identity response')
+        if (!cancelled) setIsOwner(data.isOwner)
       } catch {
-        if (!cancelled) setIsOwner(false)
+        if (!cancelled) { setIsOwner(false); setCheckFailed(true); setError('暂时无法确认身份，请稍后重试或重新登录。') }
       } finally {
         clearTimeout(timeout)
         if (!cancelled) setChecked(true)
@@ -235,7 +239,8 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
       )}
 
       {/* 身份验证：开场动画和时序保持原样 */}
-      {phase === 'auth' && (
+      {phase === 'auth' && checked && !isOwner && !checkFailed && !loginRequested && <NotesAccessNotice onReturn={() => router.push('/')} onSwitchAccount={() => setLoginRequested(true)} />}
+      {phase === 'auth' && (isOwner || !checked || checkFailed || loginRequested) && (
         <div style={{
           animation: 'fadeInUp 0.5s ease forwards',
           background: 'rgba(20,20,20,0.92)',

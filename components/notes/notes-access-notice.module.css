@@ -1,0 +1,18 @@
+.notice{position:fixed;inset:0;margin:auto;width:min(510px,calc(100% - 36px));max-height:calc(100dvh - 36px);overflow-y:auto;box-sizing:border-box;border:1px solid #ffffff17;border-radius:18px;padding:44px 42px 30px;background:#171717;color:#ecebe7;text-align:center;box-shadow:0 30px 120px #0009;font-family:Arial,'PingFang SC','Microsoft YaHei',sans-serif;animation:appear .35s ease-out}
+.notice::backdrop{background:#0009;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.mark{display:block;margin:0 auto 22px;filter:invert(1);object-fit:contain}
+.eyebrow{margin:0 0 14px;color:#aaa8a3;font-size:10px;letter-spacing:.25em}
+.notice h1{margin:0 0 23px;font:400 clamp(27px,5vw,35px)/1.18 Georgia,'Times New Roman',serif;letter-spacing:-.025em}
+.description{font-size:13px;line-height:1.8;color:#a9a7a2}
+.description p{margin:0 0 15px}
+.description .reason{color:#e4e1da;font-family:Georgia,'Times New Roman',serif;font-size:15px}
+.actions{display:flex;flex-direction:column;gap:9px;margin-top:27px}
+.actions button{width:100%;min-height:44px;border:1px solid #ffffff24;border-radius:8px;padding:11px 18px;color:#161616;background:#e8e6df;font:500 13px Arial,sans-serif;cursor:pointer;transition:background .2s}
+.actions button:hover{background:#fff}
+.actions button+button{background:transparent;color:#ccc9c2}
+.actions button+button:hover{background:#ffffff0c}
+.actions button:focus-visible{outline:2px solid #ddd5c7;outline-offset:4px}
+.footnote{margin:21px 0 0;font-size:10px;line-height:1.7;color:#6f6d69}
+@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:480px){.notice{padding:34px 25px 25px}.mark{width:48px;height:48px;margin-bottom:19px}}
+@media(prefers-reduced-motion:reduce){.notice{animation:none}.actions button{transition:none}}
