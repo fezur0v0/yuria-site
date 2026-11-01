@@ -14,6 +14,7 @@ export type MeEditor = {
   dialogue: DialoguePosition;
   onEdit: (target: MeEditTarget) => void;
   onPreviewDialogue: (position: DialoguePosition) => void;
+  onMovePhoto: (from: number, to: number) => void;
   onSave: () => void;
   onCancel: () => void;
 };

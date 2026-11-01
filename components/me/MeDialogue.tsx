@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type Ref } from 'rea
 import { BsEjectFill } from 'react-icons/bs';
 import { FiImage } from 'react-icons/fi';
 import { siteAsset } from '@/utils/siteAssets';
-import type { MeContent } from './content';
+import { meFrameStyle, type MeContent } from './content';
 import { editable, type MeEditor } from './editing';
 import styles from './me.module.css';
 
@@ -93,10 +93,10 @@ export default function MeDialogue({ content, view, editor }: { content: MeConte
   }
 
   return <section id="me-dialogue" className={styles.stage} aria-label={`和${content.profile.alias}聊聊`}>
-    {content.backgroundUrl && <div className={styles.sceneBackground} aria-hidden="true" style={{ backgroundImage: `url(${JSON.stringify(siteAsset(content.backgroundUrl))})` }} />}
-    {editor && <button type="button" className={styles.editBackground} onClick={() => editor.onEdit({ kind: 'image', field: 'backgroundUrl' })} disabled={editor.busy}><FiImage size={16} aria-hidden="true" /><span>背景</span></button>}
+    {content.backgroundUrl && <div className={styles.sceneBackground} aria-hidden="true"><img src={siteAsset(content.backgroundUrl)} alt="" style={meFrameStyle(content.frames?.backgroundUrl)} /></div>}
+    {editor && <button type="button" className={styles.editBackground} aria-label="编辑背景" title="编辑背景" onClick={() => editor.onEdit({ kind: 'image', field: 'backgroundUrl' })} disabled={editor.busy}><FiImage size={18} aria-hidden="true" /></button>}
     <header className={styles.stageHeading}><span className={styles.eyebrow}>ABOUT ME</span><h2>Nice to meet you.</h2><span className={styles.hatch} aria-hidden="true" /></header>
-    <div className={styles.portrait} aria-hidden={editor ? undefined : true} {...editable(editor, { kind: 'image', field: 'portraitUrl' }, '立绘')}><img src={siteAsset(content.portraitUrl)} alt="" width={661} height={1504} fetchPriority="high" /></div>
+    <div className={styles.portrait} aria-hidden={editor ? undefined : true} {...editable(editor, { kind: 'image', field: 'portraitUrl' }, '立绘')}><div className={styles.portraitMotion}><img src={siteAsset(content.portraitUrl)} alt="" width={661} height={1504} fetchPriority="high" style={meFrameStyle(content.frames?.portraitUrl)} /></div></div>
     <div className={styles.choices} aria-label="选择想聊的话题" hidden={topic !== undefined}>
       {content.topics.map((item, index) => <button key={item.id} ref={index === 0 ? firstChoice : undefined} type="button" onClick={() => choose(item.id)}><span>{item.label}</span></button>)}
     </div>

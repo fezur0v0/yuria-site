@@ -1,23 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import Link from 'next/link';
-import { FiCheck, FiGrid, FiHeart, FiLoader, FiPlus, FiUser, FiX } from 'react-icons/fi';
+import { FiCheck, FiGrid, FiHeart, FiLoader, FiUser, FiX } from 'react-icons/fi';
 import { siteAsset } from '@/utils/siteAssets';
-import { mePhotoSlots, type MeContent } from './content';
+import { meFrameStyle, mePhotoSlots, type MeContent } from './content';
 import { editable, type MeEditor } from './editing';
 import styles from './me.module.css';
 
 const tabs = [
   { id: 'moments', label: '影像', icon: FiGrid },
-  { id: 'favorites', label: 'likes', icon: FiHeart },
+  { id: 'favorites', label: 'Likes', icon: FiHeart },
   { id: 'about', label: 'About me', icon: FiUser },
 ] as const;
 type TabId = typeof tabs[number]['id'];
+const PhotoWallEditor = lazy(() => import('@/components/admin/MePhotoWallEditor'));
 
 export default function MeProfile({ content, editor }: { content: MeContent; editor?: MeEditor }) {
   const [tab, setTab] = useState<TabId>('moments');
   const { profile } = content;
+  const photoWall = <div className={styles.moments}>{mePhotoSlots(content).map((url, index) => <div key={index} className={url ? styles.photoCell : styles.emptyMoment} aria-hidden={url ? undefined : true}>{url && <img src={siteAsset(url)} alt={`相册影像 ${index + 1}`} width={280} height={280} style={meFrameStyle(content.frames?.photos?.[index])} className={url === content.portraitUrl ? styles.momentPortrait : undefined} />}</div>)}</div>;
 
   return <section id="me-profile" className={styles.profile} aria-labelledby="me-name">
     <div className={styles.phone}>
@@ -27,7 +29,7 @@ export default function MeProfile({ content, editor }: { content: MeContent; edi
       </div> : <Link href="/admin/me" className={styles.settingsLink} aria-label="PERSONAL PAGE，编辑主页">PERSONAL PAGE</Link>}</div>
       <div className={styles.phoneContent}>
       <header className={styles.identity}>
-        <img className={styles.avatar} src={siteAsset(content.avatarUrl)} alt={`${profile.alias}的头像`} width={112} height={112} fetchPriority="high" {...editable(editor, { kind: 'image', field: 'avatarUrl' }, '头像')} />
+        <div className={styles.avatar} {...editable(editor, { kind: 'image', field: 'avatarUrl' }, '头像')}><div className={styles.avatarWindow}><img src={siteAsset(content.avatarUrl)} alt={`${profile.alias}的头像`} width={112} height={112} fetchPriority="high" style={meFrameStyle(content.frames?.avatarUrl)} /></div></div>
         <div><h1 id="me-name" {...editable(editor, { kind: 'text', field: 'name' }, '名字')}>{profile.name}</h1><p lang="ja" {...editable(editor, { kind: 'text', field: 'alias' }, '称呼')}>{profile.alias}</p></div>
       </header>
       <div className={styles.bio}>
@@ -48,10 +50,8 @@ export default function MeProfile({ content, editor }: { content: MeContent; edi
         }}><Icon size={20} aria-hidden="true" /></button>)}
       </div>
       {tabs.map(({ id }) => <div key={id} role="tabpanel" id={`me-panel-${id}`} aria-labelledby={`me-tab-${id}`} hidden={tab !== id} tabIndex={0} className={styles.profilePanel}>
-        {id === 'moments' ? <div className={styles.moments}>
-          {mePhotoSlots(content).map((url, index) => url ? <img key={index} src={siteAsset(url)} alt={`相册影像 ${index + 1}`} width={280} height={280} className={url === content.portraitUrl ? styles.momentPortrait : undefined} {...editable(editor, { kind: 'album', index }, `相册第 ${index + 1} 项`)} /> : <div key={index} className={styles.emptyMoment} aria-hidden={editor ? undefined : true} {...editable(editor, { kind: 'album', index }, `相册第 ${index + 1} 项`)}>{editor && <FiPlus size={22} aria-hidden="true" />}</div>)}
-        </div> : id === 'favorites' ? <div className={styles.profileText}>
-          <h2>likes</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'favorites' }, 'likes')}>{profile.favorites || (editor ? '点击填写 likes' : '')}</p>
+        {id === 'moments' ? (editor ? <Suspense fallback={photoWall}><PhotoWallEditor content={content} editor={editor} /></Suspense> : photoWall) : id === 'favorites' ? <div className={styles.profileText}>
+          <h2>Likes</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'favorites' }, 'Likes')}>{profile.favorites || (editor ? '点击填写 Likes' : '')}</p>
         </div> : <div className={styles.profileText}>
           <h2>About me</h2><p className={styles.preserveLines} {...editable(editor, { kind: 'text', field: 'about' }, 'About me')}>{profile.about || (editor ? '点击填写自我介绍' : '')}</p>
         </div>}

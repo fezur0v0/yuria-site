@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaultMeContent, meMoments, mePhotoSlots, parseMeContent, ME_CONFIG_KEY } from '../components/me/content.ts';
+import { addMeTag, defaultMeContent, meFrameStyle, meMoments, mePhotoSlots, moveMePhoto, parseMeContent, ME_CONFIG_KEY } from '../components/me/content.ts';
 import { CONTENT_TABLES } from '../utils/migration/backup.ts';
 import { queryContent, mutateContent } from '../utils/migration/query.ts';
 
@@ -92,4 +92,32 @@ test('photo wall keeps three independent slots and empty slots survive saving wi
   saved.moments = Array.from({ length: 4 }, (_, i) => ({ kind: 'image', value: `/photos/${i}.webp` }));
   assert.deepEqual(mePhotoSlots(saved), ['/photos/0.webp', '/photos/1.webp', '/photos/2.webp']);
   assert.equal(saved.moments.length, 4);
+});
+
+test('photo reordering keeps the displayed region attached to the original image through saving', () => {
+  const content = structuredClone(defaultMeContent);
+  content.moments = ['a', 'b', 'c'].map(name => ({ kind: 'image', value: `/photos/${name}.webp` }));
+  content.frames = { avatarUrl: { x: 0, y: 0, zoom: 1.4 }, photos: [{ x: -.3, y: .2, zoom: 2 }, { x: 0, y: 0, zoom: 1 }, { x: .5, y: -.4, zoom: 1.5 }] };
+  const moved = parseMeContent(JSON.stringify(moveMePhoto(content, 0, 2)));
+  assert.deepEqual(mePhotoSlots(moved), ['/photos/b.webp', '/photos/c.webp', '/photos/a.webp']);
+  assert.deepEqual(moved.frames.photos[2], content.frames.photos[0]);
+  assert.deepEqual(moved.frames.avatarUrl, content.frames.avatarUrl);
+  assert.deepEqual(mePhotoSlots(content), ['/photos/a.webp', '/photos/b.webp', '/photos/c.webp']);
+  assert.equal(moveMePhoto(content, -1, 0), content);
+  assert.deepEqual(meFrameStyle(moved.frames.photos[2]), { objectPosition: '35% 60%', transformOrigin: '35% 60%', transform: 'scale(2)' });
+});
+
+test('image region settings reject non-finite or out-of-range values', () => {
+  for (const frame of [{ x: 2, y: 0, zoom: 1 }, { x: 0, y: -2, zoom: 1 }, { x: 0, y: 0, zoom: 10 }, { x: NaN, y: 0, zoom: 1 }, { x: 0, y: 0 }, null]) {
+    assert.throws(() => parseMeContent({ ...structuredClone(defaultMeContent), frames: { avatarUrl: frame } }));
+  }
+  assert.throws(() => parseMeContent({ ...structuredClone(defaultMeContent), frames: { photos: Array(4).fill({ x: 0, y: 0, zoom: 1 }) } }));
+});
+
+test('Enter-style tag additions trim, deduplicate, and enforce profile limits', () => {
+  assert.deepEqual(addMeTag(['自由'], '  音乐  '), ['自由', '音乐']);
+  assert.deepEqual(addMeTag(['自由'], '自由'), ['自由']);
+  assert.deepEqual(addMeTag(['自由'], ' '), ['自由']);
+  assert.throws(() => addMeTag([], 'a'.repeat(25)));
+  assert.throws(() => addMeTag(Array.from({ length: 8 }, (_, i) => String(i)), 'more'));
 });

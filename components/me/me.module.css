@@ -61,6 +61,8 @@
 .profileTop > .settingsLink { font-family: var(--font-geist-mono), monospace; font-size: 10px; letter-spacing: .09em; color: var(--muted); }
 .identity { display: flex; align-items: center; gap: 23px; padding: 0 25px; }
 .avatar { width: 94px; height: 94px; flex: 0 0 94px; border-radius: 50%; object-fit: cover; border: 1px solid #bfc2cf; padding: 4px; background: #fff; }
+.avatarWindow { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; }
+.avatarWindow img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .identity h1 { margin: 0; font: 35px/1.15 Georgia, 'Times New Roman', serif; letter-spacing: .04em; }
 .identity p { margin: 6px 0; font-family: 'Yu Mincho', 'Songti SC', 'Noto Serif CJK SC', serif; font-size: 19px; letter-spacing: .14em; }
 .bio { padding: 22px 25px 12px; }
@@ -77,7 +79,11 @@
 .profilePanel[hidden] { display: none; }
 .moments { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 0 6px; }
 .moments > * { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; min-width: 0; }
-.moments > .momentPortrait { object-position: 50% 16%; background: #e1e3ed; object-fit: cover; }
+.photoCell, .editPhoto { position: relative; overflow: hidden; }
+.photoCell img, .editPhoto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.moments .momentPortrait { object-position: 50% 16%; background: #e1e3ed; object-fit: cover; }
+.editPhoto { display: grid; place-items: center; padding: 0; border: 0; border-radius: 0; background: #f0f1f54d; color: #9296a4; touch-action: none; user-select: none; -webkit-touch-callout: none; }
+.editPhoto[data-dragging='true'] { z-index: 3; opacity: .75; box-shadow: 0 6px 24px #31364640; }
 .emptyMoment { display: grid; place-items: center; background: #f0f1f54d; color: #9296a4; }
 .poemTile { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 5px; background: linear-gradient(155deg, #f0f1f4, #e6e8ed); text-align: center; }
 .poemTile > span { color: #767985; font: 10px/1.2 var(--font-geist-mono), monospace; letter-spacing: .04em; }
@@ -97,13 +103,14 @@
 .stageHeading { grid-area: 1 / 1; align-self: start; padding-top: 8px; position: relative; z-index: 1; pointer-events: none; }
 .stageHeading h2 { font: clamp(27px, 2.6vw, 43px)/1.3 Georgia, 'Times New Roman', serif; margin: 12px 0 10px; letter-spacing: -.015em; }
 .hatch { display: block; width: 62px; height: 5px; background: repeating-linear-gradient(125deg, #a2a5b8 0 3px, transparent 3px 7px); mask-image: linear-gradient(to right, #000, transparent); }
-.portrait { position: absolute; right: 0; bottom: 0; width: 68%; height: 100%; z-index: -1; pointer-events: none; }
-.portrait img { width: 100%; height: 100%; object-fit: contain; object-position: right bottom; animation: breathe 9s ease-in-out infinite; }
+.portrait { position: absolute; right: 0; bottom: 0; width: 68%; height: 100%; z-index: -1; pointer-events: none; overflow: hidden; }
+.portraitMotion { width: 100%; height: 100%; animation: breathe 9s ease-in-out infinite; }
+.portrait img { width: 100%; height: 100%; object-fit: contain; object-position: right bottom; }
 .choices { grid-area: 2 / 1; display: flex; flex-direction: column; justify-content: center; align-self: stretch; gap: 14px; padding: 10px 0 30px; width: 52%; max-height: 100%; overflow-y: auto; scrollbar-width: none; }
 .choices::-webkit-scrollbar { display: none; }
 .choices[hidden] { display: none; }
-.choices button { display: flex; align-items: center; text-align: left; padding: 14px 22px; min-height: 54px; font-size: 14px; line-height: 1.5; color: #414651; border: 1px solid #ffffffb3; border-radius: 22px; background: linear-gradient(120deg, #ffffff57, #f3f5fc26); backdrop-filter: blur(22px) saturate(1.2); -webkit-backdrop-filter: blur(22px) saturate(1.2); box-shadow: inset 0 1px 0 #ffffffb3, 0 5px 20px #454d6510; transition: background .25s, transform .25s, box-shadow .25s; }
-.choices button:hover, .choices button:focus-visible { background: #ffffff8a; box-shadow: inset 0 1px 0 #fff, 0 7px 24px #33364e1a; transform: translateX(4px); }
+.choices button { display: flex; align-items: center; text-align: left; padding: 14px 22px; min-height: 54px; font-size: 14px; line-height: 1.5; color: #414651; border: 1px solid #ffffffb3; border-radius: 22px; background: linear-gradient(120deg, #fafbfce8, #e9ecf4c9); backdrop-filter: blur(30px) saturate(.8); -webkit-backdrop-filter: blur(30px) saturate(.8); box-shadow: inset 0 1px 0 #ffffffb3, 0 5px 20px #454d6510; transition: background .25s, transform .25s, box-shadow .25s; }
+.choices button:hover, .choices button:focus-visible { background: #f9fafcf2; box-shadow: inset 0 1px 0 #fff, 0 7px 24px #33364e1a; transform: translateX(4px); }
 .dialogue { grid-area: 3 / 1; position: relative; display: flex; flex-direction: column; padding: 33px 30px 14px; min-height: 0; border: 1px solid #cdd1dd; border-radius: 5px 24px 5px 24px; background: linear-gradient(130deg, #ffffffdb, #f5f6fbe8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 12px 30px #575d7b0d, inset 0 2px 0 #fff; }
 .nameplate { position: absolute; top: -22px; left: 24px; min-width: 114px; max-width: 80%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 9px 22px; background: #454854; color: white; font: 17px/1.4 'Yu Mincho', 'Songti SC', serif; letter-spacing: .1em; clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%); }
 .dialogueText { display: block; flex: 1; width: 100%; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 0; border: 0; background: transparent; color: var(--ink); text-align: left; font-size: clamp(16px, 1.25vw, 20px); line-height: 1.9; user-select: text; }
@@ -214,10 +221,11 @@
   .stageHeading { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .portrait img, .dialogueText { animation: none; }
+  .portraitMotion, .dialogueText { animation: none; }
   .choices button { transition: none; }
 }
-.sceneBackground { position: absolute; inset: 0; z-index: -3; pointer-events: none; background-size: cover; background-position: center; opacity: .4; mask-image: radial-gradient(ellipse at center, #000 35%, transparent 77%); }
+.sceneBackground { position: absolute; inset: 0; z-index: -3; pointer-events: none; overflow: hidden; opacity: .4; mask-image: radial-gradient(ellipse at center, #000 35%, transparent 77%); }
+.sceneBackground img { width: 100%; height: 100%; object-fit: cover; }
 .editing [data-me-edit] { cursor: pointer; min-height: 20px; }
 .editing [data-me-edit]:hover { filter: brightness(.97); }
 .editing [data-me-edit]:focus-visible { outline: 2px solid #6c709fa6; outline-offset: 4px; }
@@ -226,7 +234,7 @@
 .editActions button { display: grid; place-items: center; width: 38px; min-height: 44px; color: #31333c; background: transparent; border: 0; border-radius: 8px; }
 .editActions button:disabled, .editorMobileNav button:disabled { opacity: .35; }
 .addMoment { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 7px; border: 0; background: #f5f6fa; color: #787c8b; font-size: 12px; }
-.editBackground { display: inline-flex; align-items: center; gap: 7px; position: absolute; top: 4px; right: 0; z-index: 3; min-height: 44px; padding: 8px 12px; border: 1px solid #cdd1dd; border-radius: 10px; color: #5f6371; background: #ffffffb3; backdrop-filter: blur(12px); font-size: 13px; }
+.editBackground { display: inline-flex; align-items: center; justify-content: center; position: absolute; top: 4px; right: 0; z-index: 3; width: 44px; min-height: 44px; padding: 0; border: 1px solid #cdd1dd; border-radius: 10px; color: #5f6371; background: #ffffffb3; backdrop-filter: blur(12px); font-size: 13px; }
 .editorMobileNav { position: fixed; top: 0; left: 0; z-index: 50; width: 100%; height: 64px; padding: 0 12px 0 22px; display: flex; align-items: center; justify-content: space-between; background: #ffffffa8; backdrop-filter: blur(20px); color: var(--ink); }
 .editorMobileNav > a { font: 19px Georgia, serif; letter-spacing: .04em; }
 .editorMobileNav > div { display: flex; gap: 0; }

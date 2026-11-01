@@ -34,6 +34,9 @@ export const topics = [
   },
 ] as const;
 
+export type MeImageFrame = { x: number; y: number; zoom: number };
+export const defaultMeImageFrame: MeImageFrame = { x: 0, y: 0, zoom: 1 };
+
 export type MeContent = {
   profile: {
     name: string; alias: string; quote: string[]; bio: string; tags: string[];
@@ -43,6 +46,7 @@ export type MeContent = {
   portraitUrl: string;
   backgroundUrl?: string;
   moments?: ({ kind: 'image'; value: string } | { kind: 'quote'; value: string })[];
+  frames?: { avatarUrl?: MeImageFrame; portraitUrl?: MeImageFrame; backgroundUrl?: MeImageFrame; photos?: MeImageFrame[] };
   greeting: string[];
   topics: { id: string; label: string; pages: string[][] }[];
 };
@@ -90,6 +94,13 @@ export function parseMeContent(raw: unknown): MeContent {
   if (value.backgroundUrl !== undefined && value.backgroundUrl !== '' && !imageUrl(value.backgroundUrl)) throw new Error('背景图片请使用 HTTPS 地址或站内路径');
   if (value.moments !== undefined && (!Array.isArray(value.moments) || value.moments.length > 12 || value.moments.some(item => !record(item) ||
     (item.kind === 'image' ? item.value !== '' && !imageUrl(item.value) : item.kind === 'quote' ? !text(item.value, 120) : true)))) throw new Error('相册最多放置 12 项，请检查图片地址和文字卡片');
+  if (value.frames !== undefined) {
+    const validFrame = (frame: unknown) => record(frame) && ['x', 'y', 'zoom'].every(key => typeof frame[key] === 'number' && Number.isFinite(frame[key])) &&
+      (frame.x as number) >= -1 && (frame.x as number) <= 1 && (frame.y as number) >= -1 && (frame.y as number) <= 1 && (frame.zoom as number) >= 1 && (frame.zoom as number) <= 3;
+    const frames = value.frames;
+    if (!record(frames) || ['avatarUrl', 'portraitUrl', 'backgroundUrl'].some(key => frames[key] !== undefined && !validFrame(frames[key])) ||
+      (frames.photos !== undefined && (!Array.isArray(frames.photos) || frames.photos.length > 3 || !frames.photos.every(validFrame)))) throw new Error('请检查图片的缩放和显示区域');
+  }
   return structuredClone(value) as MeContent;
 }
 
@@ -105,4 +116,27 @@ export function meMoments(content: MeContent): NonNullable<MeContent['moments']>
 export function mePhotoSlots(content: MeContent): string[] {
   const photos = meMoments(content).filter(item => item.kind === 'image').slice(0, 3).map(item => item.value);
   return Array.from({ length: 3 }, (_, index) => photos[index] ?? '');
+}
+
+export function meFrameStyle(frame?: MeImageFrame) {
+  if (!frame) return undefined;
+  const position = `${50 + frame.x * 50}% ${50 + frame.y * 50}%`;
+  return { objectPosition: position, transformOrigin: position, transform: `scale(${frame.zoom})` };
+}
+
+export function moveMePhoto(content: MeContent, from: number, to: number): MeContent {
+  if (![from, to].every(index => Number.isInteger(index) && index >= 0 && index < 3) || from === to) return content;
+  const photos = mePhotoSlots(content);
+  const frames = Array.from({ length: 3 }, (_, i) => content.frames?.photos?.[i] ?? { ...defaultMeImageFrame });
+  photos.splice(to, 0, photos.splice(from, 1)[0]);
+  frames.splice(to, 0, frames.splice(from, 1)[0]);
+  return { ...content, moments: photos.map(value => ({ kind: 'image', value })), frames: { ...content.frames, photos: frames } };
+}
+
+export function addMeTag(tags: string[], input: string): string[] {
+  const tag = input.trim();
+  if (!tag || tags.includes(tag)) return tags;
+  if (tag.length > 24) throw new Error('每个标签最多 24 字');
+  if (tags.length >= 8) throw new Error('最多添加 8 个标签');
+  return [...tags, tag];
 }
