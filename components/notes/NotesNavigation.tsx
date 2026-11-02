@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { FiX } from 'react-icons/fi'
 import PortfolioNav from '@/components/PortfolioNav'
+import NotesDesktopNav from './NotesDesktopNav'
+import desktop from './notes-desktop.module.css'
 import styles from './notes-shell.module.css'
 
 type Props = {
@@ -45,7 +47,8 @@ export default function NotesNavigation({ active, search, onSearch, filterCount,
   }, [filterOpen])
 
   return <>
-    <PortfolioNav theme="light" mode="notes" notesControls={{ active, search, onSearch, onFilter: openFilter, filterOpen, filterCount }} />
+    <div className={desktop.mobileNav}><PortfolioNav theme="light" mode="notes" notesControls={{ active, search, onSearch, onFilter: openFilter, filterOpen, filterCount }} /></div>
+    <NotesDesktopNav active={active} search={search} onSearch={onSearch} onFilter={openFilter} filterOpen={filterOpen} filterCount={filterCount} />
     <dialog ref={dialog} className={styles.drawer} aria-label={active === 'library' ? '分类与标签筛选' : '角色筛选'} onCancel={close} onClose={close} onClick={event => { if (event.target === event.currentTarget) { const box = event.currentTarget.getBoundingClientRect(); if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) close() } }}>
       <div className={styles.drawerHeader}><span>筛选</span><button ref={closeButton} type="button" aria-label="关闭侧栏" onClick={close}><FiX size={22} /></button></div>
       {filterOpen && <div className={styles.filterBody}>{filterContent}</div>}

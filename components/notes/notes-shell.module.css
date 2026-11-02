@@ -49,3 +49,9 @@
 .characterSelect button:focus-visible,.editorTools button:focus-visible,.pagination button:focus-visible,.pagination input:focus-visible { outline: 2px solid #777; outline-offset: 2px; }
 @media (max-width: 420px) { .pagination { gap: 4px; }.pagesWide { display: none; }.pagesCompact { display: flex; gap: 4px; }.pagination button { width: 30px; }.pagination .pageArrow { width: 32px; }.pagination form { margin-left: 4px; }.pagination input { width: 40px; }.pageGap { width: 14px; } }
 @media (prefers-reduced-motion: reduce) { .expandTags,.characterList>button { transition: none; } }
+
+@media(min-width:1024px){
+ .main{width:min(calc(100% - 240px),1400px);margin-left:max(220px,calc((100vw - 1280px)/2 + 204px));margin-right:20px;padding:32px 28px 80px}
+ .drawer{inset:24px auto 24px 214px;width:310px;height:calc(100dvh - 48px);border:1px solid #ffffffd9;border-radius:20px;background:#f8f9fbf2;box-shadow:12px 0 60px #00000012}
+ .drawer[open]{animation:none}
+}

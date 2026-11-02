@@ -105,7 +105,9 @@ export default function Records() {
   const [showTableBuilder, setShowTableBuilder] = useState(false)
 
   useEffect(() => {
-    const character = new URLSearchParams(window.location.search).get('character')
+    const query = new URLSearchParams(window.location.search)
+    const character = query.get('character')
+    if (query.get('q')) setSearch(query.get('q')!)
     if (character) setActiveChar(character)
     fetchCharacters()
     fetchCardOptions()

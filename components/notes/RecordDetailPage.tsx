@@ -3,6 +3,7 @@ import { uploadPrivateImage } from '@/utils/content/privateUpload'
 import { FiChevronLeft, FiEdit2, FiTrash2, FiUser } from 'react-icons/fi'
 import social from './records-social.module.css'
 import RecordsProfile from './RecordsProfile'
+import NotesDesktopNav from './NotesDesktopNav'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
 import CharacterSelect from './CharacterSelect'
 import RecordToolbar from './RecordToolbar'
@@ -231,6 +232,7 @@ export default function RecordDetail() {
 
   return (
     <div className={social.page}>
+      <NotesDesktopNav active="records" />
       <main className={`${social.main} ${social.detailLayout}`}>
         <aside className={`${social.profileRail} ${social.detailProfile}`}><RecordsProfile character={characters.find(character => character.id === profileCharacterId)} /></aside>
         <div className={social.detail}>
