@@ -134,15 +134,15 @@
       "type": "image/svg+xml"
     },
     "/icon.png": {
-      "key": "site-assets/f9603dea897a4a6a2f2345ee5d8489aebcabe22b17580f25aab9533016f3a2c4/icon.png",
-      "sha256": "f9603dea897a4a6a2f2345ee5d8489aebcabe22b17580f25aab9533016f3a2c4",
-      "bytes": 47854,
+      "key": "site-assets/880dd99f29da5e89e712b093daa21ce489a29be8fed0f46b61c3545aaac7ff8a/icon.png",
+      "sha256": "880dd99f29da5e89e712b093daa21ce489a29be8fed0f46b61c3545aaac7ff8a",
+      "bytes": 13722,
       "type": "image/png"
     },
     "/favicon.ico": {
-      "key": "site-assets/f78123d5cd5435c9592b4842eba37d74da8199586a753989bc081deab4eee58e/favicon.ico",
-      "sha256": "f78123d5cd5435c9592b4842eba37d74da8199586a753989bc081deab4eee58e",
-      "bytes": 1145,
+      "key": "site-assets/faedeeae4c55f44cc44f3840b306bd6ec34ec6a490585bc0fd5af35cb2a0d110/favicon.ico",
+      "sha256": "faedeeae4c55f44cc44f3840b306bd6ec34ec6a490585bc0fd5af35cb2a0d110",
+      "bytes": 4555,
       "type": "image/x-icon"
     }
   }

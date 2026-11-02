@@ -4,7 +4,6 @@ import "./globals.css";
 import SiteSplash from "@/components/SiteSplash";
 import MusicProvider from "@/components/music/MusicProvider";
 import GlobalMusicPlayer from "@/components/music/GlobalMusicPlayer";
-import { siteAsset } from '@/utils/siteAssets';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,13 +16,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Yuria",
   description: "那一天你走进了我的生命 谢谢你成为了我的几分之几",
-  icons: {
-    icon: [
-      { url: siteAsset('/favicon.ico'), sizes: "any" },
-      { url: siteAsset('/icon.png'), type: "image/png", sizes: "192x192" },
-    ],
-    apple: siteAsset('/icon.png'),
-  },
 };
 
 export const viewport: Viewport = {

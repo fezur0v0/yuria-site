@@ -161,8 +161,8 @@ builds without R2 credentials index the same manifest without uploading. The
 five sidebar social icons now use the installed icon set, copied alongside
 website media, instead of requesting another image CDN. The source files remain
 as deployment/rollback copies. Known original paths permanently redirect to R2,
-so old article URLs continue working. The apple touch icon uses the actual app
-icon instead of a missing file.
+so old article URLs continue working. The favicon, app icon, and apple touch
+icon are excluded from that redirect list and are served from this site.
 
 The owner-only image consolidation panel reads the current live R2 document,
 identifies image fields plus HTML/Markdown/CSS image references, and copies
