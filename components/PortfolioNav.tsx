@@ -35,8 +35,8 @@ type NotesControls = {
   filterCount: number;
 };
 const notesLinks = [
-  { href: '/notes/library', label: 'Verse' },
-  { href: '/notes/records', label: 'Echo' },
+  { href: '/notes/verse', label: 'Verse' },
+  { href: '/notes/echo', label: 'Echo' },
 ];
 
 type MeControls = {

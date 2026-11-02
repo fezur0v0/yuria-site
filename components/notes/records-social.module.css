@@ -82,3 +82,13 @@
  .main{grid-template-columns:minmax(0,1fr) 240px;gap:16px}
  .recordsContent{padding-inline:16px}.detail{padding-inline:18px}.collage{grid-template-rows:125px 115px;padding-inline:12px}
 }
+
+@media(min-width:1024px){
+ .page{height:100dvh;min-height:0;overflow:hidden}
+ .profileStack{display:grid;grid-template-rows:minmax(0,.46fr) minmax(0,.54fr);gap:18px;height:100%;min-height:0}
+ .profileStack .identity{height:100%;min-height:0;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#d1d1d1 transparent}
+ .profileStack .collagePanel{display:flex;flex-direction:column;margin:0;height:100%;min-height:0}
+ .collagePanel .collage{flex:1;min-height:0;grid-template-rows:minmax(0,1.1fr) minmax(0,1fr);margin:0;padding-bottom:16px}
+ .collage button{min-height:0}.collage img{min-height:0}
+ .tabs{position:sticky;top:0;z-index:3;background:#fff}
+}

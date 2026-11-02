@@ -39,8 +39,8 @@ export default function RecordsProfile({ character }: { character?: Character })
   function avatar(value: string, label: string, scope: Target['scope']) {
     return <button type="button" className={styles.avatar} aria-label={`编辑${label}头像`} disabled={!ready} onClick={() => edit(scope, 'avatar', `${label}头像`)}>{value ? <PrivateTheaterImage src={value} alt={`${label}头像`} /> : <FiUser size={29} aria-hidden="true" />}</button>
   }
-  return <div className={styles.profileStack}><section className={styles.identity} aria-label={character ? '角色与我的介绍' : 'Echo 页个人介绍'}>
-    <button type="button" className={styles.cover} aria-label="编辑 Echo 页背景" disabled={!ready} onClick={() => edit(character ? 'pair' : 'self', 'cover', '背景')}>{current.cover && <PrivateTheaterImage src={current.cover} alt="" />}<FiImage size={18} aria-hidden="true" /></button>
+  return <div className={styles.profileStack}><section className={styles.identity} aria-label={character ? '角色与我的介绍' : 'AIRP 个人介绍'}>
+    <button type="button" className={styles.cover} aria-label="编辑个人背景" disabled={!ready} onClick={() => edit(character ? 'pair' : 'self', 'cover', '背景')}>{current.cover && <PrivateTheaterImage src={current.cover} alt="" />}<FiImage size={18} aria-hidden="true" /></button>
     <div className={`${styles.identityBody} ${character ? styles.pair : ''}`}>
       <div className={styles.avatars}>{avatar(self.avatar, '我的', 'self')}{character && avatar(pair.avatar || character.avatar || '', '角色', 'pair')}</div>
       <div className={styles.names}><button disabled={!ready} onClick={() => edit('self', 'name', '我的名字')}>{self.name || 'yuria'}</button>{character && <><span>&amp;</span><button disabled={!ready} onClick={() => edit('pair', 'name', '角色称呼')}>{pair.name || character.name}</button></>}</div>

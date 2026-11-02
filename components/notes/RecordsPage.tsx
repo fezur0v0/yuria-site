@@ -3,6 +3,7 @@ import { uploadPrivateImage } from '@/utils/content/privateUpload'
 import Link from 'next/link'
 import NotesNavigation from './NotesNavigation'
 import RecordsProfile from './RecordsProfile'
+import desktop from './notes-desktop.module.css'
 import social from './records-social.module.css'
 import NotesPagination from './NotesPagination'
 import notesStyles from './notes-shell.module.css'
@@ -59,6 +60,7 @@ function stripMarkdown(text: string) {
 
 export default function Records() {
   const router = useRouter()
+  const feedRegion = useRef<HTMLDivElement>(null)
   const [view, setView] = useState<'records' | 'characters'>('records')
   const [characterCounts, setCharacterCounts] = useState<Record<string, number | null>>({})
   const [readError, setReadError] = useState('')
@@ -112,6 +114,8 @@ export default function Records() {
     fetchCharacters()
     fetchCardOptions()
   }, [])
+
+  useEffect(() => { feedRegion.current?.scrollTo({ top: 0 }) }, [page, search, activeChar, view])
 
   useEffect(() => {
     fetchRecords()
@@ -301,9 +305,9 @@ export default function Records() {
   return (
     <div className={social.page}>
       <NotesNavigation active="records" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={activeChar ? 1 : 0} filterContent={characterPanel} />
-      <main className={social.main}>
-        <aside className={social.profileRail}><RecordsProfile character={selectedCharacter} /></aside>
-        <div className={social.recordsContent}>
+      <main className={`${social.main} ${desktop.layout}`}>
+        <aside className={`${social.profileRail} ${desktop.profile}`}><RecordsProfile character={selectedCharacter} /></aside>
+        <div ref={feedRegion} className={`${social.recordsContent} ${desktop.content}`} tabIndex={0} role="region" aria-label="Echo 内容">
         <div className={social.tabs} role="tablist" aria-label="Echo 与角色" onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
           event.preventDefault()
@@ -320,7 +324,7 @@ export default function Records() {
         {view === 'characters' ? <>
           {addingCharacter ? <div style={{ padding: '0 24px 24px' }}>{characterPanel}</div> : <div className={social.characterList}>{characters.filter(character => character.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())).map(character => <button type="button" className={social.characterRow} key={character.id} onClick={() => selectChar(character.id)}><span className={social.postAvatar}>{character.avatar ? <PrivateTheaterImage src={character.avatar} alt="" /> : <FiUser size={20} />}</span><strong>{character.name}</strong><small>{characterCounts[character.id] ?? '—'} notes</small></button>)}</div>}
           {characters.length === 0 && !addingCharacter && <p className={social.empty}>还没有角色，点击 + 添加</p>}
-        </> : readError ? <p role="alert" className={social.empty}>{readError}</p> : loading ? <p role="status" className={social.empty}>Loading...</p> : records.length === 0 ? <p className={social.empty}>还没有 Echo</p> : <div className={social.feed}>{records.map(record => <Link href={`/notes/records/${record.id}${activeChar ? `?character=${encodeURIComponent(activeChar)}` : ''}`} className={social.post} key={record.id}>
+        </> : readError ? <p role="alert" className={social.empty}>{readError}</p> : loading ? <p role="status" className={social.empty}>Loading...</p> : records.length === 0 ? <p className={social.empty}>还没有 Echo</p> : <div className={social.feed}>{records.map(record => <Link href={`/notes/echo/${record.id}${activeChar ? `?character=${encodeURIComponent(activeChar)}` : ''}`} className={social.post} key={record.id}>
           <span className={social.postAvatar}>{record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" /> : <FiUser size={20} />}</span>
           <div><div className={social.postHead}><strong>{record.characters?.name || '未命名'}</strong><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time></div><h2>{record.title}</h2>{record.extra_tag && <div className={social.extraTag}>{record.extra_tag}</div>}{record.content && <p>{stripMarkdown(record.content)}</p>}
           {Boolean(record.images?.length) && <div className={social.thumbnails}>{record.images!.slice(0,3).map((image,i) => <div key={i}><PrivateTheaterImage src={image.url} alt={image.caption || `Echo 图片 ${i+1}`} />{i === 2 && record.images!.length > 3 && <span>+{record.images!.length-3}</span>}</div>)}</div>}

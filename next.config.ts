@@ -40,11 +40,15 @@ const nextConfig: NextConfig = {
     // These three are App Router metadata files and must be served from this
     // origin. Google drops a favicon that redirects to another host.
     const sameOriginIcons = new Set(['/favicon.ico', '/icon.png', '/apple-icon.png']);
-    return Object.entries(files).filter(([source]) => !sameOriginIcons.has(source)).map(([source, file]) => ({
+    return [
+      { source: '/notes/library', destination: '/notes/verse', permanent: true },
+      { source: '/notes/records/:path*', destination: '/notes/echo/:path*', permanent: true },
+      ...Object.entries(files).filter(([source]) => !sameOriginIcons.has(source)).map(([source, file]) => ({
       source,
       destination: `${assets.baseUrl}/${file.key.split('/').map(encodeURIComponent).join('/')}`,
       permanent: true,
-    }));
+    })),
+    ];
   },
   async headers() {
     return [

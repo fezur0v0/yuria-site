@@ -1,5 +1,7 @@
 'use client'
 import NotesNavigation from './NotesNavigation'
+import RecordsProfile from './RecordsProfile'
+import desktop from './notes-desktop.module.css'
 import NotesPagination from './NotesPagination'
 import notesStyles from './notes-shell.module.css'
 import { FiPlus, FiMinus } from 'react-icons/fi'
@@ -79,6 +81,7 @@ function TagInput({ tags, onChange }: { tags: string[], onChange: (tags: string[
 
 export default function Library() {
   const router = useRouter()
+  const feedRegion = useRef<HTMLDivElement>(null)
   const [cards, setCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
   const latestRead = useRef(0)
@@ -104,6 +107,8 @@ export default function Library() {
     fetchCards()
     fetchAllTags()
   }, [page, search, selectedTags])
+
+  useEffect(() => { feedRegion.current?.scrollTo({ top: 0 }) }, [page, search, selectedTags])
 
   async function fetchCards() {
     const read = ++latestRead.current
@@ -237,7 +242,9 @@ export default function Library() {
   return (
     <div className={notesStyles.page}>
       <NotesNavigation active="library" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={Object.keys(selectedTags).length} filterContent={filterPanel} />
-      <main className={notesStyles.main}>
+      <main className={desktop.layout}>
+        <aside className={`${desktop.desktopProfile} ${desktop.profile}`}><RecordsProfile /></aside>
+        <div ref={feedRegion} className={`${notesStyles.main} ${desktop.content}`} tabIndex={0} role="region" aria-label="Verse 内容">
         <div className={notesStyles.heading}>
           <h1>Verse</h1>
           <button type="button" className={notesStyles.addButton} aria-label="新增 Verse" onClick={() => setShowAdd(true)}><FiPlus size={23} /></button>
@@ -316,7 +323,7 @@ export default function Library() {
                                 {expandedChar === g.character_id && (
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 0 2px 30px' }}>
                                     {g.records.map(r => (
-                                      <button key={r.id} onClick={() => router.push(`/notes/records/${r.id}`)}
+                                      <button key={r.id} onClick={() => router.push(`/notes/echo/${r.id}`)}
                                         style={{ textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: '#888', padding: '4px 0' }}
                                         onMouseEnter={e => e.currentTarget.style.color = '#1a1a1a'}
                                         onMouseLeave={e => e.currentTarget.style.color = '#888'}>
@@ -349,6 +356,7 @@ export default function Library() {
         )}
 
         <NotesPagination page={page} totalPages={totalPages} onChange={setPage} />
+        </div>
       </main>
 
       {showAdd && (

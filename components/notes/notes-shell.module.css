@@ -66,3 +66,8 @@
  .drawer{inset:16px auto 16px 208px;width:min(310px,calc(100vw - 224px));height:calc(100dvh - 32px);border:1px solid #ffffffd9;border-radius:16px;background:#fffffff5;box-shadow:12px 0 60px #00000012;overflow-x:hidden}
  .drawer[open]{animation:none}
 }
+
+@media(min-width:1024px){
+ .page{height:100dvh;min-height:0;overflow:hidden}
+ .heading{position:sticky;top:0;z-index:3;background:#fff;flex-shrink:0}
+}

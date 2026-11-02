@@ -4,6 +4,7 @@ import { FiChevronLeft, FiEdit2, FiTrash2, FiUser } from 'react-icons/fi'
 import social from './records-social.module.css'
 import RecordsProfile from './RecordsProfile'
 import NotesDesktopNav from './NotesDesktopNav'
+import desktop from './notes-desktop.module.css'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
 import CharacterSelect from './CharacterSelect'
 import RecordToolbar from './RecordToolbar'
@@ -215,7 +216,7 @@ export default function RecordDetail() {
   async function deleteRecord() {
     if (!record || !confirm('确定删除这条 Echo？')) return
     await supabase.from('theater_records').delete().eq('id', record.id)
-    router.push('/notes/records')
+    router.push('/notes/echo')
   }
 
   const images = record?.images || []
@@ -233,11 +234,11 @@ export default function RecordDetail() {
   return (
     <div className={social.page}>
       <NotesDesktopNav active="records" />
-      <main className={`${social.main} ${social.detailLayout}`}>
-        <aside className={`${social.profileRail} ${social.detailProfile}`}><RecordsProfile character={characters.find(character => character.id === profileCharacterId)} /></aside>
-        <div className={social.detail}>
+      <main className={`${social.main} ${social.detailLayout} ${desktop.layout}`}>
+        <aside className={`${social.profileRail} ${social.detailProfile} ${desktop.profile}`}><RecordsProfile character={characters.find(character => character.id === profileCharacterId)} /></aside>
+        <div className={`${social.detail} ${desktop.content}`} tabIndex={0} role="region" aria-label="Echo 正文">
         <nav className={social.detailNav} aria-label="Echo 操作">
-          <button type="button" aria-label="返回 Echo 列表" onClick={() => { const character = new URLSearchParams(window.location.search).get('character'); router.push(`/notes/records${character ? `?character=${encodeURIComponent(character)}` : ''}`) }}><FiChevronLeft size={25} /></button>
+          <button type="button" aria-label="返回 Echo 列表" onClick={() => { const character = new URLSearchParams(window.location.search).get('character'); router.push(`/notes/echo${character ? `?character=${encodeURIComponent(character)}` : ''}`) }}><FiChevronLeft size={25} /></button>
           <div className={social.detailActions}><button type="button" aria-label="编辑 Echo" onClick={openEdit}><FiEdit2 size={18} /></button><button type="button" aria-label="删除 Echo" onClick={deleteRecord}><FiTrash2 size={17} /></button></div>
         </nav>
         <header className={social.detailHeader}>

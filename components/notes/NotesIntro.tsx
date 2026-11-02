@@ -107,7 +107,7 @@ export default function NotesIntro({ lines }: { lines: string[] }) {
     const requestedNext = new URLSearchParams(window.location.search).get('next')
     const next = requestedNext?.startsWith('/notes/') && !requestedNext.includes('\\')
       ? requestedNext
-      : '/notes/library'
+      : '/notes/verse'
 
     if (isOwner) {
       // The destination is independently protected by the server and database RLS.
