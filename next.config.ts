@@ -42,6 +42,7 @@ const nextConfig: NextConfig = {
     const sameOriginIcons = new Set(['/favicon.ico', '/icon.png', '/apple-icon.png']);
     return [
       { source: '/notes/library', destination: '/notes/verse', permanent: true },
+      { source: '/notes/records', destination: '/notes/echo', permanent: true },
       { source: '/notes/records/:path*', destination: '/notes/echo/:path*', permanent: true },
       ...Object.entries(files).filter(([source]) => !sameOriginIcons.has(source)).map(([source, file]) => ({
       source,
