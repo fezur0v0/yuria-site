@@ -241,13 +241,15 @@ export default function Library() {
 
   return (
     <div className={notesStyles.page}>
-      <NotesNavigation active="library" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={Object.keys(selectedTags).length} filterContent={filterPanel} />
+      <NotesNavigation active="library" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={Object.keys(selectedTags).length} filterContent={filterPanel} addLabel="新增 Verse" onAdd={() => setShowAdd(true)}>
+      {toolbar => (
       <main className={desktop.layout}>
         <aside className={`${desktop.desktopProfile} ${desktop.profile}`}><RecordsProfile /></aside>
         <div ref={feedRegion} className={`${notesStyles.main} ${desktop.content}`} tabIndex={0} role="region" aria-label="Verse 内容">
         <div className={notesStyles.heading}>
           <h1>Verse</h1>
-          <button type="button" className={notesStyles.addButton} aria-label="新增 Verse" onClick={() => setShowAdd(true)}><FiPlus size={23} /></button>
+          {toolbar}
+          <button type="button" className={`${notesStyles.addButton} ${desktop.mobileOnly}`} aria-label="新增 Verse" onClick={() => setShowAdd(true)}><FiPlus size={23} /></button>
         </div>
 
         {loading ? (
@@ -358,6 +360,8 @@ export default function Library() {
         <NotesPagination page={page} totalPages={totalPages} onChange={setPage} />
         </div>
       </main>
+      )}
+      </NotesNavigation>
 
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowAdd(false)}>

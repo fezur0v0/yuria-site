@@ -304,10 +304,12 @@ export default function Records() {
   const selectedCharacter = characters.find(character => character.id === activeChar)
   return (
     <div className={social.page}>
-      <NotesNavigation active="records" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={activeChar ? 1 : 0} filterContent={characterPanel} />
+      <NotesNavigation active="records" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={activeChar ? 1 : 0} filterContent={characterPanel} addLabel={view === 'records' ? '新增 Echo' : '新增角色'} onAdd={() => { if (view === 'records') { setNewRecord(previous => ({ ...previous, character_id: activeChar ?? previous.character_id })); setShowAdd(true) } else { setAddingCharacter(true); setNewCharError('') } }}>
+      {toolbar => (
       <main className={`${social.main} ${desktop.layout}`}>
         <aside className={`${social.profileRail} ${desktop.profile}`}><RecordsProfile character={selectedCharacter} /></aside>
         <div ref={feedRegion} className={`${social.recordsContent} ${desktop.content}`} tabIndex={0} role="region" aria-label="Echo 内容">
+        <div className={social.contentHeader}>
         <div className={social.tabs} role="tablist" aria-label="Echo 与角色" onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
           event.preventDefault()
@@ -319,10 +321,12 @@ export default function Records() {
           <button id="records-feed-tab" type="button" role="tab" aria-label="Echo" aria-controls="records-panel" tabIndex={view === 'records' ? 0 : -1} aria-selected={view === 'records'} onClick={() => setView('records')}><FiFileText size={23} /><span>Echo</span></button>
           <button id="records-characters-tab" type="button" role="tab" aria-label="角色列表" aria-controls="records-panel" tabIndex={view === 'characters' ? 0 : -1} aria-selected={view === 'characters'} onClick={() => { setView('characters'); setActiveChar(null); setPage(1) }}><FiUsers size={23} /><span>角色</span></button>
         </div>
+        {toolbar}
+        </div>
         <section id="records-panel" role="tabpanel" aria-labelledby={view === 'records' ? 'records-feed-tab' : 'records-characters-tab'}>
-        <div className={social.feedTools}>{activeChar ? <button type="button" className={social.backToAll} onClick={() => selectChar(null)}><FiChevronLeft size={15} />全部 Echo</button> : <span>{view === 'records' ? `${total} notes` : `${characters.length} characters`}</span>}<button type="button" aria-label={view === 'records' ? '新增 Echo' : '新增角色'} onClick={() => { if (view === 'records') { setNewRecord(previous => ({ ...previous, character_id: activeChar ?? previous.character_id })); setShowAdd(true) } else { setAddingCharacter(true); setNewCharError('') } }}><FiPlus size={23} /></button></div>
+        <div className={`${social.feedTools} ${activeChar ? social.hasSelection : ''}`}>{activeChar ? <button type="button" className={social.backToAll} onClick={() => selectChar(null)}><FiChevronLeft size={15} />全部 Echo</button> : <span className={desktop.mobileOnly}>{view === 'records' ? `${total} notes` : `${characters.length} characters`}</span>}<button className={desktop.mobileOnly} type="button" aria-label={view === 'records' ? '新增 Echo' : '新增角色'} onClick={() => { if (view === 'records') { setNewRecord(previous => ({ ...previous, character_id: activeChar ?? previous.character_id })); setShowAdd(true) } else { setAddingCharacter(true); setNewCharError('') } }}><FiPlus size={23} /></button></div>
         {view === 'characters' ? <>
-          {addingCharacter ? <div style={{ padding: '0 24px 24px' }}>{characterPanel}</div> : <div className={social.characterList}>{characters.filter(character => character.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())).map(character => <button type="button" className={social.characterRow} key={character.id} onClick={() => selectChar(character.id)}><span className={social.postAvatar}>{character.avatar ? <PrivateTheaterImage src={character.avatar} alt="" /> : <FiUser size={20} />}</span><strong>{character.name}</strong><small>{characterCounts[character.id] ?? '—'} notes</small></button>)}</div>}
+          {addingCharacter ? <div style={{ padding: '0 24px 24px' }}>{characterPanel}</div> : <div className={social.characterList}>{characters.filter(character => character.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())).map(character => <button type="button" className={social.characterRow} key={character.id} onClick={() => selectChar(character.id)}><span className={social.postAvatar}>{character.avatar ? <PrivateTheaterImage src={character.avatar} alt="" /> : <FiUser size={20} />}</span><strong>{character.name}</strong><small className={desktop.mobileOnly}>{characterCounts[character.id] ?? '—'} notes</small></button>)}</div>}
           {characters.length === 0 && !addingCharacter && <p className={social.empty}>还没有角色，点击 + 添加</p>}
         </> : readError ? <p role="alert" className={social.empty}>{readError}</p> : loading ? <p role="status" className={social.empty}>Loading...</p> : records.length === 0 ? <p className={social.empty}>还没有 Echo</p> : <div className={social.feed}>{records.map(record => <Link href={`/notes/echo/${record.id}${activeChar ? `?character=${encodeURIComponent(activeChar)}` : ''}`} className={social.post} key={record.id}>
           <span className={social.postAvatar}>{record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" /> : <FiUser size={20} />}</span>
@@ -333,6 +337,8 @@ export default function Records() {
         </section>
         </div>
       </main>
+      )}
+      </NotesNavigation>
 
       {/* 新增 Echo 弹窗 */}
       {showAdd && (

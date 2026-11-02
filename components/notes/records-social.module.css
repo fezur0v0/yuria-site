@@ -92,3 +92,12 @@
  .collage button{min-height:0}.collage img{min-height:0}
  .tabs{position:sticky;top:0;z-index:3;background:#fff}
 }
+
+@media(min-width:1024px){
+ .contentHeader{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;min-height:58px;border-bottom:1px solid #ececec;background:#fff}
+ .contentHeader .tabs{position:static;flex:none;grid-template-columns:90px 90px;padding:0;border:0}
+ .contentHeader .tabs button{height:57px;font-size:13px;gap:8px}
+ .feedTools{display:none}
+ .feedTools.hasSelection{display:flex;padding:8px 0 0}
+}
+@media(min-width:1024px) and (max-width:1199px){.contentHeader{gap:6px}.contentHeader .tabs{grid-template-columns:64px 64px}.contentHeader .tabs button{gap:5px;font-size:12px}.contentHeader .tabs svg{width:18px}}

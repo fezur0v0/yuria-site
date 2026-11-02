@@ -63,7 +63,7 @@
  .verseTitle{font:400 17px/1.7 Georgia,'Songti SC',serif!important}
  .copyButton{display:inline-flex!important;width:auto!important;border:0!important;border-radius:8px!important;background:#f5f5f5!important;padding:7px 10px!important}
  .verseCard img{max-width:100%;height:auto}
- .drawer{inset:16px auto 16px 208px;width:min(310px,calc(100vw - 224px));height:calc(100dvh - 32px);border:1px solid #ffffffd9;border-radius:16px;background:#fffffff5;box-shadow:12px 0 60px #00000012;overflow-x:hidden}
+ .drawer{inset:84px 328px auto auto;width:min(310px,calc(100vw - 280px));height:auto;max-height:calc(100dvh - 108px);border:1px solid #ffffffd9;border-radius:16px;background:#fffffff5;box-shadow:12px 0 60px #00000012;overflow-x:hidden}
  .drawer[open]{animation:none}
 }
 
@@ -71,3 +71,5 @@
  .page{height:100dvh;min-height:0;overflow:hidden}
  .heading{position:sticky;top:0;z-index:3;background:#fff;flex-shrink:0}
 }
+
+@media(min-width:1024px) and (max-width:1199px){.drawer{right:280px}}
