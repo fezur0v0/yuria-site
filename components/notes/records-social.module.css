@@ -121,3 +121,11 @@
  .post:hover,.characterRow:hover{background:transparent}
  .post:hover::before,.characterRow:hover::before{background:#f5f5f5}
 }
+
+/* Keep prose at the full inner width; the header metadata is independent. */
+.detailContent{display:block;width:100%;max-width:none;min-width:0;margin:0}
+.detailHeader>div{min-width:0}.detailIdentity{position:relative;padding-right:110px;min-height:27px}
+.detailMeta{position:absolute;top:0;right:0;display:flex;flex-direction:column;align-items:flex-end;gap:16px}
+.detailMeta button{display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:9px;background:transparent;color:#777;cursor:pointer}.detailMeta button:hover{background:#f3f3f3}
+.detailNav{padding-top:18px}.detailHeader{min-height:88px}.detailContent :global(.prose){width:100%;max-width:none}
+@media(min-width:960px) and (max-width:1023px){.detailLayout{display:block;width:calc(100% - 48px);padding-top:0}.detailLayout .detailProfile{display:none}.detailLayout .detail{padding:0;border:0}}

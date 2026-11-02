@@ -1,6 +1,6 @@
 'use client'
 import { uploadPrivateImage } from '@/utils/content/privateUpload'
-import { FiChevronLeft, FiEdit2, FiTrash2, FiUser } from 'react-icons/fi'
+import { FiChevronLeft, FiEdit2, FiTrash2, FiUser, FiLink } from 'react-icons/fi'
 import social from './records-social.module.css'
 import RecordsProfile from './RecordsProfile'
 import NotesDesktopNav from './NotesDesktopNav'
@@ -15,6 +15,7 @@ import { createClient } from '@/utils/content/client'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import TableBuilderModal from '@/components/TableBuilderModal'
+import EchoHtml from './EchoHtml'
 
 const supabase = createClient()
 
@@ -38,7 +39,7 @@ type RecordDetail = {
 
 function MarkdownContent({ content }: { content: string }) {
   return (
-    <div className="prose prose-neutral max-w-none prose-p:text-[14px] prose-p:leading-[1.9] prose-p:text-[#444] prose-strong:text-[#1a1a1a] prose-strong:font-semibold prose-headings:font-normal">
+    <div style={{ width: '100%', maxWidth: 'none', minWidth: 0 }} className="prose prose-neutral max-w-none prose-p:text-[14px] prose-p:leading-[1.9] prose-p:text-[#444] prose-strong:text-[#1a1a1a] prose-strong:font-semibold prose-headings:font-normal">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -74,6 +75,7 @@ export default function RecordDetail() {
 
   // 编辑相关
   const [showEdit, setShowEdit] = useState(false)
+  const [showHtml, setShowHtml] = useState(false)
   const [characters, setCharacters] = useState<Character[]>([])
   const [cardOptions, setCardOptions] = useState<CardOption[]>([])
   const [saving, setSaving] = useState(false)
@@ -243,7 +245,7 @@ export default function RecordDetail() {
         </nav>
         <header className={social.detailHeader}>
           <span className={social.postAvatar}>{record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" /> : <FiUser size={28} />}</span>
-          <div><div className={social.detailIdentity}><strong>{record.characters?.name || '未命名'}</strong><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time></div><h1>{record.title}</h1>{record.extra_tag && <div className={social.extraTag}>{record.extra_tag}</div>}</div>
+          <div><div className={social.detailIdentity}><strong>{record.characters?.name || '未命名'}</strong><div className={social.detailMeta}><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time><button type="button" aria-label="打开 HTML" title="HTML" onClick={() => setShowHtml(true)}><FiLink size={19} /></button></div></div><h1>{record.title}</h1>{record.extra_tag && <div className={social.extraTag}>{record.extra_tag}</div>}</div>
         </header>
         <article className={social.detailContent}>
           {record.content && <MarkdownContent content={record.content} />}
@@ -261,6 +263,8 @@ export default function RecordDetail() {
         </article>
         </div>
       </main>
+
+      {showHtml && <EchoHtml id={id} onClose={() => setShowHtml(false)} />}
 
       {/* 灯箱 */}
       {lightboxIndex !== null && (
