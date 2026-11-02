@@ -298,9 +298,9 @@ export default function RecordDetail() {
       {showEdit && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
           onClick={() => { setShowEdit(false); setCharDropdownOpen(false); setCardDropdownOpen(false) }}>
-          <div role="dialog" aria-modal="true" aria-label="编辑 Echo" style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" aria-label="Edit" style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             {saveError && <p role="alert" className={social.error}>{saveError}</p>}
-            <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>编辑 Echo</h2>
+            <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>Edit</h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>

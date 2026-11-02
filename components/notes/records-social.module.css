@@ -114,3 +114,10 @@
  .echoMain .cover>svg{top:80px}
 }
 @media(max-width:600px){.echoMain .cover{height:223px}}
+
+@media(min-width:1024px){
+ .post,.characterRow{position:relative;isolation:isolate}
+ .post::before,.characterRow::before{content:'';position:absolute;inset:2px -10px;z-index:-1;border-radius:12px;background:transparent;transition:background .18s}
+ .post:hover,.characterRow:hover{background:transparent}
+ .post:hover::before,.characterRow:hover::before{background:#f5f5f5}
+}
