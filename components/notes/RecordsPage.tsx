@@ -41,7 +41,7 @@ type RecordRow = {
 
 type CardOption = { id: string; title: string }
 
-const PAGE_SIZE = 9
+const PAGE_SIZE = 12
 
 function stripMarkdown(text: string) {
   return text
@@ -306,11 +306,11 @@ export default function Records() {
     <div className={social.page}>
       <NotesNavigation active="records" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={activeChar ? 1 : 0} filterContent={characterPanel} addLabel={view === 'records' ? '新增 Echo' : '新增角色'} onAdd={() => { if (view === 'records') { setNewRecord(previous => ({ ...previous, character_id: activeChar ?? previous.character_id })); setShowAdd(true) } else { setAddingCharacter(true); setNewCharError('') } }}>
       {toolbar => (
-      <main className={`${social.main} ${desktop.layout}`}>
+      <main className={`${social.main} ${social.echoMain} ${desktop.layout}`}>
         <aside className={`${social.profileRail} ${desktop.profile}`}><RecordsProfile character={selectedCharacter} /></aside>
         <div ref={feedRegion} className={`${social.recordsContent} ${desktop.content}`} tabIndex={0} role="region" aria-label="Echo 内容">
         <div className={social.contentHeader}>
-        <div className={social.tabs} role="tablist" aria-label="Echo 与角色" onKeyDown={event => {
+        <div className={social.tabs} role="tablist" aria-label="Echo 与 Char" onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
           event.preventDefault()
           const next = event.key === 'Home' ? 'records' : event.key === 'End' ? 'characters' : view === 'records' ? 'characters' : 'records'
@@ -319,7 +319,7 @@ export default function Records() {
           document.getElementById(next === 'records' ? 'records-feed-tab' : 'records-characters-tab')?.focus()
         }}>
           <button id="records-feed-tab" type="button" role="tab" aria-label="Echo" aria-controls="records-panel" tabIndex={view === 'records' ? 0 : -1} aria-selected={view === 'records'} onClick={() => setView('records')}><FiFileText size={23} /><span>Echo</span></button>
-          <button id="records-characters-tab" type="button" role="tab" aria-label="角色列表" aria-controls="records-panel" tabIndex={view === 'characters' ? 0 : -1} aria-selected={view === 'characters'} onClick={() => { setView('characters'); setActiveChar(null); setPage(1) }}><FiUsers size={23} /><span>角色</span></button>
+          <button id="records-characters-tab" type="button" role="tab" aria-label="Char" aria-controls="records-panel" tabIndex={view === 'characters' ? 0 : -1} aria-selected={view === 'characters'} onClick={() => { setView('characters'); setActiveChar(null); setPage(1) }}><FiUsers size={23} /><span>Char</span></button>
         </div>
         {toolbar}
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import styles from './notes-shell.module.css'
 
@@ -21,8 +21,9 @@ function pageItems(page: number, total: number, compact: boolean): (number | str
 }
 
 export default function NotesPagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (page: number) => void }) {
-  const [jump, setJump] = useState('')
+  const [jump, setJump] = useState(String(page))
   const [invalid, setInvalid] = useState(false)
+  useEffect(() => { setJump(String(page)); setInvalid(false) }, [page, totalPages])
   if (totalPages <= 1) return null
   const renderPages = (compact: boolean) => pageItems(page, totalPages, compact).map(item => typeof item === 'number'
     ? <button type="button" key={item} onClick={() => onChange(item)} aria-label={`第 ${item} 页`} aria-current={item === page ? 'page' : undefined}>{item}</button>
@@ -32,8 +33,8 @@ export default function NotesPagination({ page, totalPages, onChange }: { page: 
     <div className={styles.pagesWide}>{renderPages(false)}</div>
     <div className={styles.pagesCompact}>{renderPages(true)}</div>
     <button type="button" className={styles.pageArrow} aria-label="下一页" onClick={() => onChange(page + 1)} disabled={page >= totalPages}><FiChevronRight size={25} aria-hidden="true" /></button>
-    <form onSubmit={event => { event.preventDefault(); const next = Number(jump); if (!/^\d+$/.test(jump) || !Number.isSafeInteger(next) || next < 1 || next > totalPages) { setInvalid(true); return } onChange(next); setJump(''); setInvalid(false) }}>
-      <input type="text" inputMode="numeric" aria-label="跳转页码" aria-invalid={invalid} title={`输入 1–${totalPages}，按回车跳转`} value={jump} onChange={event => { setJump(event.target.value); setInvalid(false) }} />
+    <form onSubmit={event => { event.preventDefault(); const next = Number(jump); if (!/^\d+$/.test(jump) || !Number.isSafeInteger(next) || next < 1 || next > totalPages) { setInvalid(true); return } onChange(next); setJump(String(next)); setInvalid(false) }}>
+      <input type="text" inputMode="numeric" aria-label="跳转页码" aria-invalid={invalid} title={`输入 1–${totalPages}，按回车跳转`} value={jump} onFocus={event => event.currentTarget.select()} onBlur={() => { setJump(String(page)); setInvalid(false) }} onChange={event => { setJump(event.target.value); setInvalid(false) }} />
     </form>
   </nav>
 }

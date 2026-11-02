@@ -10,8 +10,9 @@
 .page :global(.card-item:hover) { box-shadow: 0 4px 24px #00000014 !important; }
 .page :global(.card-item img) { max-width: 100%; }
 .page :global(.scroll-hide) { scrollbar-width: none; }
-.drawer { position: fixed; inset: 0 0 0 auto; margin: 0; padding: 0; width: var(--yuria-drawer-width,min(304px,calc(100vw - 32px))); height: 100dvh; max-width: none; max-height: none; border: 0; background: #fafaf8; color: #222; box-shadow: -12px 0 60px #0000001a; font-family: var(--font-geist-sans),sans-serif; }
-.drawer[open] { display: flex; flex-direction: column; animation: drawer-reveal .25s ease both; }
+.drawer { position: fixed; inset: 0; margin: auto; padding: 0; width: min(520px,calc(100vw - 32px)); height: fit-content; max-width: none; max-height: calc(100dvh - 48px); border: 1px solid #ffffffd9; border-radius: 20px; background: #fffffff5; color: #222; box-shadow: 0 20px 70px #00000018; font-family: var(--font-geist-sans),sans-serif; overflow: hidden; }
+.drawer[open] { display: flex; flex-direction: column; }
+
 .drawer::backdrop { background: #15151550; backdrop-filter: blur(4px); }
 .drawerHeader { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; padding: max(16px,env(safe-area-inset-top)) 20px 12px 26px; font-size: 15px; }
 .drawerHeader button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: #444; cursor: pointer; }
@@ -63,8 +64,7 @@
  .verseTitle{font:400 17px/1.7 Georgia,'Songti SC',serif!important}
  .copyButton{display:inline-flex!important;width:auto!important;border:0!important;border-radius:8px!important;background:#f5f5f5!important;padding:7px 10px!important}
  .verseCard img{max-width:100%;height:auto}
- .drawer{inset:84px 328px auto auto;width:min(310px,calc(100vw - 280px));height:auto;max-height:calc(100dvh - 108px);border:1px solid #ffffffd9;border-radius:16px;background:#fffffff5;box-shadow:12px 0 60px #00000012;overflow-x:hidden}
- .drawer[open]{animation:none}
+
 }
 
 @media(min-width:1024px){
@@ -72,4 +72,7 @@
  .heading{position:sticky;top:0;z-index:3;background:#fff;flex-shrink:0}
 }
 
-@media(min-width:1024px) and (max-width:1199px){.drawer{right:280px}}
+
+.filterBody{overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#d1d1d1 transparent}
+.filterBody::-webkit-scrollbar{width:5px}.filterBody::-webkit-scrollbar-thumb{background:#d1d1d1;border-radius:10px}.filterBody::-webkit-scrollbar-button{display:none;width:0;height:0}
+@supports selector(::-webkit-scrollbar){.filterBody{scrollbar-width:auto;scrollbar-color:auto}}
