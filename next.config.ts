@@ -37,11 +37,14 @@ const nextConfig: NextConfig = {
   images: { remotePatterns: [{ protocol: 'https', hostname: new URL(assets.baseUrl).hostname, pathname: '/site-assets/**' }] },
   async redirects() {
     const files = assets.files as Record<string, { key: string }>;
-    const redirects = Object.entries(files).map(([source, file]) => ({ source,
-      destination: `${assets.baseUrl}/${file.key.split('/').map(encodeURIComponent).join('/')}`, permanent: true }));
-    if (files['/icon.png']) redirects.push({ source: '/apple-icon.png',
-      destination: `${assets.baseUrl}/${files['/icon.png'].key}`, permanent: true });
-    return redirects;
+    // These three are App Router metadata files and must be served from this
+    // origin. Google drops a favicon that redirects to another host.
+    const sameOriginIcons = new Set(['/favicon.ico', '/icon.png', '/apple-icon.png']);
+    return Object.entries(files).filter(([source]) => !sameOriginIcons.has(source)).map(([source, file]) => ({
+      source,
+      destination: `${assets.baseUrl}/${file.key.split('/').map(encodeURIComponent).join('/')}`,
+      permanent: true,
+    }));
   },
   async headers() {
     return [
