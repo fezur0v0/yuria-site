@@ -239,8 +239,8 @@ export default function Library() {
       <NotesNavigation active="library" search={search} onSearch={value => { setSearch(value); setPage(1) }} filterCount={Object.keys(selectedTags).length} filterContent={filterPanel} />
       <main className={notesStyles.main}>
         <div className={notesStyles.heading}>
-          <h1>词库</h1>
-          <button type="button" className={notesStyles.addButton} aria-label="新增词库" onClick={() => setShowAdd(true)}><FiPlus size={23} /></button>
+          <h1>Verse</h1>
+          <button type="button" className={notesStyles.addButton} aria-label="新增 Verse" onClick={() => setShowAdd(true)}><FiPlus size={23} /></button>
         </div>
 
         {loading ? (
@@ -254,13 +254,13 @@ export default function Library() {
               const groups = relatedGroups[card.id] || []
               const expandedChar = expandedCharPerCard[card.id]
               return (
-                <div key={card.id} className="card-item"
+                <div key={card.id} className={`card-item ${notesStyles.verseCard}`}
                   style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${isExpanded ? '#e0e0de' : '#f0f0ee'}`, padding: '20px', cursor: 'pointer', boxShadow: isExpanded ? '0 4px 24px rgba(0,0,0,0.08)' : '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s', overflowWrap: 'anywhere', minWidth: 0 }}
                   onClick={() => handleCardClick(card)}>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '15px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.title}</div>
+                      <div className={notesStyles.verseTitle} style={{ fontSize: '15px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.title}</div>
                       {card.author && <div style={{ fontSize: '12px', color: '#999', marginBottom: '2px' }}>by {card.author}</div>}
                       <div style={{ fontSize: '11px', color: '#bbb' }}>{new Date(card.created_at).toLocaleDateString('zh-CN')}</div>
                     </div>
@@ -293,7 +293,7 @@ export default function Library() {
                   {isExpanded && (
                     <div style={{ borderTop: '1px solid #f0f0ee', paddingTop: '12px', marginBottom: '12px' }} onClick={e => e.stopPropagation()}>
                       {groups.length === 0 ? (
-                        <div style={{ fontSize: '12px', color: '#ccc', textAlign: 'center', padding: '8px 0' }}>暂无关联记录</div>
+                        <div style={{ fontSize: '12px', color: '#ccc', textAlign: 'center', padding: '8px 0' }}>暂无关联 Echo</div>
                       ) : (
                         <>
                           <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '10px', letterSpacing: '0.1em' }}>关联角色</div>
@@ -334,7 +334,7 @@ export default function Library() {
                   )}
 
                   <div onClick={e => e.stopPropagation()}>
-                    <button onClick={() => copyContent(card.content, card.id)}
+                    <button className={notesStyles.copyButton} onClick={() => copyContent(card.content, card.id)}
                       style={{ width: '100%', padding: '9px', borderRadius: '8px', border: '1px solid #ebebeb', background: copied === card.id ? '#f0fdf4' : '#fff', color: copied === card.id ? '#22c55e' : '#666', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
                       {copied === card.id
                         ? <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>已复制</>
@@ -401,10 +401,10 @@ export default function Library() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setEditCard(null)}>
           <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(480px,100%)', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: 0 }}>编辑词库</h2>
+              <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: 0 }}>编辑 Verse</h2>
               <button onClick={() => { if (confirm('确定删除这张卡片？')) { deleteCard(editCard.id); setEditCard(null) } }}
                 style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: '1px solid #fca5a5', borderRadius: '8px', padding: '5px 12px', cursor: 'pointer' }}>
-                删除词库
+                删除 Verse
               </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

@@ -75,7 +75,7 @@ export default function Records() {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
 
-  // 新增记录弹窗
+  // 新增 Echo 弹窗
   const [showAdd, setShowAdd] = useState(false)
   const [cardOptions, setCardOptions] = useState<CardOption[]>([])
   const [saving, setSaving] = useState(false)
@@ -97,7 +97,7 @@ export default function Records() {
   const [newCharUploading, setNewCharUploading] = useState(false)
   const [savingNewChar, setSavingNewChar] = useState(false)
 
-  // 词库下拉
+  // Verse 下拉
   const [cardDropdownOpen, setCardDropdownOpen] = useState(false)
   const [cardSearch, setCardSearch] = useState('')
 
@@ -139,7 +139,7 @@ export default function Records() {
     if (activeChar) query = query.eq('character_id', activeChar)
     const { data, count, error } = await query.order('created_at', { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
     if (read !== latestRead.current) return
-    if (error) { setReadError('记录读取失败，请刷新重试。'); setLoading(false); return }
+    if (error) { setReadError('Echo 读取失败，请刷新重试。'); setLoading(false); return }
     setReadError('')
     setTotal(count || 0)
     const lastPage = Math.max(1, Math.ceil((count || 0) / PAGE_SIZE))
@@ -266,7 +266,7 @@ export default function Records() {
       content: newRecord.content || null,
       images,
     })
-    if (error) { setSaveError('记录未保存，请稍后重试。'); setSaving(false); return }
+    if (error) { setSaveError('Echo 未保存，请稍后重试。'); setSaving(false); return }
     setNewRecord({ character_id: '', card_id: '', title: '', extra_tag: '', content: '' })
     setDraftImages([])
     setCardSearch('')
@@ -304,7 +304,7 @@ export default function Records() {
       <main className={social.main}>
         <aside className={social.profileRail}><RecordsProfile character={selectedCharacter} /></aside>
         <div className={social.recordsContent}>
-        <div className={social.tabs} role="tablist" aria-label="记录与角色" onKeyDown={event => {
+        <div className={social.tabs} role="tablist" aria-label="Echo 与角色" onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
           event.preventDefault()
           const next = event.key === 'Home' ? 'records' : event.key === 'End' ? 'characters' : view === 'records' ? 'characters' : 'records'
@@ -312,30 +312,30 @@ export default function Records() {
           if (next === 'characters') { setActiveChar(null); setPage(1) }
           document.getElementById(next === 'records' ? 'records-feed-tab' : 'records-characters-tab')?.focus()
         }}>
-          <button id="records-feed-tab" type="button" role="tab" aria-label="记录" aria-controls="records-panel" tabIndex={view === 'records' ? 0 : -1} aria-selected={view === 'records'} onClick={() => setView('records')}><FiFileText size={23} /><span>记录</span></button>
+          <button id="records-feed-tab" type="button" role="tab" aria-label="Echo" aria-controls="records-panel" tabIndex={view === 'records' ? 0 : -1} aria-selected={view === 'records'} onClick={() => setView('records')}><FiFileText size={23} /><span>Echo</span></button>
           <button id="records-characters-tab" type="button" role="tab" aria-label="角色列表" aria-controls="records-panel" tabIndex={view === 'characters' ? 0 : -1} aria-selected={view === 'characters'} onClick={() => { setView('characters'); setActiveChar(null); setPage(1) }}><FiUsers size={23} /><span>角色</span></button>
         </div>
         <section id="records-panel" role="tabpanel" aria-labelledby={view === 'records' ? 'records-feed-tab' : 'records-characters-tab'}>
-        <div className={social.feedTools}>{activeChar ? <button type="button" className={social.backToAll} onClick={() => selectChar(null)}><FiChevronLeft size={15} />全部记录</button> : <span>{view === 'records' ? `${total} notes` : `${characters.length} characters`}</span>}<button type="button" aria-label={view === 'records' ? '新增记录' : '新增角色'} onClick={() => { if (view === 'records') { setNewRecord(previous => ({ ...previous, character_id: activeChar ?? previous.character_id })); setShowAdd(true) } else { setAddingCharacter(true); setNewCharError('') } }}><FiPlus size={23} /></button></div>
+        <div className={social.feedTools}>{activeChar ? <button type="button" className={social.backToAll} onClick={() => selectChar(null)}><FiChevronLeft size={15} />全部 Echo</button> : <span>{view === 'records' ? `${total} notes` : `${characters.length} characters`}</span>}<button type="button" aria-label={view === 'records' ? '新增 Echo' : '新增角色'} onClick={() => { if (view === 'records') { setNewRecord(previous => ({ ...previous, character_id: activeChar ?? previous.character_id })); setShowAdd(true) } else { setAddingCharacter(true); setNewCharError('') } }}><FiPlus size={23} /></button></div>
         {view === 'characters' ? <>
           {addingCharacter ? <div style={{ padding: '0 24px 24px' }}>{characterPanel}</div> : <div className={social.characterList}>{characters.filter(character => character.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())).map(character => <button type="button" className={social.characterRow} key={character.id} onClick={() => selectChar(character.id)}><span className={social.postAvatar}>{character.avatar ? <PrivateTheaterImage src={character.avatar} alt="" /> : <FiUser size={20} />}</span><strong>{character.name}</strong><small>{characterCounts[character.id] ?? '—'} notes</small></button>)}</div>}
           {characters.length === 0 && !addingCharacter && <p className={social.empty}>还没有角色，点击 + 添加</p>}
-        </> : readError ? <p role="alert" className={social.empty}>{readError}</p> : loading ? <p role="status" className={social.empty}>Loading...</p> : records.length === 0 ? <p className={social.empty}>还没有记录</p> : <div className={social.feed}>{records.map(record => <Link href={`/notes/records/${record.id}${activeChar ? `?character=${encodeURIComponent(activeChar)}` : ''}`} className={social.post} key={record.id}>
+        </> : readError ? <p role="alert" className={social.empty}>{readError}</p> : loading ? <p role="status" className={social.empty}>Loading...</p> : records.length === 0 ? <p className={social.empty}>还没有 Echo</p> : <div className={social.feed}>{records.map(record => <Link href={`/notes/records/${record.id}${activeChar ? `?character=${encodeURIComponent(activeChar)}` : ''}`} className={social.post} key={record.id}>
           <span className={social.postAvatar}>{record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" /> : <FiUser size={20} />}</span>
           <div><div className={social.postHead}><strong>{record.characters?.name || '未命名'}</strong><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time></div><h2>{record.title}</h2>{record.extra_tag && <div className={social.extraTag}>{record.extra_tag}</div>}{record.content && <p>{stripMarkdown(record.content)}</p>}
-          {Boolean(record.images?.length) && <div className={social.thumbnails}>{record.images!.slice(0,3).map((image,i) => <div key={i}><PrivateTheaterImage src={image.url} alt={image.caption || `记录图片 ${i+1}`} />{i === 2 && record.images!.length > 3 && <span>+{record.images!.length-3}</span>}</div>)}</div>}
+          {Boolean(record.images?.length) && <div className={social.thumbnails}>{record.images!.slice(0,3).map((image,i) => <div key={i}><PrivateTheaterImage src={image.url} alt={image.caption || `Echo 图片 ${i+1}`} />{i === 2 && record.images!.length > 3 && <span>+{record.images!.length-3}</span>}</div>)}</div>}
           </div></Link>)}</div>}
         {view === 'records' && <NotesPagination page={page} totalPages={totalPages} onChange={setPage} />}
         </section>
         </div>
       </main>
 
-      {/* 新增记录弹窗 */}
+      {/* 新增 Echo 弹窗 */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
           onClick={() => { setShowAdd(false); setCharDropdownOpen(false); setCardDropdownOpen(false) }}>
-          <div role="dialog" aria-modal="true" aria-label="新增记录" style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>新增记录</h2>
+          <div role="dialog" aria-modal="true" aria-label="新增 Echo" style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>新增 Echo</h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
@@ -344,18 +344,18 @@ export default function Records() {
                 <CharacterSelect characters={characters} value={newRecord.character_id} open={charDropdownOpen} onOpenChange={open => { setCharDropdownOpen(open); if (open) setCardDropdownOpen(false) }} onChange={id => setNewRecord(previous => ({ ...previous, character_id: id }))} />
               </div>
 
-              {/* 关联词库下拉 */}
+              {/* 关联 Verse 下拉 */}
               <div style={{ position: 'relative' }}>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>关联词库（可选）</label>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>关联 Verse（可选）</label>
                 <div onClick={() => { setCardDropdownOpen(v => !v); setCharDropdownOpen(false) }}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', cursor: 'pointer', color: selectedCard ? '#1a1a1a' : '#bbb' }}>
-                  {selectedCard ? selectedCard.title : '点击查看词库列表'}
+                  {selectedCard ? selectedCard.title : '点击查看 Verse 列表'}
                   <svg style={{ marginLeft: 'auto' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
 
                 {cardDropdownOpen && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: '#fff', border: '1px solid #ebebeb', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px' }}>
-                    <input value={cardSearch} onChange={e => setCardSearch(e.target.value)} placeholder="搜索词库标题..." autoFocus
+                    <input value={cardSearch} onChange={e => setCardSearch(e.target.value)} placeholder="搜索 Verse 标题..." autoFocus
                       style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '8px', padding: '7px 10px', fontSize: '12px', outline: 'none', marginBottom: '6px' }} />
                     <div className="scroll-hide" style={{ maxHeight: '180px', overflowY: 'auto' }}>
                       {newRecord.card_id && (
@@ -363,7 +363,7 @@ export default function Records() {
                           style={{ padding: '8px 10px', fontSize: '12px', color: '#ef4444', cursor: 'pointer' }}>取消关联</div>
                       )}
                       {filteredCardOptions.length === 0 ? (
-                        <div style={{ padding: '10px', fontSize: '12px', color: '#ccc', textAlign: 'center' }}>没有找到词库</div>
+                        <div style={{ padding: '10px', fontSize: '12px', color: '#ccc', textAlign: 'center' }}>没有找到 Verse</div>
                       ) : filteredCardOptions.map(c => (
                         <div key={c.id} onClick={() => { setNewRecord(p => ({ ...p, card_id: c.id })); setCardDropdownOpen(false) }}
                           style={{ padding: '8px 10px', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', color: newRecord.card_id === c.id ? '#1a1a1a' : '#666', background: newRecord.card_id === c.id ? '#f5f5f3' : '#fff' }}>
@@ -389,7 +389,7 @@ export default function Records() {
 
               <div>
                 <RecordToolbar onFormat={insertMarkdown} onTable={() => setShowTableBuilder(true)} />
-                <textarea aria-label="记录正文" ref={contentRef} value={newRecord.content} onChange={e => setNewRecord(p => ({ ...p, content: e.target.value }))} rows={7}
+                <textarea aria-label="Echo 正文" ref={contentRef} value={newRecord.content} onChange={e => setNewRecord(p => ({ ...p, content: e.target.value }))} rows={7}
                   placeholder="在这里写正文...（选中文字后点上方按钮可快速加粗/引用）"
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
               </div>

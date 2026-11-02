@@ -39,15 +39,16 @@ export default function RecordsProfile({ character }: { character?: Character })
   function avatar(value: string, label: string, scope: Target['scope']) {
     return <button type="button" className={styles.avatar} aria-label={`编辑${label}头像`} disabled={!ready} onClick={() => edit(scope, 'avatar', `${label}头像`)}>{value ? <PrivateTheaterImage src={value} alt={`${label}头像`} /> : <FiUser size={29} aria-hidden="true" />}</button>
   }
-  return <section className={styles.identity} aria-label={character ? '角色与我的介绍' : '记录页个人介绍'}>
-    <button type="button" className={styles.cover} aria-label="编辑记录页背景" disabled={!ready} onClick={() => edit(character ? 'pair' : 'self', 'cover', '背景')}>{current.cover && <PrivateTheaterImage src={current.cover} alt="" />}<FiImage size={18} aria-hidden="true" /></button>
+  return <div className={styles.profileStack}><section className={styles.identity} aria-label={character ? '角色与我的介绍' : 'Echo 页个人介绍'}>
+    <button type="button" className={styles.cover} aria-label="编辑 Echo 页背景" disabled={!ready} onClick={() => edit(character ? 'pair' : 'self', 'cover', '背景')}>{current.cover && <PrivateTheaterImage src={current.cover} alt="" />}<FiImage size={18} aria-hidden="true" /></button>
     <div className={`${styles.identityBody} ${character ? styles.pair : ''}`}>
       <div className={styles.avatars}>{avatar(self.avatar, '我的', 'self')}{character && avatar(pair.avatar || character.avatar || '', '角色', 'pair')}</div>
       <div className={styles.names}><button disabled={!ready} onClick={() => edit('self', 'name', '我的名字')}>{self.name || 'yuria'}</button>{character && <><span>&amp;</span><button disabled={!ready} onClick={() => edit('pair', 'name', '角色称呼')}>{pair.name || character.name}</button></>}</div>
       <button className={styles.signature} disabled={!ready} onClick={() => edit(character ? 'pair' : 'self', 'bio', character ? '个性签名' : '个人介绍')}>{current.bio || (ready ? character ? '写一句属于你们的个签' : '写一点关于自己' : 'Loading...')}</button>
       {error && <p role="alert" className={styles.error}>{error}</p>}
     </div>
-    <div className={styles.collage} role="group" aria-label="私密照片墙">{[0, 1, 2].map(index => <button type="button" key={index} aria-label={`编辑照片 ${index + 1}`} disabled={!ready} onClick={() => setTarget({ scope: character ? 'pair' : 'self', field: 'photo', index, label: `照片 ${index + 1}` })}>{current.photos?.[index] ? <PrivateTheaterImage src={current.photos[index]} alt={`照片 ${index + 1}`} /> : <FiImage size={20} aria-hidden="true" />}</button>)}</div>
+    </section>
+    <section className={styles.collagePanel} aria-label="私密照片墙"><h2>Moments</h2><div className={styles.collage} role="group" aria-label="私密照片墙">{[0, 1, 2].map(index => <button type="button" key={index} aria-label={`编辑照片 ${index + 1}`} disabled={!ready} onClick={() => setTarget({ scope: character ? 'pair' : 'self', field: 'photo', index, label: `照片 ${index + 1}` })}>{current.photos?.[index] ? <PrivateTheaterImage src={current.photos[index]} alt={`照片 ${index + 1}`} /> : <FiImage size={20} aria-hidden="true" />}</button>)}</div></section>
     {target && <ProfileEdit key={`${character?.id ?? 'self'}:${target.scope}:${target.field}:${target.index ?? 0}`} target={target} initial={target.field === 'photo' ? (current.photos?.[target.index ?? 0] ?? '') : (target.scope === 'self' ? self : pair)[target.field]} onClose={() => setTarget(null)} onSave={async value => {
       const previous = target.scope === 'self' ? self : pair
       const photos: [string, string, string] = [...(previous.photos ?? ['', '', ''])]
@@ -59,7 +60,7 @@ export default function RecordsProfile({ character }: { character?: Character })
       if (target.scope === 'self') setSelf(next); else setPair(next)
       setTarget(null)
     }} />}
-  </section>
+  </div>
 }
 function ProfileEdit({ target, initial, onClose, onSave }: { target: Target; initial: string; onClose: () => void; onSave: (value: string) => Promise<void> }) {
   const dialog = useRef<HTMLDialogElement>(null)

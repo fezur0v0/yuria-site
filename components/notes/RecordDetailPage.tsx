@@ -213,7 +213,7 @@ export default function RecordDetail() {
   }
 
   async function deleteRecord() {
-    if (!record || !confirm('确定删除这条记录？')) return
+    if (!record || !confirm('确定删除这条 Echo？')) return
     await supabase.from('theater_records').delete().eq('id', record.id)
     router.push('/notes/records')
   }
@@ -228,7 +228,7 @@ export default function RecordDetail() {
   const filteredCardOptions = cardOptions.filter(c => c.title.toLowerCase().includes(cardSearch.toLowerCase()))
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc', fontSize: '13px', background: '#fafaf8' }}>加载中...</div>
-  if (!record) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc', fontSize: '13px', background: '#fafaf8' }}>未找到该记录</div>
+  if (!record) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc', fontSize: '13px', background: '#fafaf8' }}>未找到该 Echo</div>
 
   return (
     <div className={social.page}>
@@ -236,9 +236,9 @@ export default function RecordDetail() {
       <main className={`${social.main} ${social.detailLayout}`}>
         <aside className={`${social.profileRail} ${social.detailProfile}`}><RecordsProfile character={characters.find(character => character.id === profileCharacterId)} /></aside>
         <div className={social.detail}>
-        <nav className={social.detailNav} aria-label="记录操作">
-          <button type="button" aria-label="返回记录列表" onClick={() => { const character = new URLSearchParams(window.location.search).get('character'); router.push(`/notes/records${character ? `?character=${encodeURIComponent(character)}` : ''}`) }}><FiChevronLeft size={25} /></button>
-          <div className={social.detailActions}><button type="button" aria-label="编辑记录" onClick={openEdit}><FiEdit2 size={18} /></button><button type="button" aria-label="删除记录" onClick={deleteRecord}><FiTrash2 size={17} /></button></div>
+        <nav className={social.detailNav} aria-label="Echo 操作">
+          <button type="button" aria-label="返回 Echo 列表" onClick={() => { const character = new URLSearchParams(window.location.search).get('character'); router.push(`/notes/records${character ? `?character=${encodeURIComponent(character)}` : ''}`) }}><FiChevronLeft size={25} /></button>
+          <div className={social.detailActions}><button type="button" aria-label="编辑 Echo" onClick={openEdit}><FiEdit2 size={18} /></button><button type="button" aria-label="删除 Echo" onClick={deleteRecord}><FiTrash2 size={17} /></button></div>
         </nav>
         <header className={social.detailHeader}>
           <span className={social.postAvatar}>{record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" /> : <FiUser size={28} />}</span>
@@ -297,9 +297,9 @@ export default function RecordDetail() {
       {showEdit && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
           onClick={() => { setShowEdit(false); setCharDropdownOpen(false); setCardDropdownOpen(false) }}>
-          <div role="dialog" aria-modal="true" aria-label="编辑记录" style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" aria-label="编辑 Echo" style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(560px,100%)', maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             {saveError && <p role="alert" className={social.error}>{saveError}</p>}
-            <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>编辑记录</h2>
+            <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: '0 0 20px' }}>编辑 Echo</h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
@@ -308,22 +308,22 @@ export default function RecordDetail() {
               </div>
 
               <div style={{ position: 'relative' }}>
-                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>关联词库（可选）</label>
+                <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>关联 Verse（可选）</label>
                 <div onClick={() => { setCardDropdownOpen(v => !v); setCharDropdownOpen(false) }}
                   style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ebebeb', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', cursor: 'pointer', color: selectedCard ? '#1a1a1a' : '#bbb' }}>
-                  {selectedCard ? selectedCard.title : '点击查看词库列表'}
+                  {selectedCard ? selectedCard.title : '点击查看 Verse 列表'}
                   <svg style={{ marginLeft: 'auto' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
                 </div>
                 {cardDropdownOpen && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px', background: '#fff', border: '1px solid #ebebeb', borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 10, padding: '8px' }}>
-                    <input value={cardSearch} onChange={e => setCardSearch(e.target.value)} placeholder="搜索词库标题..." autoFocus
+                    <input value={cardSearch} onChange={e => setCardSearch(e.target.value)} placeholder="搜索 Verse 标题..." autoFocus
                       style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '8px', padding: '7px 10px', fontSize: '12px', outline: 'none', marginBottom: '6px' }} />
                     <div className="scroll-hide" style={{ maxHeight: '180px', overflowY: 'auto' }}>
                       {editForm.card_id && (
                         <div onClick={() => { setEditForm(p => ({ ...p, card_id: '' })); setCardDropdownOpen(false) }} style={{ padding: '8px 10px', fontSize: '12px', color: '#ef4444', cursor: 'pointer' }}>取消关联</div>
                       )}
                       {filteredCardOptions.length === 0 ? (
-                        <div style={{ padding: '10px', fontSize: '12px', color: '#ccc', textAlign: 'center' }}>没有找到词库</div>
+                        <div style={{ padding: '10px', fontSize: '12px', color: '#ccc', textAlign: 'center' }}>没有找到 Verse</div>
                       ) : filteredCardOptions.map(c => (
                         <div key={c.id} onClick={() => { setEditForm(p => ({ ...p, card_id: c.id })); setCardDropdownOpen(false) }}
                           style={{ padding: '8px 10px', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', color: editForm.card_id === c.id ? '#1a1a1a' : '#666', background: editForm.card_id === c.id ? '#f5f5f3' : '#fff' }}>
@@ -348,7 +348,7 @@ export default function RecordDetail() {
 
               <div>
                 <RecordToolbar onFormat={insertMarkdown} onTable={() => setShowTableBuilder(true)} />
-                <textarea aria-label="记录正文" ref={contentRef} value={editForm.content} onChange={e => setEditForm(p => ({ ...p, content: e.target.value }))} rows={7}
+                <textarea aria-label="Echo 正文" ref={contentRef} value={editForm.content} onChange={e => setEditForm(p => ({ ...p, content: e.target.value }))} rows={7}
                   style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
               </div>
 

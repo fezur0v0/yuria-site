@@ -1,14 +1,14 @@
 .rail{display:none}
 @media(min-width:1024px){
  .mobileNav{display:none}
- .rail{position:fixed;inset:24px auto 24px max(20px,calc((100vw - 1280px)/2));z-index:45;display:flex;flex-direction:column;width:180px;max-height:calc(100dvh - 48px);padding:28px 14px 20px;border:1px solid #ffffffeb;border-radius:22px;background:#f8f9fbbd;backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);box-shadow:0 8px 36px #303c5510,inset 0 1px 0 #fff;color:#4f535c;font-family:var(--font-geist-sans),sans-serif;overflow-y:auto;scrollbar-width:thin}
- .brand{display:block;padding:0 14px 26px;margin-bottom:22px;border-bottom:1px solid #dfe2e6b0;font:30px/1.3 Georgia,serif;text-decoration:none;color:#30333b}
+ .rail{position:fixed;inset:0 auto 0 0;z-index:45;display:flex;flex-direction:column;width:200px;max-height:100dvh;padding:32px 14px 24px;border:0;border-right:1px solid #ebebeb;border-radius:0;background:#ffffffed;backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);box-shadow:none;color:#262626;font-family:var(--font-geist-sans),sans-serif;overflow-y:auto;scrollbar-width:thin}
+ .brand{display:block;padding:0 14px 26px;margin-bottom:22px;border-bottom:0;font:30px/1.3 Georgia,serif;text-decoration:none;color:#30333b}
  .brand span{display:block;margin-top:9px;font:10px/1.4 var(--font-geist-sans),sans-serif;letter-spacing:.4em;color:#9398a3}
  .links{display:flex;flex-direction:column;gap:8px}
  .links>a,.links>button,.bottom>a{display:flex;align-items:center;gap:14px;min-height:50px;padding:12px 14px;border:1px solid transparent;border-radius:12px;background:none;color:inherit;font:14px/1.5 var(--font-geist-sans),sans-serif;text-decoration:none;text-align:left;cursor:pointer}
- .links>a[aria-current=page]{background:#e9ecf1b3;border-color:#fff;color:#222630}
- .links>a:hover,.links>button:hover,.bottom>a:hover{background:#ffffffb8}
- .bottom{display:flex;flex-direction:column;gap:4px;margin-top:auto;padding-top:22px;border-top:1px solid #dfe2e6b0}
+ .links>a[aria-current=page]{background:#f3f3f3;border-color:transparent;color:#171717;font-weight:600}
+ .links>a:hover,.links>button:hover,.bottom>a:hover{background:#f7f7f7}
+ .bottom{display:flex;flex-direction:column;gap:4px;margin-top:auto;padding-top:22px;border-top:0}
  .links{padding-bottom:30px}.rail svg{flex:none}.count{margin-left:auto;font-size:11px;color:#9097a5}
  .search{margin:0 2px 6px}.search input{width:100%;min-width:0;height:40px;border:1px solid #dfe2e8;border-radius:10px;padding:0 10px;background:#ffffffcf;color:#333;font:13px var(--font-geist-sans),sans-serif}
  .rail :is(a,button,input):focus-visible{outline:2px solid #9098aa;outline-offset:2px}

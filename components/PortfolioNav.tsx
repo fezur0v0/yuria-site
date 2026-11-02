@@ -35,8 +35,8 @@ type NotesControls = {
   filterCount: number;
 };
 const notesLinks = [
-  { href: '/notes/library', label: '词库' },
-  { href: '/notes/records', label: '记录' },
+  { href: '/notes/library', label: 'Verse' },
+  { href: '/notes/records', label: 'Echo' },
 ];
 
 type MeControls = {
@@ -55,7 +55,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
   const isLight = theme === 'light';
   const isAdmin = mode === 'admin';
   const isNotes = mode === 'notes';
-  const searchScope = isNotes && notesControls ? { value: notesControls.search, onChange: notesControls.onSearch, label: notesControls.active === 'library' ? '搜索词库标题或内容' : '搜索记录标题、副标题或正文', placeholder: notesControls.active === 'library' ? '搜索词库…' : '搜索记录…' } : undefined;
+  const searchScope = isNotes && notesControls ? { value: notesControls.search, onChange: notesControls.onSearch, label: notesControls.active === 'library' ? '搜索 Verse 标题或内容' : '搜索 Echo 标题、标签或正文', placeholder: notesControls.active === 'library' ? '搜索 Verse…' : '搜索 Echo…' } : undefined;
   const desktopLinks = isNotes ? notesLinks : isAdmin ? adminLinks : [...(showSections ? sections : []), ...extraLinks];
   const drawerLinks = isNotes ? notesLinks : isAdmin ? adminLinks : [...sections, ...extraLinks];
   const drawerId = isNotes ? 'notes-drawer' : isAdmin ? 'admin-drawer' : 'site-drawer';
@@ -95,7 +95,7 @@ export default function PortfolioNav({ homeHref = '/', theme = 'default', showSe
   }, [drawerOpen]);
 
   return <>
-    <nav aria-label={isNotes ? '词库与记录导航' : isAdmin ? '管理面板顶部导航' : '顶部导航'} className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${visible || meControls ? 'translate-y-0' : '-translate-y-full'}`}>
+    <nav aria-label={isNotes ? 'Verse 与 Echo 导航' : isAdmin ? '管理面板顶部导航' : '顶部导航'} className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${visible || meControls ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className={`transition-colors duration-300 ${scrolled || meControls ? isLight ? 'bg-white/50 backdrop-blur-md' : 'bg-black/30 backdrop-blur-md' : 'bg-transparent'}`}>
         <div className="pl-6 pr-3 sm:px-8 h-16 flex items-center justify-between gap-6">
           <Link href={homeHref} className={`${isLight ? 'text-[#1a1a1a]' : 'text-white'} font-serif text-lg tracking-wide`}>yuria</Link>
