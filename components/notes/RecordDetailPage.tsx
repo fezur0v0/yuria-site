@@ -2,6 +2,7 @@
 import { uploadPrivateImage } from '@/utils/content/privateUpload'
 import { FiChevronLeft, FiEdit2, FiTrash2, FiUser, FiLink } from 'react-icons/fi'
 import social from './records-social.module.css'
+import EchoTagsInput, { EchoTags } from './EchoTags'
 import RecordsProfile from './RecordsProfile'
 import NotesDesktopNav from './NotesDesktopNav'
 import desktop from './notes-desktop.module.css'
@@ -245,7 +246,7 @@ export default function RecordDetail() {
         </nav>
         <header className={social.detailHeader}>
           <span className={social.postAvatar}>{record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" /> : <FiUser size={28} />}</span>
-          <div><div className={social.detailIdentity}><strong>{record.characters?.name || '未命名'}</strong><div className={social.detailMeta}><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time><button type="button" aria-label="打开 HTML" title="HTML" onClick={() => setShowHtml(true)}><FiLink size={19} /></button></div></div><h1>{record.title}</h1>{record.extra_tag && <div className={social.extraTag}>{record.extra_tag}</div>}</div>
+          <div><div className={social.detailIdentity}><strong>{record.characters?.name || '未命名'}</strong><div className={social.detailMeta}><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time><button type="button" aria-label="打开 HTML" title="HTML" onClick={() => setShowHtml(true)}><FiLink size={19} /></button></div></div><h1>{record.title}</h1><EchoTags value={record.extra_tag} /></div>
         </header>
         <article className={social.detailContent}>
           {record.content && <MarkdownContent content={record.content} />}
@@ -347,8 +348,7 @@ export default function RecordDetail() {
               </div>
               <div>
                 <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标签</label>
-                <input value={editForm.extra_tag} onChange={e => setEditForm(p => ({ ...p, extra_tag: e.target.value }))} placeholder="标签"
-                  style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
+                <EchoTagsInput value={editForm.extra_tag} onChange={value => setEditForm(p => ({ ...p, extra_tag: value }))} />
               </div>
 
               <div>

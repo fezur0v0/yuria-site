@@ -1,0 +1,11 @@
+.tags,.inputBox{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0;max-width:100%}
+.tags{margin:5px 0 8px}
+.tag{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:2px 8px;border-radius:6px;background:#f5f5f3;color:#777;font-size:11px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+.inputBox{min-height:42px;padding:8px 12px;border:1px solid #ebebeb;border-radius:10px;background:#fff;cursor:text}
+.inputBox:focus-within{border-color:#aaa}
+.inputBox .tag{font-size:12px;color:#555}
+.tag button{flex:none;display:grid;place-items:center;width:20px;height:22px;padding:0;border:0;border-radius:4px;background:transparent;color:#999;font:inherit;font-size:15px;cursor:pointer}
+.tag button:hover{background:#e8e8e5;color:#444}
+.inputBox input{flex:1;width:100%;min-width:100px;max-width:100%;padding:0;border:0;background:transparent;color:#333;font:inherit;font-size:13px;line-height:24px;outline:none}
+.hint{margin:6px 0 0;color:#aaa;font-size:11px;line-height:1.6}
+.tag button:focus-visible{outline:2px solid #777;outline-offset:2px}

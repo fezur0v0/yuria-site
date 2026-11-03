@@ -5,6 +5,7 @@ import NotesNavigation from './NotesNavigation'
 import RecordsProfile from './RecordsProfile'
 import desktop from './notes-desktop.module.css'
 import social from './records-social.module.css'
+import EchoTagsInput, { EchoTags } from './EchoTags'
 import NotesPagination from './NotesPagination'
 import notesStyles from './notes-shell.module.css'
 import { FiPlus, FiCheck, FiUser, FiFileText, FiUsers, FiChevronLeft } from 'react-icons/fi'
@@ -330,7 +331,7 @@ export default function Records() {
           {characters.length === 0 && !addingCharacter && <p className={social.empty}>还没有角色，点击 + 添加</p>}
         </> : readError ? <p role="alert" className={social.empty}>{readError}</p> : loading ? <p role="status" className={social.empty}>Loading...</p> : records.length === 0 ? <p className={social.empty}>还没有 Echo</p> : <div className={social.feed}>{records.map(record => <Link href={`/notes/echo/${record.id}${activeChar ? `?character=${encodeURIComponent(activeChar)}` : ''}`} className={social.post} key={record.id}>
           <span className={social.postAvatar}>{record.characters?.avatar ? <PrivateTheaterImage src={record.characters.avatar} alt="" /> : <FiUser size={20} />}</span>
-          <div><div className={social.postHead}><strong>{record.characters?.name || '未命名'}</strong><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time></div><h2>{record.title}</h2>{record.extra_tag && <div className={social.extraTag}>{record.extra_tag}</div>}{record.content && <p>{stripMarkdown(record.content)}</p>}
+          <div><div className={social.postHead}><strong>{record.characters?.name || '未命名'}</strong><time dateTime={record.created_at}>{new Date(record.created_at).toLocaleDateString('zh-CN')}</time></div><h2>{record.title}</h2><EchoTags value={record.extra_tag} />{record.content && <p>{stripMarkdown(record.content)}</p>}
           {Boolean(record.images?.length) && <div className={social.thumbnails}>{record.images!.slice(0,3).map((image,i) => <div key={i}><PrivateTheaterImage src={image.url} alt={image.caption || `Echo 图片 ${i+1}`} />{i === 2 && record.images!.length > 3 && <span>+{record.images!.length-3}</span>}</div>)}</div>}
           </div></Link>)}</div>}
         {view === 'records' && <NotesPagination page={page} totalPages={totalPages} onChange={setPage} />}
@@ -393,8 +394,7 @@ export default function Records() {
 
               <div>
                 <label style={{ fontSize: '12px', color: '#aaa', marginBottom: '6px', display: 'block' }}>标签</label>
-                <input value={newRecord.extra_tag} onChange={e => setNewRecord(p => ({ ...p, extra_tag: e.target.value }))} placeholder="标签"
-                  style={{ width: '100%', border: '1px solid #ebebeb', borderRadius: '10px', padding: '10px 14px', fontSize: '13px', outline: 'none' }} />
+                <EchoTagsInput value={newRecord.extra_tag} onChange={value => setNewRecord(p => ({ ...p, extra_tag: value }))} />
               </div>
 
               <div>
