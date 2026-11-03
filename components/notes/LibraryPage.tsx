@@ -4,7 +4,7 @@ import RecordsProfile from './RecordsProfile'
 import desktop from './notes-desktop.module.css'
 import NotesPagination from './NotesPagination'
 import notesStyles from './notes-shell.module.css'
-import { FiPlus, FiMinus } from 'react-icons/fi'
+import { FiPlus, FiMinus, FiTrash2 } from 'react-icons/fi'
 import PrivateTheaterImage from '@/components/notes/PrivateTheaterImage'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -414,9 +414,9 @@ export default function Library() {
           <div style={{ background: '#fff', borderRadius: '20px', padding: '28px', width: 'min(480px,100%)', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
               <h2 style={{ fontFamily: 'Noto Serif SC,serif', fontWeight: 300, fontSize: '18px', color: '#1a1a1a', margin: 0 }}>编辑 Verse</h2>
-              <button onClick={() => { if (confirm('确定删除这张卡片？')) { deleteCard(editCard.id); setEditCard(null) } }}
-                style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: '1px solid #fca5a5', borderRadius: '8px', padding: '5px 12px', cursor: 'pointer' }}>
-                删除 Verse
+              <button type="button" aria-label="删除 Verse" title="删除 Verse" onClick={() => { if (confirm('确定删除这张卡片？')) { deleteCard(editCard.id); setEditCard(null) } }}
+                style={{ display: 'grid', placeItems: 'center', width: '40px', height: '40px', color: '#a9a9a9', background: 'none', border: 0, borderRadius: '8px', padding: 0, cursor: 'pointer' }}>
+                <FiTrash2 size={17} aria-hidden="true" />
               </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

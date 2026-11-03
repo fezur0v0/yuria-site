@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useRef, useState } from 'react';
+import { FiX } from 'react-icons/fi';
 import { parseEchoTags, serializeEchoTags } from '@/utils/notes/echo-tags';
 import styles from './echo-tags.module.css';
 
@@ -30,7 +31,7 @@ export default function EchoTagsInput({ value, onChange }: { value: string; onCh
       {tags.map(tag => <span key={tag} className={styles.tag}>{tag}<button type="button" aria-label={`删除标签：${tag}`} onMouseDown={event => event.preventDefault()} onClick={() => {
         onChange(serializeEchoTags(tags.filter(item => item !== tag)));
         inputRef.current?.focus();
-      }}>×</button></span>)}
+      }}><FiX size={12} aria-hidden="true" /></button></span>)}
       <input ref={inputRef} aria-label="Echo 标签" aria-describedby={hintId} value={input} placeholder={tags.length ? '继续添加…' : '输入标签后按 Enter…'} enterKeyHint="done"
         onChange={event => setInput(event.target.value)} onBlur={commit}
         onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}
