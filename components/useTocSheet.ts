@@ -51,8 +51,6 @@ export default function useTocSheet() {
     const { min, max } = bounds();
     height.current = Math.max(min, Math.min(max, value));
     sheet.current?.style.setProperty('--sheet-height', `${height.current}px`);
-    grip.current?.setAttribute('aria-valuenow', String(Math.round(height.current / max * 100)));
-    grip.current?.setAttribute('aria-valuetext', `${Math.round(height.current)} 像素`);
   }, [bounds]);
 
   const finishDrag = useCallback(() => {
@@ -68,7 +66,14 @@ export default function useTocSheet() {
 
   useEffect(() => {
     if (!open) return;
-    paintHeight(sheet.current?.offsetHeight ?? window.innerHeight * .6);
+    const panel = sheet.current;
+    if (!panel) return;
+    const sizeObserver = new ResizeObserver(() => {
+      const actual = panel.offsetHeight;
+      grip.current?.setAttribute('aria-valuenow', String(Math.round(actual / bounds().max * 100)));
+      grip.current?.setAttribute('aria-valuetext', `${actual} 像素`);
+    });
+    sizeObserver.observe(panel);
     const previousFocus = document.activeElement as HTMLElement | null;
     const scrollY = window.scrollY;
     const body = document.body;
@@ -87,6 +92,7 @@ export default function useTocSheet() {
     };
     document.addEventListener('keydown', keydown);
     return () => {
+      sizeObserver.disconnect();
       document.removeEventListener('keydown', keydown);
       Object.assign(body.style, original);
       window.scrollTo({ top: scrollY, behavior: 'instant' });
@@ -97,7 +103,7 @@ export default function useTocSheet() {
       if (target) window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 100,
         behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
     };
-  }, [open, close, paintHeight]);
+  }, [open, close, bounds]);
 
   function pointerDown(event: PointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0 || closingRef.current || gesture.current) return;

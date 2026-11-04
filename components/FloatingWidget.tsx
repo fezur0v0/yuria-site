@@ -102,7 +102,7 @@ export default function FloatingWidget({
 
             {/* 目录内容区 */}
             <div
-              className={`${styles.content} flex-1 overflow-y-auto px-6 py-4 flex flex-col items-center gap-2.5`}
+              className={`${styles.content} flex-auto overflow-y-auto px-6 py-4 flex flex-col items-center gap-2.5`}
             >
               {groupedToc.map(({ h2, children }) => {
                 const isOpen = openH2 === h2.id;
