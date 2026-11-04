@@ -1,7 +1,7 @@
-.overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,var(--sheet-shade,.25));backdrop-filter:blur(4px);overscroll-behavior:none;transition:background-color 240ms ease,opacity 240ms ease}
+.overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;box-sizing:border-box;padding-top:max(24px,env(safe-area-inset-top));background:rgba(0,0,0,var(--sheet-shade,.25));backdrop-filter:blur(4px);overscroll-behavior:none;transition:background-color 240ms ease,opacity 240ms ease}
 .overlay:has([data-dragging=true]){transition:none}
 .overlay[data-closing=true]{opacity:0}
-.sheet{box-sizing:border-box;width:100%;max-width:512px;max-height:60vh;max-height:min(70dvh,calc(100dvh - env(safe-area-inset-top) - 24px));display:flex;flex-direction:column;overflow:hidden;border-radius:32px 32px 0 0;border-top:1px solid #ffffff99;background:#ffffffdd;backdrop-filter:blur(40px);box-shadow:0 -10px 40px #00000014;transform:translate3d(0,var(--sheet-offset,0px),0);transition:transform 240ms cubic-bezier(.22,.8,.25,1);outline:none}
+.sheet{box-sizing:border-box;width:100%;max-width:512px;height:var(--sheet-height,min(60dvh,520px));max-height:calc(100dvh - max(24px,env(safe-area-inset-top)));display:flex;flex-direction:column;overflow:hidden;border-radius:32px 32px 0 0;border-top:1px solid #ffffff99;background:#ffffffdd;backdrop-filter:blur(40px);box-shadow:0 -10px 40px #00000014;transform:translate3d(0,var(--sheet-offset,0px),0);transition:transform 240ms cubic-bezier(.22,.8,.25,1),height 180ms ease-out;outline:none}
 .sheet[data-dragging=true]{transition:none;will-change:transform;user-select:none}
 .dragHeader{flex:none;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
 .dragHeader:active{cursor:grabbing}
@@ -12,3 +12,8 @@
 .content::-webkit-scrollbar{display:none}
 .content>div{flex-shrink:0}
 @media(prefers-reduced-motion:reduce){.overlay,.sheet{transition:none}}
+
+.title{position:relative}
+.close{position:absolute;right:-8px;top:-7px;display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:transparent;color:#777;cursor:pointer}
+.close:hover{background:#00000008}
+.close:focus-visible{outline:2px solid #777}
