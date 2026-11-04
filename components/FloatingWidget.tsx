@@ -5,7 +5,6 @@ import useTocSheet from './useTocSheet';
 import styles from './toc-sheet.module.css';
 import Link from 'next/link';
 import { PiCaretUpBold, PiGearSix, PiListBullets } from 'react-icons/pi';
-import { FiX } from 'react-icons/fi';
 
 interface TocItem {
   id: string;
@@ -86,18 +85,17 @@ export default function FloatingWidget({
         <div ref={toc.overlay} className={styles.overlay} data-closing={toc.closing} onClick={() => toc.close()}>
           <div ref={toc.sheet} className={styles.sheet} role="dialog" aria-modal="true" aria-label="文章目录" tabIndex={-1} onClick={event => event.stopPropagation()}>
             <div className={styles.dragHeader} {...toc.dragHandlers}>
-              <div ref={toc.grip} className={styles.grip} role="separator" tabIndex={0} aria-label="调整目录高度，向上增高、向下降低" aria-orientation="horizontal" aria-valuemin={0} aria-valuemax={100} aria-valuenow={60} onKeyDown={toc.resizeKey}>
+              <div ref={toc.grip} className={styles.grip} role="separator" tabIndex={0} aria-label="调整目录高度，向上增高、下拉收起" aria-orientation="horizontal" aria-valuemin={0} aria-valuemax={100} aria-valuenow={60} onKeyDown={toc.resizeKey}>
                 <span aria-hidden="true" />
               </div>
 
             {/* 标题 */}
-            <div className={`${styles.title} flex items-center justify-center gap-2 pb-3 mx-6 border-b border-black/[0.05]`}>
+            <div className={`flex items-center justify-center gap-2 pb-3 mx-6 border-b border-black/[0.05]`}>
               <span className="text-[10px] text-black/30">✦</span>
               <h4 className="text-xs font-serif tracking-[0.25em] text-black/60 uppercase font-medium">
                 INDEX
               </h4>
               <span className="text-[10px] text-black/30">✦</span>
-              <button type="button" className={styles.close} aria-label="关闭目录" onPointerDown={event => event.stopPropagation()} onClick={() => toc.close()}><FiX size={16} aria-hidden="true" /></button>
             </div>
 
             </div>

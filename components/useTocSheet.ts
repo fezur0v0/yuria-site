@@ -119,28 +119,37 @@ export default function useTocSheet() {
       drag.moved = true;
       if (sheet.current) sheet.current.dataset.dragging = 'true';
     }
-    const { min, max } = bounds();
-    height.current = resizeSheet(drag.height, drag.y, event.clientY, min, max);
-    if (frame.current !== null) return;
+    cancelFrame();
     frame.current = requestAnimationFrame(() => {
       frame.current = null;
-      paintHeight(height.current);
+      const { min, max } = bounds();
+      paintHeight(resizeSheet(drag.height, drag.y, Math.min(event.clientY, drag.y), min, max));
+      sheet.current?.style.setProperty('--sheet-offset', String(Math.max(0, dy)) + 'px');
     });
   }
 
   function pointerUp(event: PointerEvent<HTMLDivElement>) {
     const drag = gesture.current;
     if (!drag || drag.id !== event.pointerId) return;
+    const down = event.clientY - drag.y;
+    if (drag.moved && down >= Math.min(88, drag.height * .22)) {
+      close();
+      return;
+    }
     if (drag.moved) {
+      sheet.current?.style.setProperty('--sheet-offset', '0px');
       const { min, max } = bounds();
-      paintHeight(resizeSheet(drag.height, drag.y, event.clientY, min, max));
+      paintHeight(resizeSheet(drag.height, drag.y, Math.min(event.clientY, drag.y), min, max));
     }
     finishDrag();
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   }
 
   function pointerCancel(event: PointerEvent<HTMLDivElement>) {
-    if (gesture.current?.id === event.pointerId) finishDrag();
+    if (gesture.current?.id === event.pointerId) {
+      sheet.current?.style.setProperty('--sheet-offset', '0px');
+      finishDrag();
+    }
   }
 
   function resizeKey(event: React.KeyboardEvent<HTMLDivElement>) {
