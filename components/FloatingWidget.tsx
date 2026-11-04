@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import useTocSheet from './useTocSheet';
+import styles from './toc-sheet.module.css';
 import Link from 'next/link';
 import { PiCaretUpBold, PiGearSix, PiListBullets } from 'react-icons/pi';
 
@@ -18,16 +20,10 @@ export default function FloatingWidget({
   settingsHref?: string;
 }) {
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [tocOpen, setTocOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const toc = useTocSheet();
   
   // 记录当前展开的 H2 id
   const [openH2, setOpenH2] = useState<string | null>(null);
-
-  // 手势拖拽状态
-  const [dragY, setDragY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const startYRef = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => setShowBackToTop(window.scrollY > 400);
@@ -35,46 +31,13 @@ export default function FloatingWidget({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setTocOpen(false);
-      setIsClosing(false);
-      setDragY(0);
-    }, 200);
-  };
-
   const handleOpen = () => {
-    setDragY(0);
     const firstH2 = tocItems.find((i) => i.level === 2);
     setOpenH2(firstH2 ? firstH2.id : null);
-    setTocOpen(true);
+    toc.show();
   };
 
-  const handleTocClick = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 100;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-    handleClose();
-  };
-
-  // 拖拽手势
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setIsDragging(true);
-    startYRef.current = e.touches[0].clientY;
-  };
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    const deltaY = e.touches[0].clientY - startYRef.current;
-    if (deltaY > 0) setDragY(deltaY);
-  };
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-    if (dragY > 80) handleClose();
-    else setDragY(0);
-  };
+  const handleTocClick = (id: string) => toc.close(id);
 
   // H2 / H3 数据分组
   const groupedToc = tocItems.reduce<{ h2: TocItem; children: TocItem[] }[]>((acc, item) => {
@@ -118,30 +81,13 @@ export default function FloatingWidget({
         </Link>
       </div>
 
-      {tocOpen && (
-        <div
-          className={`fixed inset-0 z-50 bg-black/25 backdrop-blur-sm flex items-end justify-center transition-opacity duration-200 ${
-            isClosing ? 'opacity-0' : 'opacity-100'
-          }`}
-          onClick={handleClose}
-        >
-          <div
-            className={`w-full max-w-lg max-h-[60vh] flex flex-col rounded-t-[32px] bg-white/80 backdrop-blur-2xl border-t border-white/60 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] ${
-              isDragging ? '' : 'transition-transform duration-200 ease-out'
-            } ${isClosing ? 'translate-y-full' : ''}`}
-            style={{ transform: !isClosing ? `translateY(${dragY}px)` : undefined }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* 顶部的拖拽手势指示条 */}
-            <div
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onClick={handleClose}
-              className="w-full py-3.5 flex items-center justify-center cursor-grab active:cursor-grabbing"
-            >
-              <div className="w-12 h-1.5 rounded-full bg-black/20" />
-            </div>
+      {toc.open && (
+        <div ref={toc.overlay} className={styles.overlay} data-closing={toc.closing} onClick={() => toc.close()}>
+          <div ref={toc.sheet} className={styles.sheet} role="dialog" aria-modal="true" aria-label="文章目录" tabIndex={-1} onClick={event => event.stopPropagation()}>
+            <div className={styles.dragHeader} {...toc.dragHandlers}>
+              <button type="button" className={styles.grip} aria-label="关闭目录，也可向下拖动关闭" onClick={toc.gripClick}>
+                <span aria-hidden="true" />
+              </button>
 
             {/* 标题 */}
             <div className="flex items-center justify-center gap-2 pb-3 mx-6 border-b border-black/[0.05]">
@@ -152,10 +98,11 @@ export default function FloatingWidget({
               <span className="text-[10px] text-black/30">✦</span>
             </div>
 
+            </div>
+
             {/* 目录内容区 */}
             <div
-              className="flex-1 overflow-y-auto px-6 py-4 flex flex-col items-center gap-2.5 [&::-webkit-scrollbar]:hidden"
-              style={{ scrollbarWidth: 'none' }}
+              className={`${styles.content} flex-1 overflow-y-auto px-6 py-4 flex flex-col items-center gap-2.5`}
             >
               {groupedToc.map(({ h2, children }) => {
                 const isOpen = openH2 === h2.id;
@@ -164,7 +111,7 @@ export default function FloatingWidget({
                 return (
                   <div key={h2.id} className="w-full flex flex-col items-center">
                     {/* H2 标题块：展开时带有特有的柔和阴影与白底 */}
-                    <div
+                    <button type="button" aria-expanded={hasChildren ? isOpen : undefined}
                       onClick={() => {
                         if (hasChildren) {
                           setOpenH2(isOpen ? null : h2.id);
@@ -181,11 +128,11 @@ export default function FloatingWidget({
                       <span className="text-sm tracking-wide text-center line-clamp-1">
                         {h2.text}
                       </span>
-                    </div>
+                    </button>
 
                     {/* H3 子章节：折叠动画 */}
                     {hasChildren && (
-                      <div
+                      <div inert={!isOpen}
                         className={`w-full flex flex-col items-center overflow-hidden transition-all duration-300 ease-in-out ${
                           isOpen ? 'max-h-96 opacity-100 py-1.5 gap-1' : 'max-h-0 opacity-0'
                         }`}
