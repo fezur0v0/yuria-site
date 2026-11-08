@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createClient } from '@supabase/supabase-js';
 import { CONTENT_TABLES } from '../utils/migration/backup.ts';
-import { queryContent, mutateContent, splitTerms, tableName } from '../utils/migration/query.ts';
+import { queryContent, mutateContent, splitTerms, tableName, validateQueryParameters, QueryLimitError } from '../utils/migration/query.ts';
 import { adaptPrivateMedia } from '../utils/migration/mediaUrls.ts';
 import { previewMatches } from '../utils/migration/preview.ts';
 
@@ -64,6 +64,34 @@ test('SQL null behavior, wildcard escaping and zero-size pagination stay predict
   const result = query(source, true, 'portfolio_items', { limit: '0' });
   assert.equal(result.rows.length, 0); assert.equal(result.count, 3);
   assert.throws(() => query(source, true, 'portfolio_items', { limit: '-1' }));
+});
+test('query limits reject oversized inputs even on empty collections and writes', () => {
+  const empty = fixture(); empty.tables.music_tracks = [];
+  const longPattern = { title: `ilike.${'字'.repeat(257)}` };
+  assert.throws(() => query(empty, false, 'music_tracks', longPattern), QueryLimitError);
+  assert.throws(() => query(empty, true, 'music_tracks', { title: `not.ilike.${'x'.repeat(257)}` }), QueryLimitError);
+  assert.doesNotThrow(() => query(empty, false, 'music_tracks', { title: `ilike.${'字'.repeat(256)}` }));
+  const term = 'title.eq.x';
+  assert.doesNotThrow(() => query(empty, false, 'music_tracks', { or: `(${Array(32).fill(term).join(',')})` }));
+  assert.throws(() => query(empty, false, 'music_tracks', { or: `(${Array(33).fill(term).join(',')})` }), QueryLimitError);
+  assert.throws(() => mutateContent(empty, 'music_tracks', 'POST', new URLSearchParams({ or: `(${Array(33).fill(term).join(',')})` }), { title: 'x' }, false), QueryLimitError);
+  assert.throws(() => validateQueryParameters(new URLSearchParams(), 'x'.repeat(8193)), QueryLimitError);
+  assert.doesNotThrow(() => validateQueryParameters(new URLSearchParams(), 'x'.repeat(8192)));
+  assert.throws(() => query(empty, false, 'music_tracks', { title: `${'not.'.repeat(33)}eq.x` }), QueryLimitError);
+});
+test('ilike supports unicode, case folding, line breaks and wildcard combinations safely', () => {
+  const source = fixture();
+  source.tables.portfolio_items[0].title = 'Hello 星😀\nWorld.K';
+  for (const pattern of ['hello%world.k', 'HELLO*星_\nWORLD.K', '%星😀%', '%world._']) {
+    assert.equal(query(source, true, 'portfolio_items', { title: `ilike.${pattern}` }).count, 1, pattern);
+  }
+  assert.equal(query(source, true, 'portfolio_items', { title: 'ilike.%worldXk' }).count, 0);
+  source.tables.portfolio_items[0].title = `${'a'.repeat(20000)}!`;
+  assert.equal(query(source, true, 'portfolio_items', { title: `ilike.${'%a'.repeat(100)}b` }).count, 0);
+  source.tables.portfolio_items[0].title = 'K';
+  assert.equal(query(source, true, 'portfolio_items', { title: 'ilike.k' }).count, 1);
+  source.tables.portfolio_items[0].title = 'a'.repeat(50000);
+  assert.throws(() => query(source, true, 'portfolio_items', { title: `ilike.${'%a'.repeat(100)}` }), QueryLimitError);
 });
 test('insert assigns ids and conservative publication defaults', () => {
   const document = fixture();

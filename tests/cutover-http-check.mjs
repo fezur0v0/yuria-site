@@ -63,7 +63,8 @@ const fixture = createServer(async (request, response) => {
 });
 const user = { id: '11111111-1111-4111-8111-111111111111', aud: 'authenticated', role: 'authenticated',
   email: 'fixture@example.invalid', identities: [{ provider: 'github', identity_data: { provider_id: 'fixture-owner' } }] };
-await new Promise(resolve => fixture.listen(0, '127.0.0.1', resolve));
+// A fixed fixture port lets the test use the same public URL in the build and runtime.
+await new Promise(resolve => fixture.listen(Number(process.env.CONTENT_FIXTURE_PORT || 0), '127.0.0.1', resolve));
 fixtureOrigin = `http://127.0.0.1:${fixture.address().port}`;
 tables.portfolio_items = [{ id: 'original', title: 'Original title', category: null, content: '<p>Original body</p>', cover_url: null, is_visible: true },
   { id: 'draft', title: 'Hidden draft', content: 'private', is_visible: false }];
@@ -132,6 +133,18 @@ try {
   assert.equal(mode.live, true); assert.equal(mode.preview, false);
   const publicRead = await request('/api/content/portfolio_items?select=id,title');
   assert.deepEqual(await publicRead.json(), [{ id: 'original', title: 'Original title' }]);
+  for (const owner of [false, true]) {
+    for (const query of [
+      `title=ilike.${'a'.repeat(257)}`,
+      `or=(${Array(33).fill('title.eq.x').join(',')})`,
+      `title=eq.${'a'.repeat(8200)}`,
+    ]) {
+      const invalid = await request(`/api/content/portfolio_items?${query}`, {}, owner);
+      assert.equal(invalid.status, 400);
+      assert.match((await invalid.json()).message, /查询条件过长|搜索内容过长|筛选条件过多/);
+      assert.match(invalid.headers.get('cache-control'), /no-store/);
+    }
+  }
   const ownerRead = await request('/api/content/portfolio_items?select=id,title', {}, true);
   const version = ownerRead.headers.get('X-Yuria-Table-Version'); assert.ok(version);
   assert.equal((await ownerRead.json()).length, 2);

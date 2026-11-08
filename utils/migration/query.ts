@@ -46,11 +46,76 @@ function list(value: string, open: string, close: string) {
   if (!value.startsWith(open) || !value.endsWith(close)) throw new Error('列表格式无效');
   return value.length === 2 ? [] : splitTerms(value.slice(1, -1)).map(unquote);
 }
-function testValue(value: unknown, expression: string): boolean {
+
+export class QueryLimitError extends Error {}
+const MAX_QUERY_BYTES = 8 * 1024;
+const MAX_OR_TERMS = 32;
+const MAX_ILIKE_CHARACTERS = 256;
+const MAX_MATCH_STEPS = 8_000_000;
+type MatchBudget = { remaining: number };
+
+function validateExpression(expression: string) {
+  let current = expression;
+  let negations = 0;
+  while (current.startsWith('not.')) {
+    if (++negations > 32) throw new QueryLimitError('筛选条件嵌套过多');
+    current = current.slice(4);
+  }
+  if (current.startsWith('ilike.') && Array.from(unquote(current.slice(6))).length > MAX_ILIKE_CHARACTERS) {
+    throw new QueryLimitError('搜索内容过长，请缩短后重试');
+  }
+}
+
+export function validateQueryParameters(params: URLSearchParams, rawSearch?: string) {
+  const encoder = new TextEncoder();
+  if (encoder.encode(rawSearch ?? params.toString()).length > MAX_QUERY_BYTES) {
+    throw new QueryLimitError('查询条件过长，请缩短后重试');
+  }
+  for (const [name, value] of params) {
+    if (name === 'or') {
+      const terms = list(value, '(', ')');
+      if (terms.length > MAX_OR_TERMS) throw new QueryLimitError('筛选条件过多，请减少后重试');
+      for (const term of terms) {
+        const dot = term.indexOf('.');
+        if (dot >= 0) validateExpression(term.slice(dot + 1));
+      }
+    } else if (!['select', 'order', 'offset', 'limit', 'columns', 'on_conflict'].includes(name)) {
+      validateExpression(value);
+    }
+  }
+}
+
+// Stream through the input using bounded dynamic programming, avoiding regex backtracking.
+function matchIlike(value: string, pattern: string, budget: MatchBudget) {
+  budget.remaining -= value.length * Array.from(pattern).length;
+  if (budget.remaining < 0) throw new QueryLimitError('搜索范围过大，请缩短搜索内容或减少筛选条件');
+  const tokens = Array.from(pattern).map(char => {
+    if (char === '%' || char === '*') return { kind: 'many' as const };
+    if (char === '_') return { kind: 'one' as const };
+    return { kind: 'literal' as const, regex: new RegExp(`^(?:${char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})$`, 'iu') };
+  });
+  let previous = new Uint8Array(tokens.length + 1);
+  let next = new Uint8Array(tokens.length + 1);
+  previous[0] = 1;
+  for (let i = 1; i <= tokens.length; i++) {
+    if (tokens[i - 1].kind === 'many') previous[i] = previous[i - 1];
+  }
+  for (const char of value) {
+    next.fill(0);
+    for (let i = 1; i <= tokens.length; i++) {
+      const token = tokens[i - 1];
+      if (token.kind === 'many') next[i] = next[i - 1] | previous[i];
+      else if (token.kind === 'one' || token.regex.test(char)) next[i] = previous[i - 1];
+    }
+    [previous, next] = [next, previous];
+  }
+  return previous[tokens.length] === 1;
+}
+function testValue(value: unknown, expression: string, budget: MatchBudget): boolean {
   const index = expression.indexOf('.');
   if (index < 0) throw new Error('筛选操作无效');
   const op = expression.slice(0, index), expected = expression.slice(index + 1);
-  if (op === 'not') return value == null && !expected.startsWith('is.') ? false : !testValue(value, expected);
+  if (op === 'not') return value == null && !expected.startsWith('is.') ? false : !testValue(value, expected, budget);
   if (op === 'eq') return value !== null && value !== undefined && String(value) === unquote(expected);
   if (op === 'neq') return value !== null && value !== undefined && String(value) !== unquote(expected);
   if (op === 'is') {
@@ -63,13 +128,11 @@ function testValue(value: unknown, expression: string): boolean {
   if (op === 'cs') return Array.isArray(value) && list(expected, '{', '}').every(item => value.includes(item));
   if (op === 'ilike') {
     if (typeof value !== 'string') return false;
-    const pattern = unquote(expected).split('').map(char => char === '%' || char === '*' ? '.*' :
-      char === '_' ? '.' : char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('');
-    return new RegExp(`^${pattern}$`, 'isu').test(value);
+    return matchIlike(value, unquote(expected), budget);
   }
   throw new Error('不支持的筛选操作');
 }
-export function matches(table: TableName, row: ContentRow, params: URLSearchParams) {
+export function matches(table: TableName, row: ContentRow, params: URLSearchParams, budget: MatchBudget = { remaining: MAX_MATCH_STEPS }) {
   let result = true;
   for (const [name, value] of params) {
     if (['select', 'order', 'offset', 'limit', 'columns', 'on_conflict'].includes(name)) continue;
@@ -77,9 +140,9 @@ export function matches(table: TableName, row: ContentRow, params: URLSearchPara
       const terms = list(value, '(', ')');
       // Validate every term, even if an earlier term already matched.
       const hits = terms.map(term => { const dot = term.indexOf('.');
-        return testValue(row[column(table, term.slice(0, dot))], term.slice(dot + 1)); });
+        return testValue(row[column(table, term.slice(0, dot))], term.slice(dot + 1), budget); });
       result = hits.some(Boolean) && result;
-    } else result = testValue(row[column(table, name)], value) && result;
+    } else result = testValue(row[column(table, name)], value, budget) && result;
   }
   return result;
 }
@@ -106,11 +169,13 @@ function integer(value: string | null, fallback: number) {
   return Number(value);
 }
 export function queryContent(source: ContentDocument, owner: boolean, table: TableName, params: URLSearchParams) {
+  validateQueryParameters(params);
   const document = visibleContent(source, owner);
+  const budget = { remaining: MAX_MATCH_STEPS };
   // Validate the query even on empty collections.
-  matches(table, {}, params);
+  matches(table, {}, params, budget);
   project(table, {}, params.get('select') ?? '*', document);
-  let rows = document.tables[table].filter(row => matches(table, row, params));
+  let rows = document.tables[table].filter(row => matches(table, row, params, budget));
   const count = rows.length;
   const order = params.get('order');
   if (order) {
@@ -138,6 +203,7 @@ export function queryContent(source: ContentDocument, owner: boolean, table: Tab
 
 export function mutateContent(document: ContentDocument, table: TableName, method: string,
   params: URLSearchParams, input: unknown, upsert: boolean) {
+  validateQueryParameters(params);
   let rows = document.tables[table];
   const primaryKey = table === 'site_config' ? 'key' : 'id';
   if (params.has('on_conflict') && params.get('on_conflict') !== primaryKey) throw new Error('仅支持按主键合并');
@@ -166,8 +232,9 @@ export function mutateContent(document: ContentDocument, table: TableName, metho
   } else {
     const filters = [...params.keys()].filter(name => !['select', 'order', 'limit', 'offset', 'columns', 'on_conflict'].includes(name));
     if (!filters.length) throw new Error('修改和删除必须指定记录');
-    matches(table, {}, params);
-    const targets = rows.filter(row => matches(table, row, params));
+    const budget = { remaining: MAX_MATCH_STEPS };
+    matches(table, {}, params, budget);
+    const targets = rows.filter(row => matches(table, row, params, budget));
     if (method === 'PATCH') {
       const patch = validatePatch(table, input);
       if (primaryKey in patch) throw new Error('不能修改记录标识');

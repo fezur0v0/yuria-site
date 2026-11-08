@@ -1,6 +1,6 @@
 import { contentContext } from '@/utils/content/request';
 import { readContent, saveContent, tableVersion } from '@/utils/content/store';
-import { tableName, queryContent, mutateContent } from '@/utils/migration/query';
+import { tableName, queryContent, mutateContent, validateQueryParameters, QueryLimitError } from '@/utils/migration/query';
 import { isSameOriginRequest } from '@/utils/security/origin';
 import { adaptPrivateMedia } from '@/utils/migration/mediaUrls';
 import { previewMatches } from '@/utils/migration/preview';
@@ -16,6 +16,14 @@ async function handle(request: Request, context: Context) {
   let table;
   try { table = tableName((await context.params).table); }
   catch { return Response.json({ message: '不支持的内容类型' }, { status: 404, headers: privateHeaders }); }
+  const url = new URL(request.url);
+  try {
+    validateQueryParameters(url.searchParams, url.search.slice(1));
+    validateQueryParameters(url.searchParams);
+  } catch (error) {
+    return Response.json({ message: error instanceof QueryLimitError ? error.message : '查询条件格式无效' },
+      { status: 400, headers: privateHeaders });
+  }
   const write = !['GET', 'HEAD'].includes(request.method);
   if (write && !isSameOriginRequest(request)) return Response.json({ message: '请求来源无效' }, { status: 403, headers: privateHeaders });
   const access = await contentContext();
@@ -29,7 +37,6 @@ async function handle(request: Request, context: Context) {
     return Response.json({ message: access.paused ? '正在迁移，请暂停编辑，完成后刷新页面' : '内容来源已切换，请刷新页面后再编辑', code: 'CONTENT_MODE_CHANGED' },
       { status: 409, headers: { ...privateHeaders, 'X-Yuria-Content-Backend': 'r2' } });
   }
-  const url = new URL(request.url);
   if (!access.r2) {
     // Supabase still verifies the forwarded bearer token and enforces RLS.
     // Identity/owner decisions above always use getUser(), never the client token alone.
@@ -80,8 +87,8 @@ async function handle(request: Request, context: Context) {
     const data = single ? result.rows[0] : result.rows;
     return Response.json(access.state.phase === 'active' ? adaptImportedMedia(data, process.env.NEXT_PUBLIC_SUPABASE_URL) : adaptPrivateMedia(data),
       { status: request.method === 'POST' ? 201 : 200, headers });
-  } catch {
-    return Response.json({ message: 'R2 内容操作未完成，请检查内容格式或稍后重试' }, { status: 400, headers });
+  } catch (error) {
+    return Response.json({ message: error instanceof QueryLimitError ? error.message : 'R2 内容操作未完成，请检查内容格式或稍后重试' }, { status: 400, headers });
   }
 }
 export const GET = handle;
