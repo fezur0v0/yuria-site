@@ -147,9 +147,22 @@ Tests: `npm run test:content` and `npm run test:auth`.
 Tests: `node --experimental-strip-types --test tests/storage-backup.test.mjs`.
 
 Cutover verification: `npm run test:content`, `npm run test:auth`, TypeScript and
-the production build. `node tests/cutover-http-check.mjs` exercises the built app
-against local Supabase/S3 HTTP fixtures with disposable credentials; it requires
-permitted loopback access and does not contact production services.
+the production build. The cutover HTTP check runs the built app against local
+Supabase/S3 fixtures. Use a test checkout without production credentials and a
+free loopback port. Next.js embeds `NEXT_PUBLIC_*` values at build time, so use
+the same fixture port in the build URL and the test runner. Build with Next.js
+directly to reuse the checked-in asset manifest and skip the asset upload step.
+
+PowerShell:
+
+```powershell
+$env:CONTENT_FIXTURE_PORT = '48721'
+$env:NEXT_PUBLIC_SUPABASE_URL = "http://127.0.0.1:$env:CONTENT_FIXTURE_PORT"
+$env:NEXT_PUBLIC_SUPABASE_ANON_KEY = 'fixture-anon'
+$env:NODE_OPTIONS = '--dns-result-order=ipv4first'
+npx --no-install next build
+if ($LASTEXITCODE -eq 0) { node --experimental-strip-types tests/cutover-http-check.mjs }
+```
 
 ## Website images and external image consolidation
 
