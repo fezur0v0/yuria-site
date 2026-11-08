@@ -68,6 +68,8 @@ await new Promise(resolve => fixture.listen(Number(process.env.CONTENT_FIXTURE_P
 fixtureOrigin = `http://127.0.0.1:${fixture.address().port}`;
 tables.portfolio_items = [{ id: 'original', title: 'Original title', category: null, content: '<p>Original body</p>', cover_url: null, is_visible: true },
   { id: 'draft', title: 'Hidden draft', content: 'private', is_visible: false }];
+tables.hero_lines = [{ id: 'hero-empty', text: '', sort_order: 0 },
+  ...Array.from({ length: 7 }, (_, index) => ({ id: `hero-long-${index}`, text: 'a'.repeat(5120), sort_order: index + 1 }))];
 tables.gallery_albums = [{ id: 'album', title: 'Album', is_visible: true, is_locked: false }];
 tables.gallery_images = [{ id: 'image', album_id: 'album', image_url: `${fixtureOrigin}/storage/v1/object/public/gallery/image.jpg` }];
 tables.characters = [{ id: 'character', name: 'Private character', avatar: `${fixtureOrigin}/storage/v1/object/public/theater-images/image.jpg` }];
@@ -145,6 +147,22 @@ try {
       assert.match(invalid.headers.get('cache-control'), /no-store/);
     }
   }
+  const searchHero = (pattern, limit = '1') => request(`/api/content/hero_lines?${new URLSearchParams({
+    select: 'id', order: 'sort_order.asc', limit, text: `ilike.${pattern}`,
+  })}`);
+  const shortSearch = await searchHero('%a%');
+  assert.equal(shortSearch.status, 200);
+  assert.deepEqual(await shortSearch.json(), [{ id: 'hero-long-0' }]);
+  for (const emptyPattern of ['', '""']) {
+    const emptySearch = await searchHero(emptyPattern, '10');
+    assert.equal(emptySearch.status, 200);
+    assert.deepEqual(await emptySearch.json(), [{ id: 'hero-empty' }]);
+  }
+  // The 256-character pattern fits the input cap but costs 7 × 5120 × 256 > 8M steps.
+  const overBudget = await searchHero('a'.repeat(256));
+  assert.equal(overBudget.status, 400);
+  assert.equal((await overBudget.json()).message, '搜索范围过大，请缩短搜索内容或减少筛选条件');
+  assert.match(overBudget.headers.get('cache-control'), /no-store/);
   const ownerRead = await request('/api/content/portfolio_items?select=id,title', {}, true);
   const version = ownerRead.headers.get('X-Yuria-Table-Version'); assert.ok(version);
   assert.equal((await ownerRead.json()).length, 2);

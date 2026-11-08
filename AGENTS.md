@@ -101,3 +101,8 @@ Vercel (all 5 `R2_*` vars present) it also uploads them under immutable keys. On
 - `/guestbook` is linked from `components/PortfolioNav.tsx` but has no route (404).
 - `npm run lint` fails with 26 errors (mainly `no-explicit-any`, `no-unused-vars`, react-hooks).
 - Content is sparse test data (3 portfolio items, 1 test record, empty albums) — not a bug.
+- Content API queries are capped at 8 KiB, each `or` at 32 terms, and each `ilike` pattern at
+  256 Unicode code points. The 8M `ilike` work budget sums text length in UTF-16 code units
+  times pattern length in code points across matches. It estimates matching work, rather than
+  elapsed time or total request cost. Filtering happens before pagination, so even a short
+  pattern or small result limit can return HTTP 400 when scanning enough text.

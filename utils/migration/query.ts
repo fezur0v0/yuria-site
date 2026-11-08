@@ -51,6 +51,7 @@ export class QueryLimitError extends Error {}
 const MAX_QUERY_BYTES = 8 * 1024;
 const MAX_OR_TERMS = 32;
 const MAX_ILIKE_CHARACTERS = 256;
+// Estimate ilike work as text UTF-16 length times pattern code points, summed across matches.
 const MAX_MATCH_STEPS = 8_000_000;
 type MatchBudget = { remaining: number };
 
@@ -87,6 +88,7 @@ export function validateQueryParameters(params: URLSearchParams, rawSearch?: str
 
 // Stream through the input using bounded dynamic programming, avoiding regex backtracking.
 function matchIlike(value: string, pattern: string, budget: MatchBudget) {
+  if (pattern === '') return value.length === 0;
   budget.remaining -= value.length * Array.from(pattern).length;
   if (budget.remaining < 0) throw new QueryLimitError('搜索范围过大，请缩短搜索内容或减少筛选条件');
   const tokens = Array.from(pattern).map(char => {
